@@ -3,6 +3,10 @@
 /public/build
 /public/hot
 /public/storage
+/public/assets/gov_id_document
+/public/assets/profile_image
+/public/assets/store_logo
+/public/assets/product_images
 /storage/*.key
 /vendor
 .env
