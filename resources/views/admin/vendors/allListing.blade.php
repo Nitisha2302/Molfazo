@@ -23,7 +23,7 @@
                         <option value="4" {{ request('status_filter') == '4' ? 'selected' : '' }}>Blocked</option>
                     </select>
 
-                    <button type="submit" class="btn btn-success">Filter</button>
+                    <button type="submit" class="btn btn-dark">Filter</button>
 
                     @if(request()->has('search') || request()->has('status_filter'))
                         <a href="{{ route('dashboard.admin.vendors') }}" class="btn btn-secondary">Reset</a>
@@ -88,12 +88,12 @@
                                     @if(in_array($vendor->status_id, [2,3]))
                                         <form method="POST" action="{{ route('dashboard.admin.vendors.approve', $vendor->id) }}">
                                             @csrf
-                                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                            <button type="submit" class="btn btn-dark btn-sm">Approve</button>
                                         </form>
                                     @elseif($vendor->status_id == 4)
                                         <form method="POST" action="{{ route('dashboard.admin.vendors.unblock', $vendor->id) }}">
                                             @csrf
-                                            <button type="submit" class="btn btn-success btn-sm">Unblock</button>
+                                            <button type="submit" class="btn btn-dark btn-sm">Unblock</button>
                                         </form>
                                     @endif
 

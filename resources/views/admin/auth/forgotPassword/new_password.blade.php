@@ -3,7 +3,7 @@
 <!-- Landing-Page-Banner-Start-->
 <section class="landing-herobanner">
 
-  <div class="herobanner" style="background-image: url('{{ asset('assets/admin/images/bg-cover.png') }}');">
+  <div class="herobanner">
     <div class="container-xl">
       <div class="d-flex flex-column gap-5">
         <div class="col-md-12">

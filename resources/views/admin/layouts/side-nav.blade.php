@@ -19,7 +19,8 @@
                 </a>
             </li>
 
-            <li class="@if (Route::currentRouteName() == 'dashboard.admin.categories') active @endif">
+            <!-- <li class="@if (Route::currentRouteName() == 'dashboard.admin.categories') active @endif"> -->
+            <li class="@if (Route::is('dashboard.admin.categories','dashboard.admin.categories.create')) active @endif">
                 <a href="{{ route('dashboard.admin.categories') }}">
                     <span class="d-flex gap-3 align-items-end">
                          <i class="fas fa-th-large icon-font-size"></i>
@@ -28,7 +29,7 @@
                 </a>
             </li>
             
-            <li class="@if (Route::currentRouteName() == 'dashboard.admin.subcategories') active @endif">
+            <li class="@if (Route::is('dashboard.admin.subcategories','dashboard.admin.subcategories.create')) active @endif">
                 <a href="{{ route('dashboard.admin.subcategories') }}">
                     <span class="d-flex gap-3 align-items-end">
                         <i class="fas fa-list-ul icon-font-size"></i>

@@ -21,7 +21,7 @@
                             <option value="2" {{ request('status_filter') == '2' ? 'selected' : '' }}>Inactive</option>
                         </select>
 
-                    <button type="submit" class="btn btn-success">Filter</button>
+                    <button type="submit" class="btn btn-dark">Filter</button>
 
                     @if(request()->has('search'))
                         <a href="{{ route('dashboard.admin.categories') }}" class="btn btn-secondary">Reset</a>

@@ -35,7 +35,7 @@ Route::middleware('auth:sanctum', 'throttle.auth')->get('/user', function (Reque
 Route::post('otp/mobile/send', [AuthController::class, 'sendMobileOtp']);
 Route::post('otp/email/send', [AuthController::class, 'sendEmailOtp']);
 Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
-Route::post('vendor/register', [AuthController::class, 'vendorRegister']);
+Route::post('vendor/complete-profile', [AuthController::class, 'vendorCompleteProfile']);
 Route::post('vendor/login/otp/send',   [AuthController::class, 'sendVendorLoginOtp']);
 Route::post('vendor/login/otp/verify', [AuthController::class, 'verifyLoginOtp']);
 

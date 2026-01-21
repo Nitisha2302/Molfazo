@@ -87,6 +87,13 @@ class CategoryController extends Controller
             'slug' => \Illuminate\Support\Str::slug($request->name),
             'status_id' => $request->status_id,
         ]);
+         //  IMPORTANT LOGIC
+            // If category is inactive → make all sub-categories inactive
+            if ($request->status_id == 2) {
+                $category->subCategories()->update([
+                    'status_id' => 2
+                ]);
+            }
 
         return redirect()
             ->route('dashboard.admin.categories')
@@ -128,6 +135,25 @@ class CategoryController extends Controller
         return view('admin.subcategories.addSubCategory', compact('categories'));
     }
 
+    /**
+     * Generate a unique slug for SubCategory
+     */
+    private function generateUniqueSubCategorySlug($name, $id = null)
+    {
+        $slug = Str::slug($name);
+        $originalSlug = $slug;
+        $count = 1;
+
+        // Keep checking if slug exists (excluding current id for updates)
+        while (SubCategory::where('slug', $slug)->when($id, fn($q) => $q->where('id', '!=', $id))->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        return $slug;
+    }
+
+
     // Store sub-category
     public function storeSubCategory(Request $request)
     {
@@ -144,7 +170,7 @@ class CategoryController extends Controller
         SubCategory::create([
             'category_id' => $request->category_id,
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+           'slug' => $this->generateUniqueSubCategorySlug($request->name),
             'status_id' => 1,
         ]);
 
@@ -177,7 +203,8 @@ class CategoryController extends Controller
         $subCategory->update([
             'category_id' => $request->category_id,
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+           'slug' => $this->generateUniqueSubCategorySlug($request->name, $subCategory->id),
+
         ]);
 
         return redirect()->route('dashboard.admin.subcategories')->with('success','Sub-category updated successfully.');

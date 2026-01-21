@@ -30,7 +30,7 @@
 
         .qadam-policy-head h1 {
             font-size: 42px;
-            color: #008955;
+            color: #000;
             font-weight: 700;
         }
 
@@ -49,7 +49,7 @@
             background-color: #f1f5f9;
             margin-bottom: 8px;
             border-radius: 6px;
-            color: #008955;
+            color: #000;
             font-weight: 500;
         }
 

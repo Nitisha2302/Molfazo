@@ -19,539 +19,6 @@ use App\Mail\ForgotPasswordMail;
 
 class AuthController extends Controller
 {
-   
-//     public function vendorRegister(Request $request)
-//     {
-//         /* ===============================
-//         VALIDATION
-//         =============================== */
-//         $rules = [
-//             'name'            => 'required|string|max:255',
-//             'email'           => 'required|email|unique:users,email',
-//             'mobile'          => 'required|digits_between:8,15|unique:users,mobile',
-//             'password'        => 'required|min:6|confirmed',
-//             'gov_id_type'     => 'required|string',
-//             'gov_id_number'   => 'required|string',
-//             'gov_id_document' => 'required|array', // multiple files
-//             'gov_id_document.*' => 'file|mimes:jpg,png,pdf',
-//             'city'            => 'required|string',
-//             'country'         => 'required|string',
-//             'terms_accepted'  => 'required|in:1',
-
-//             'profile_photo'   => 'nullable|image|mimes:jpg,png',
-//             'alt_mobile'      => 'nullable|digits_between:8,15',
-
-//             'device_id'       => 'nullable|string',
-//             'device_type'     => 'nullable|string',
-//             'fcm_token'       => 'nullable|string',
-//         ];
-
-//         $messages = [
-//             'name.required'            => 'Full name is required.',
-//             'email.required'           => 'Email address is required.',
-//             'email.unique'             => 'This email is already registered.',
-//             'mobile.required'          => 'Mobile number is required.',
-//             'mobile.unique'            => 'This mobile number is already registered.',
-//             'password.confirmed'       => 'Password and confirm password do not match.',
-//             'gov_id_document.required' => 'At least one Government ID document is required.',
-//             'gov_id_document.*.mimes'  => 'Government ID must be a file of type: jpg, png, pdf.',
-//             'terms_accepted.in'        => 'You must accept terms & conditions.',
-//         ];
-
-//         $validator = Validator::make($request->all(), $rules, $messages);
-
-//         if ($validator->fails()) {
-//             return response()->json([
-//                 'status'  => false,
-//                 'message' => $validator->errors()->first(),
-//             ], 422);
-//         }
-
-//         /* ===============================
-//         HANDLE FILE UPLOADS
-//         =============================== */
-        
-//         // ---- Multiple Government IDs ----
-//        $uploadedGovIds = [];
-//         if ($request->hasFile('gov_id_document')) {
-//             foreach ($request->file('gov_id_document') as $file) {
-//                 $filename = time() . '_' . $file->getClientOriginalName();
-//                 $file->move(public_path('assets/gov_id_document'), $filename);
-//                 $uploadedGovIds[] = $filename;
-//             }
-//         }
-//         $govDocJson = json_encode($uploadedGovIds);
-
-
-
-//     // ---- Profile Photo (Optional) ----
-//     $profilePhotoName = null;
-//     if ($request->hasFile('profile_photo')) {
-//         $file = $request->file('profile_photo');
-//         $profilePhotoName = time() . '_' . $file->getClientOriginalName();
-        
-//         // Move file to folder
-//         $file->move(public_path('assets/profile_image'), $profilePhotoName);
-        
-//         // Store only filename in DB
-//     }
-
-
-//         /* ===============================
-//         CREATE USER
-//         =============================== */
-//         $user = User::create([
-//             'name'             => $request->name,
-//             'email'            => $request->email,
-//             'mobile'           => $request->mobile,
-//             'alt_mobile'       => $request->alt_mobile,
-//             'password'         => Hash::make($request->password),
-
-//             'role'          => 2, // Vendor
-//             'status_id'        => 2, // Pending admin approval
-
-//             'gov_id_type'      => $request->gov_id_type,
-//             'gov_id_number'    => $request->gov_id_number,
-//             'government_id'    => $govDocJson, // multiple files stored
-
-//             'city'             => $request->city,
-//             'country'          => $request->country,
-//             'profile_photo'    => $profilePhotoName,
-//             'terms_accepted'   => true,
-
-//             'device_id'        => $request->device_id,
-//             'device_type'      => $request->device_type,
-//             'fcm_token'        => $request->fcm_token,
-//         ]);
-
-//         return response()->json([
-//             'status'  => true,
-//             'message' => 'Vendor registered successfully. Waiting for admin approval.',
-//             'data'    => $user,
-//         ], 200);
-//     }
-
-    // public function sendOtp(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'email' => 'nullable|email',
-    //         'phone_number' => 'nullable|digits_between:8,15',
-    //         'device_type' => 'nullable|string|max:255',
-    //         'device_id' => 'nullable|string|max:255',
-    //         'fcm_token' => 'nullable|string|max:255',
-    //     ], [
-    //         'phone_number.digits_between' => 'Phone number must be between 8 and 15 digits.',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $validator->errors()->first(),
-    //         ], 201);
-    //     }
-
-    //     if (!$request->email && !$request->phone_number) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Please provide email or phone number.',
-    //         ], 201);
-    //     }
-
-    //     $otp = mt_rand(100000, 999999); // 6-digit OTP
-
-    //     if ($request->email) {
-    //         $user = User::firstOrCreate(
-    //             ['email' => $request->email],
-    //             ['email_verified' => 0]
-    //         );
-
-    //         $user->otp = $otp;
-    //         $user->otp_sent_at = now();
-    //         $user->save();
-
-    //         $logoPath = url('/') . "/assets/email-logo/logo_molfazo.png";
-
-    //         Mail::to($user->email)->send(new OTPVerificationMail($user->name ?? '', $otp, $logoPath));
-
-    //         return response()->json([
-    //             'status' => true,
-    //             'message' => 'OTP sent to your email.',
-    //         ], 200);
-    //     }
-
-    //     if ($request->phone_number) {
-    //         $user = User::firstOrCreate(
-    //             ['mobile' => $request->phone_number],
-    //             ['is_mobile_verified' => 0]
-    //         );
-
-    //         $user->mobile_otp = $otp;
-    //         $user->mobile_otp_sent_at = now();
-    //         $user->save();
-
-    //         $phone = $request->phone_number;
-    //         $otpMsg = "Your verification code: {$otp}";
-    //         $responseMessage = "OTP sent to your mobile number.";
-
-    //         if (strlen($phone) === 9) {
-    //             // Use SMS API for 9-digit numbers
-    //             $txnId = 'otp_' . time();
-    //             $strHash = $this->generateSha256Hex("borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}");
-    //             $smsResponse = Http::get('https://api.osonsms.com/sendsms_v1.php', [
-    //                 'login'        => 'borafzo',
-    //                 'from'         => 'BORAFZO',
-    //                 'phone_number' => $phone,
-    //                 'msg'          => $otpMsg,
-    //                 'txn_id'       => $txnId,
-    //                 'str_hash'     => $strHash,
-    //             ]);
-    //             Log::info('OsonSMS Response: ' . $smsResponse->body());
-    //         } elseif (strlen($phone) === 10) {
-    //             // Auto-generate OTP for 10-digit numbers (India/local testing)
-    //             Log::info("Auto-generated OTP for 10-digit number: $phone OTP: $otp");
-    //             // Optionally return OTP in response for dev/testing
-    //             $responseMessage = "Auto-generated OTP for testing (10-digit number).";
-    //         }
-
-    //         return response()->json([
-    //             'status' => true,
-    //             'message' => $responseMessage,
-    //             'data' => [
-    //                 'phone_number' => $user->mobile,
-    //                 'otp' => (strlen($phone) === 10) ? $otp : null, // return OTP for 10-digit numbers
-    //             ],
-    //         ], 200);
-    //     }
-    // }
-
-
-    //     /**
-    //      * Generate SHA-256 hash for OsonSMS
-    //      */
-    private function generateSha256Hex(string $input): string
-    {
-        $utf8String = mb_convert_encoding($input, 'UTF-8');
-        return hash('sha256', $utf8String);
-    }
-
-
-//    public function verifyOtp(Request $request)
-//     {
-//         $validator = Validator::make($request->all(), [
-//             'email' => 'nullable|email',
-//             'phone_number' => 'nullable|digits_between:8,15',
-//             'otp' => 'required|digits:6',
-//         ], [
-//             'email.email' => 'Invalid email address.',
-//             'phone_number.digits_between' => 'Phone number must be between 8 and 15 digits.',
-//             'otp.required' => 'OTP is required.',
-//             'otp.digits' => 'OTP must be 6 digits.',
-//         ]);
-
-//         if ($validator->fails()) {
-//             return response()->json([
-//                 'status' => false,
-//                 'message' => $validator->errors()->first(),
-//             ], 201);
-//         }
-
-//         // Determine user and columns
-//         if ($request->email) {
-//             $user = User::where('email', $request->email)->first();
-//             $otpColumn = 'otp';
-//             $otpSentColumn = 'otp_sent_at';
-//             $verifiedColumn = 'email_verified';
-//             $verifiedAtColumn = 'email_verified_at';
-//         } elseif ($request->phone_number) {
-//             $user = User::where('mobile', $request->phone_number)->first();
-//             $otpColumn = 'mobile_otp';
-//             $otpSentColumn = 'mobile_otp_sent_at';
-//             $verifiedColumn = 'is_mobile_verified';
-//             $verifiedAtColumn = 'mobile_verified_at';
-//         } else {
-//             return response()->json([
-//                 'status' => false,
-//                 'message' => 'Email or phone number is required.',
-//             ], 201);
-//         }
-
-//         if (!$user) {
-//             return response()->json([
-//                 'status' => false,
-//                 'message' => 'User not found.',
-//             ], 404);
-//         }
-
-//         // Check OTP match
-//         if ($request->otp != $user->$otpColumn) {
-//             return response()->json([
-//                 'status' => false,
-//                 'message' => 'Invalid OTP.',
-//             ], 201);
-//         }
-
-//         // Check OTP expiration (5 minutes)
-//         $otpSentAt = Carbon::parse($user->$otpSentColumn);
-//         if ($otpSentAt->addMinutes(5)->isPast()) {
-//             return response()->json([
-//                 'status' => false,
-//                 'message' => 'OTP has expired. Please request a new OTP.',
-//             ], 201);
-//         }
-
-//         // OTP valid — update verification and generate API token
-//         $apiToken = bin2hex(random_bytes(30));
-//         $user->api_token = $apiToken;
-
-//         // Set verified flag and timestamp
-//         $user->$verifiedColumn = 1;
-//         $user->$verifiedAtColumn = now();
-
-//         // Clear OTP
-//         $user->$otpColumn = null;
-//         $user->$otpSentColumn = null;
-
-//         $user->save();
-
-//         // Return user details
-//         return response()->json([
-//             'status' => true,
-//             'message' => 'Login successful.',
-//             'data' => [
-//                 'id' => $user->id,
-//                 'api_token' => $user->api_token,
-//                 'name' => $user->name,
-//                 'email' => $user->email,
-//                 'phone_number' => $user->mobile,
-//                 'email_verified' => $user->email_verified,
-//                 'email_verified_at' => $user->email_verified_at,
-//                 'is_phone_verify' => $user->is_mobile_verified,
-//                 'mobile_verified_at' => $user->mobile_verified_at,
-//                 'created_at' => $user->created_at,
-//                 'updated_at' => $user->updated_at,
-//                 // add other fields as needed
-//             ],
-//         ], 200);
-//     }
-
-
-    public function vendorLogin(Request $request)
-    {
-        /* ===============================
-        VALIDATION
-        =============================== */
-        $validator = Validator::make($request->all(), [
-            'login'        => 'required|string', // email or mobile
-            'password'     => 'required|string',
-            'device_token' => 'nullable|string',
-            'device_type'  => 'nullable|string',
-            'fcm_token'    => 'nullable|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status'  => false,
-                'message' => $validator->errors()->first(),
-            ], 422);
-        }
-
-        /* ===============================
-        USER CHECK (EMAIL OR MOBILE)
-        =============================== */
-        $loginValue = $request->login;
-
-        $user = User::where('email', $loginValue)
-                    ->orWhere('mobile', $loginValue)
-                    ->first();
-
-        if (!$user) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Account not found. Please register first.',
-            ], 404);
-        }
-
-        /* ===============================
-        PASSWORD CHECK
-        =============================== */
-        if (!Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Invalid login credentials.',
-            ], 401);
-        }
-
-        /* ===============================
-        VENDOR ROLE CHECK
-        =============================== */
-        if ($user->role != 2) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Only vendor accounts are allowed to login here.',
-            ], 403);
-        }
-
-        /* ===============================
-        VENDOR APPROVAL CHECK
-        =============================== */
-        if ($user->status_id == 2) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Your vendor account is pending admin approval.',
-            ], 403);
-        }
-
-        if ($user->status_id == 3) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Your vendor account has been rejected.',
-            ], 403);
-        }
-
-        if ($user->status_id == 4) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Your vendor account has been blocked. Contact support.',
-            ], 403);
-        }
-
-        /* ===============================
-        LOGIN SUCCESS
-        =============================== */
-        $apiToken = bin2hex(random_bytes(40));
-
-        $user->update([
-            'api_token'    => $apiToken,
-            'device_token' => $request->device_token,
-            'device_type'  => $request->device_type,
-            'fcm_token'    => $request->fcm_token,
-        ]);
-
-        return response()->json([
-            'status'  => true,
-            'message' => 'Login successful.',
-            'data'    => [
-                'id'        => $user->id,
-                'role'      => $user->role,
-                'email'     => $user->email,
-                'mobile'    => $user->mobile,
-                'api_token' => $user->api_token,
-            ],
-        ], 200);
-    }
-
-
-    public function getProfile(Request $request)
-    {
-        /* ===============================
-        AUTHENTICATED USER
-        =============================== */
-        $user = Auth::guard('api')->user();
-
-        if (!$user) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'User is not authenticated.',
-            ], 401);
-        }
-
-        /* ===============================
-        FORMAT OPTIONAL DATA
-        =============================== */
-        $profilePhoto = $user->profile_photo
-            ?  $user->profile_photo
-            : null;
-
-        $govDocuments = $user->government_id
-            ? json_decode($user->government_id, true)
-            : [];
-
-        /* ===============================
-        RESPONSE
-        =============================== */
-        return response()->json([
-            'status'  => true,
-            'message' => 'User profile fetched successfully.',
-            'data'    => [
-                'id' => $user->id,
-
-                /* Role & Status */
-                'role'       => $user->role,        // 1=Admin,2=Vendor,3=Customer
-                'status_id'  => $user->status_id,   // 1=Active,2=Pending,3=Rejected,4=Blocked
-
-                /* Basic Info */
-                'name'       => $user->name,
-                'email'      => $user->email,
-                'mobile'     => $user->mobile,
-                'alt_mobile' => $user->alt_mobile,
-
-                /* Location */
-                'country' => $user->country,
-                'city'    => $user->city,
-
-                /* Profile */
-                'profile_photo' => $profilePhoto,
-
-                /* Government Documents */
-                'gov_id_type'   => $user->gov_id_type,
-                'gov_id_number' => $user->gov_id_number,
-                'government_id_documents' => $govDocuments,
-
-                /* Approval */
-                'approved_at' => $user->approved_at,
-
-                /* Verification Flags (no OTP logic) */
-                'email_verified'        => $user->email_verified,
-                'email_verified_at'     => $user->email_verified_at,
-                'is_mobile_verified'    => $user->is_mobile_verified,
-                'mobile_verified_at'    => $user->mobile_verified_at,
-
-                /* Flags */
-                'terms_accepted' => $user->terms_accepted,
-                'is_social'      => $user->is_social,
-
-                /* Device */
-                'device_type' => $user->device_type,
-                'fcm_token'   => $user->fcm_token,
-
-                /* Meta */
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-            ],
-        ], 200);
-    }
-
-
-    public function logout(Request $request)
-    {
-        /* ===============================
-        AUTHENTICATED USER
-        =============================== */
-        $user = Auth::guard('api')->user();
-
-        if (!$user) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'User is not authenticated.',
-            ], 401);
-        }
-
-        /* ===============================
-        LOGOUT
-        =============================== */
-        $user->update([
-            'api_token'    => null,
-            'device_token' => null,
-            'device_type'  => null,
-            'fcm_token'    => null,
-        ]);
-
-        return response()->json([
-            'status'  => true,
-            'message' => 'Logout successful.',
-        ], 200);
-    }
-
 
     public function sendMobileOtp(Request $request)
     {
@@ -745,11 +212,18 @@ class AuthController extends Controller
             'api_token' => $user->api_token,
         ], 200);
     }
+   
+    //  Generate SHA-256 hash for OsonSMS
 
-
-    public function vendorRegister(Request $request)
+    private function generateSha256Hex(string $input): string
     {
-          /* ===============================
+        $utf8String = mb_convert_encoding($input, 'UTF-8');
+        return hash('sha256', $utf8String);
+    }
+
+    public function vendorCompleteProfile(Request $request)
+    {
+        /* ===============================
         AUTHENTICATED USER
         =============================== */
         $user = Auth::guard('api')->user();
@@ -764,10 +238,10 @@ class AuthController extends Controller
          /* ===============================
         VERIFICATION CHECK
         =============================== */
-        if (!$user->is_mobile_verified || !$user->email_verified) {
+        if (!$user->is_mobile_verified ) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Please verify mobile number and email first.',
+                'message' => 'Please verify mobile number.',
             ], 403);
         }
 
@@ -776,7 +250,7 @@ class AuthController extends Controller
         =============================== */
         $rules = [
             'name'            => 'required|string|max:255',
-            // 'email'           => 'required|email|unique:users,email',
+            'email'           => 'required|email|unique:users,email',
             // 'mobile'          => 'required|digits_between:8,15|unique:users,mobile',
             'password'        => 'required|min:6|confirmed',
             'gov_id_type'     => 'required|string',
@@ -833,25 +307,25 @@ class AuthController extends Controller
 
 
 
-    // ---- Profile Photo (Optional) ----
-    $profilePhotoName = null;
-    if ($request->hasFile('profile_photo')) {
-        $file = $request->file('profile_photo');
-        $profilePhotoName = time() . '_' . $file->getClientOriginalName();
-        
-        // Move file to folder
-        $file->move(public_path('assets/profile_image'), $profilePhotoName);
-        
-        // Store only filename in DB
-    }
+        // ---- Profile Photo (Optional) ----
+        $profilePhotoName = null;
+        if ($request->hasFile('profile_photo')) {
+            $file = $request->file('profile_photo');
+            $profilePhotoName = time() . '_' . $file->getClientOriginalName();
+            
+            // Move file to folder
+            $file->move(public_path('assets/profile_image'), $profilePhotoName);
+            
+            // Store only filename in DB
+        }
 
 
         /* ===============================
         CREATE USER
         =============================== */
-      $user->update([
+        $user->update([
             'name'             => $request->name,
-            // 'email'            => $request->email,
+            'email'            => $request->email,
             // 'mobile'           => $request->mobile,
             'alt_mobile'       => $request->alt_mobile,
             'password'         => Hash::make($request->password),
@@ -880,6 +354,110 @@ class AuthController extends Controller
         ], 200);
     }
 
+    public function vendorLogin(Request $request)
+    {
+        /* ===============================
+        VALIDATION
+        =============================== */
+        $validator = Validator::make($request->all(), [
+            'login'        => 'required|string', // email or mobile
+            'password'     => 'required|string',
+            'device_token' => 'nullable|string',
+            'device_type'  => 'nullable|string',
+            'fcm_token'    => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        /* ===============================
+        USER CHECK (EMAIL OR MOBILE)
+        =============================== */
+        $loginValue = $request->login;
+
+        $user = User::where('email', $loginValue)
+                    ->orWhere('mobile', $loginValue)
+                    ->first();
+
+        if (!$user) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Account not found. Please register first.',
+            ], 404);
+        }
+
+        /* ===============================
+        PASSWORD CHECK
+        =============================== */
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Invalid login credentials.',
+            ], 401);
+        }
+
+        /* ===============================
+        VENDOR ROLE CHECK
+        =============================== */
+        if ($user->role != 2) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Only vendor accounts are allowed to login here.',
+            ], 403);
+        }
+
+        /* ===============================
+        VENDOR APPROVAL CHECK
+        =============================== */
+        if ($user->status_id == 2) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Your vendor account is pending admin approval.',
+            ], 403);
+        }
+
+        if ($user->status_id == 3) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Your vendor account has been rejected.',
+            ], 403);
+        }
+
+        if ($user->status_id == 4) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Your vendor account has been blocked. Contact support.',
+            ], 403);
+        }
+
+        /* ===============================
+        LOGIN SUCCESS
+        =============================== */
+        $apiToken = bin2hex(random_bytes(40));
+
+        $user->update([
+            'api_token'    => $apiToken,
+            'device_token' => $request->device_token,
+            'device_type'  => $request->device_type,
+            'fcm_token'    => $request->fcm_token,
+        ]);
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Login successful.',
+            'data'    => [
+                'id'        => $user->id,
+                'role'      => $user->role,
+                'email'     => $user->email,
+                'mobile'    => $user->mobile,
+                'api_token' => $user->api_token,
+            ],
+        ], 200);
+    }
 
     public function sendVendorLoginOtp(Request $request)
     {
@@ -1058,7 +636,116 @@ class AuthController extends Controller
     }
 
 
+    public function getProfile(Request $request)
+    {
+        /* ===============================
+        AUTHENTICATED USER
+        =============================== */
+        $user = Auth::guard('api')->user();
 
+        if (!$user) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'User is not authenticated.',
+            ], 401);
+        }
+
+        /* ===============================
+        FORMAT OPTIONAL DATA
+        =============================== */
+        $profilePhoto = $user->profile_photo
+            ?  $user->profile_photo
+            : null;
+
+        $govDocuments = $user->government_id
+            ? json_decode($user->government_id, true)
+            : [];
+
+        /* ===============================
+        RESPONSE
+        =============================== */
+        return response()->json([
+            'status'  => true,
+            'message' => 'User profile fetched successfully.',
+            'data'    => [
+                'id' => $user->id,
+
+                /* Role & Status */
+                'role'       => $user->role,        // 1=Admin,2=Vendor,3=Customer
+                'status_id'  => $user->status_id,   // 1=Active,2=Pending,3=Rejected,4=Blocked
+
+                /* Basic Info */
+                'name'       => $user->name,
+                'email'      => $user->email,
+                'mobile'     => $user->mobile,
+                'alt_mobile' => $user->alt_mobile,
+
+                /* Location */
+                'country' => $user->country,
+                'city'    => $user->city,
+
+                /* Profile */
+                'profile_photo' => $profilePhoto,
+
+                /* Government Documents */
+                'gov_id_type'   => $user->gov_id_type,
+                'gov_id_number' => $user->gov_id_number,
+                'government_id_documents' => $govDocuments,
+
+                /* Approval */
+                'approved_at' => $user->approved_at,
+
+                /* Verification Flags (no OTP logic) */
+                'email_verified'        => $user->email_verified,
+                'email_verified_at'     => $user->email_verified_at,
+                'is_mobile_verified'    => $user->is_mobile_verified,
+                'mobile_verified_at'    => $user->mobile_verified_at,
+
+                /* Flags */
+                'terms_accepted' => $user->terms_accepted,
+                'is_social'      => $user->is_social,
+
+                /* Device */
+                'device_type' => $user->device_type,
+                'fcm_token'   => $user->fcm_token,
+
+                /* Meta */
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+            ],
+        ], 200);
+    }
+
+
+    public function logout(Request $request)
+    {
+        /* ===============================
+        AUTHENTICATED USER
+        =============================== */
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'User is not authenticated.',
+            ], 401);
+        }
+
+        /* ===============================
+        LOGOUT
+        =============================== */
+        $user->update([
+            'api_token'    => null,
+            'device_token' => null,
+            'device_type'  => null,
+            'fcm_token'    => null,
+        ]);
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Logout successful.',
+        ], 200);
+    }
 
     public function forgotPassword(Request $request)
     {
@@ -1112,7 +799,6 @@ class AuthController extends Controller
             ], 500);
         }
     }
-
 
 
     public function resetForgotPassword(Request $request)
@@ -1172,6 +858,8 @@ class AuthController extends Controller
     }
 
 
+
+  
 
 
 
