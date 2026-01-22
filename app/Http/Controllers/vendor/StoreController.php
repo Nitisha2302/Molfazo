@@ -125,6 +125,7 @@ class StoreController extends Controller
 
         return response()->json([
             'status' => true,
+              'message' => 'Store fetched successfully.',
             'data' => $stores,
         ], 200);
     }
@@ -159,6 +160,7 @@ class StoreController extends Controller
 
         return response()->json([
             'status' => true,
+             'message' => 'Store details fetched successfully.',
             'data' => $this->formatStore($store),
         ], 200);
     }

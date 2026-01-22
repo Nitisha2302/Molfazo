@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Auth;
 use App\Mail\OTPVerificationMail;
 use Illuminate\Validation\ValidationException;
 use App\Mail\ForgotPasswordMail;
+use Illuminate\Support\Str;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
 
 
 
@@ -860,7 +864,98 @@ class AuthController extends Controller
 
 
   
+    public function VendorloginWithApple(Request $request)
+    {
+        /* ===============================
+           VALIDATION
+        =============================== */
+        $request->validate([
+            'identity_token' => 'required',
+            'apple_id'       => 'required', // sub from apple
+            'email'          => 'nullable|email',
+            'name'           => 'nullable|string',
+        ]);
 
+        try {
+
+            /* ===============================
+               VERIFY APPLE TOKEN
+            =============================== */
+            $appleKeys = Http::get('https://appleid.apple.com/auth/keys')->json();
+
+            $decoded = JWT::decode(
+                $request->identity_token,
+                JWK::parseKeySet($appleKeys),
+                ['RS256']
+            );
+
+            if ($decoded->iss !== 'https://appleid.apple.com') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid Apple token',
+                ], 401);
+            }
+
+            /* ===============================
+               FIND OR CREATE USER
+            =============================== */
+            $user = User::where('apple_token', $request->apple_id)->first();
+
+            if (!$user) {
+
+                // match by email (first login only)
+                if ($request->email) {
+                    $user = User::where('email', $request->email)->first();
+                }
+
+                if (!$user) {
+                    $user = User::create([
+                        'name'        => $request->name ?? 'Apple User',
+                        'email'       => $request->email,
+                        'password'    => Hash::make(Str::random(32)),
+                        'apple_token' => $request->apple_id,
+                        'is_social'   => 1,
+                        'status_id'   => 1,
+                        'role'        => 3,
+                    ]);
+                } else {
+                    $user->update([
+                        'apple_token' => $request->apple_id,
+                        'is_social'   => 1,
+                    ]);
+                }
+            }
+
+            /* ===============================
+               STATUS CHECK
+            =============================== */
+            if ($user->status_id == 4) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Account blocked by admin',
+                ], 403);
+            }
+
+            /* ===============================
+               ISSUE BEARER TOKEN
+            =============================== */
+            $token = $user->createToken('apple-login')->plainTextToken;
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Apple login successful',
+                'token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $user,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Apple authentication failed',
+            ], 401);
+        }
+    }
 
 
 

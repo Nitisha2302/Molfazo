@@ -53,6 +53,26 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     Route::delete('sub-categories/{id}', [CategoryController::class,'destroySubCategory'])->name('subcategories.delete');
 
 
+    Route::get('child-categories', [CategoryController::class, 'childCategoryListing'])
+    ->name('childcategories');
+
+    Route::get('child-categories/create', [CategoryController::class, 'createChildCategory'])
+        ->name('childcategories.create');
+
+    Route::post('child-categories', [CategoryController::class, 'storeChildCategory'])
+        ->name('childcategories.store');
+
+    Route::get('child-categories/{id}/edit', [CategoryController::class, 'editChildCategory'])
+        ->name('childcategories.edit');
+
+    Route::put('child-categories/{id}', [CategoryController::class, 'updateChildCategory'])
+        ->name('childcategories.update');
+
+    Route::delete('child-categories/{id}', [CategoryController::class, 'destroyChildCategory'])
+        ->name('childcategories.delete');
+
+
+
 
     Route::get('/vendors', [VendorController::class, 'index'])->name('vendors');
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Store;
 use App\Models\ProductImage;
 use Auth;
 use Validator;
@@ -153,6 +154,7 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => true,
+              'message' => 'Products fetched successfully.',
             'data' => $products,
         ], 200);
     }
@@ -184,6 +186,7 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => true,
+              'message' => 'Products details fetched successfully.',
             'data' => $this->formatProduct($product),
         ], 200);
     }
@@ -233,4 +236,62 @@ class ProductController extends Controller
             default => 'Unknown',
         };
     }
+
+    public function getstoreAllProducts($store_id)
+    {
+        /* ===============================
+        AUTHENTICATION (OPTIONAL)
+        =============================== */
+        $user = Auth::guard('api')->user();
+
+        // If this API should be public → remove this block
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        /* ===============================
+        STORE VALIDATION
+        =============================== */
+        $store = Store::where('id', $store_id)
+            ->where('status_id', 1) // 1 = Active
+            ->first();
+
+        if (!$store) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Store not found or not active.',
+            ], 404);
+        }
+
+        /* ===============================
+        FETCH STORE PRODUCTS
+        =============================== */
+        $products = Product::where('store_id', $store->id)->get();
+
+        if ($products->isEmpty()) {
+            return response()->json([
+                'status' => true,
+                'data' => [],
+                'message' => 'No products found for this store.'
+            ], 200);
+        }
+
+        /* ===============================
+        FORMAT PRODUCTS
+        =============================== */
+        $products = $products->map(function ($product) {
+            return $this->formatProduct($product);
+        });
+
+        return response()->json([
+            'status' => true,
+              'message' => 'Products fetched successfully.',
+            'data' => $products,
+        ], 200);
+    }
+
+
 }
