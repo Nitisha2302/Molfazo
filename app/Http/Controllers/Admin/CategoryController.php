@@ -7,6 +7,9 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\SubCategory;
 use Str;
+use App\Models\ChildCategory;
+
+
 
 class CategoryController extends Controller
 {
@@ -227,6 +230,10 @@ class CategoryController extends Controller
     }
 
 
+    
+    //////////////////////////////
+    // CHILD CATEGORY SLUG
+    //////////////////////////////
     private function generateUniqueChildCategorySlug($name, $id = null)
     {
         $slug = Str::slug($name);
@@ -234,7 +241,7 @@ class CategoryController extends Controller
         $count = 1;
 
         while (
-            \App\Models\ChildCategory::where('slug', $slug)
+            ChildCategory::where('slug', $slug)
                 ->when($id, fn ($q) => $q->where('id', '!=', $id))
                 ->exists()
         ) {
@@ -244,9 +251,12 @@ class CategoryController extends Controller
         return $slug;
     }
 
+    //////////////////////////////
+    // LIST
+    //////////////////////////////
     public function childCategoryListing(Request $request)
     {
-        $childCategories = \App\Models\ChildCategory::with('subCategory.category')
+        $childCategories = ChildCategory::with('subCategory.category')
             ->when($request->search, fn ($q) =>
                 $q->where('name', 'like', '%' . $request->search . '%')
             )
@@ -268,25 +278,40 @@ class CategoryController extends Controller
         );
     }
 
+    //////////////////////////////
+    // CREATE
+    //////////////////////////////
     public function createChildCategory()
     {
         $subCategories = SubCategory::where('status_id', 1)->pluck('name', 'id');
         return view('admin.childcategories.addChildCategory', compact('subCategories'));
     }
 
-
+    //////////////////////////////
+    // STORE
+    //////////////////////////////
     public function storeChildCategory(Request $request)
     {
-        $request->validate([
+        $rules = [
             'sub_category_id' => 'required|exists:sub_categories,id',
             'name' => 'required|string|max:255|unique:child_categories,name,NULL,id,sub_category_id,' . $request->sub_category_id,
-        ]);
+            'status_id' => 'required|in:1,2',
+        ];
 
-        \App\Models\ChildCategory::create([
+        $messages = [
+            'sub_category_id.required' => 'Please select a sub category.',
+            'name.required' => 'Child category name is required.',
+            'name.unique' => 'This child category already exists for selected sub category.',
+            'status_id.required' => 'Please select status.',
+        ];
+
+        $request->validate($rules, $messages);
+
+        ChildCategory::create([
             'sub_category_id' => $request->sub_category_id,
             'name' => $request->name,
             'slug' => $this->generateUniqueChildCategorySlug($request->name),
-            'status_id' => 1,
+            'status_id' => $request->status_id,
         ]);
 
         return redirect()
@@ -294,9 +319,12 @@ class CategoryController extends Controller
             ->with('success', 'Child category added successfully.');
     }
 
+    //////////////////////////////
+    // EDIT
+    //////////////////////////////
     public function editChildCategory($id)
     {
-        $childCategory = \App\Models\ChildCategory::findOrFail($id);
+        $childCategory = ChildCategory::findOrFail($id);
         $subCategories = SubCategory::where('status_id', 1)->pluck('name', 'id');
 
         return view(
@@ -305,10 +333,12 @@ class CategoryController extends Controller
         );
     }
 
-
+    //////////////////////////////
+    // UPDATE
+    //////////////////////////////
     public function updateChildCategory(Request $request, $id)
     {
-        $childCategory = \App\Models\ChildCategory::findOrFail($id);
+        $childCategory = ChildCategory::findOrFail($id);
 
         $request->validate([
             'sub_category_id' => 'required|exists:sub_categories,id',
@@ -328,16 +358,14 @@ class CategoryController extends Controller
             ->with('success', 'Child category updated successfully.');
     }
 
-
+    //////////////////////////////
+    // DELETE
+    //////////////////////////////
     public function destroyChildCategory($id)
     {
-        \App\Models\ChildCategory::findOrFail($id)->delete();
+        ChildCategory::findOrFail($id)->delete();
         return back()->with('success', 'Child category deleted successfully.');
     }
-
-
-
-
 
 
 
