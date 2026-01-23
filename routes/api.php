@@ -43,6 +43,7 @@ Route::post('vendor/forgot-password', [AuthController::class, 'forgotPassword'])
 Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgotPassword']);
 
 
+Route::post('vendor/login/apple', [AuthController::class, 'VendorloginWithApple']);
 
 
 
@@ -58,12 +59,15 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
     // STORES
     Route::post('vendor/store/create', [StoreController::class, 'create']);
     Route::get('vendor/store/list', [StoreController::class, 'list']);
-    Route::get('vendor/store/{id}', [StoreController::class, 'details']);
+    Route::get('vendor/store/details/{id}', [StoreController::class, 'details']);
 
     // PRODUCTS
      Route::post('vendor/product/create', [ProductController::class, 'create']);
     Route::get('vendor/product/list', [ProductController::class, 'list']);
     Route::get('vendor/product/details/{id}', [ProductController::class, 'details']);
+
+    Route::get('vendor/store/{store_id}/products', [ProductController::class, 'getstoreAllProducts']);
+
 
     // ORDERS
     Route::get('vendor/orders', [OrderController::class, 'list']);

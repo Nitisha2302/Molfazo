@@ -38,6 +38,15 @@
                 </a>
             </li>
 
+            <li class="@if (Route::is('dashboard.admin.childcategories','dashboard.admin.subcategories.createChildCategory')) active @endif">
+                <a href="{{ route('dashboard.admin.childcategories') }}">
+                    <span class="d-flex gap-3 align-items-end">
+                        <i class="fas fa-list-ul icon-font-size"></i>
+                        <span class="nav-content-menu">Child Categeories</span>
+                    </span>
+                </a>
+            </li>
+
             <li class="@if (Route::currentRouteName() == 'dashboard.admin.vendors') active @endif">
                 <a href="{{ route('dashboard.admin.vendors') }}">
                     <span class="d-flex gap-3 align-items-end">
@@ -55,6 +64,8 @@
                     </span>
                 </a>
             </li>
+
+            
 
         @endif
     </ul>

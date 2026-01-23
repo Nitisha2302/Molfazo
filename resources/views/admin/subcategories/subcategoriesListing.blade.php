@@ -54,7 +54,15 @@
                     @forelse($subCategories as $sub)
                         <tr>
                             <td>{{ $sub->name }}</td>
-                            <td>{{ $sub->category->name ?? 'N/A' }}</td>
+                            <!-- <td>{{ $sub->category->name ?? 'N/A' }}</td> -->
+                            <td>
+                                {{ $sub->category->name ?? 'N/A' }}
+
+                                @if($sub->category && $sub->category->status_id == 2)
+                                    <span class="badge bg-warning ms-2">Parent Inactive</span>
+                                @endif
+                            </td>
+
                             <td>
                                 <span class="badge {{ $sub->status_id == 1 ? 'bg-success' : 'bg-danger' }}">
                                     {{ $sub->status_id == 1 ? 'Active' : 'Inactive' }}

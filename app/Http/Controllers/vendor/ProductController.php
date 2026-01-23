@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Store;
+use App\Models\ChildCategory;
 use App\Models\ProductImage;
 use Auth;
 use Validator;
@@ -34,6 +36,7 @@ class ProductController extends Controller
             'store_id' => 'required|exists:stores,id',
             'category_id' => 'required|exists:categories,id',
             'sub_category_id' => 'required|exists:sub_categories,id',
+            'child_category_id' => 'nullable|exists:child_categories,id',
             'name' => 'required|string',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
@@ -53,6 +56,8 @@ class ProductController extends Controller
             'category_id.exists' => 'The selected category does not exist.',
             'sub_category_id.required' => 'Please select a subcategory.',
             'sub_category_id.exists' => 'The selected subcategory does not exist.',
+            'child_category_id.required' => 'Please select a child category.',
+            'child_category_id.exists' => 'The selected child category does not exist.',
             'name.required' => 'Product name is required.',
             'price.required' => 'Product price is required.',
             'price.numeric' => 'Price must be a valid number.',
@@ -84,6 +89,20 @@ class ProductController extends Controller
             ], 403);
         }
 
+        if ($request->child_category_id) {
+            $childCategory = ChildCategory::where('id', $request->child_category_id)
+                ->where('sub_category_id', $request->sub_category_id)
+                ->first();
+
+            if (!$childCategory) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Child category does not belong to selected sub-category.',
+                ], 422);
+            }
+        }
+
+
         /* ===============================
            CREATE PRODUCT
         =============================== */
@@ -91,6 +110,7 @@ class ProductController extends Controller
             'store_id' => $request->store_id,
             'category_id' => $request->category_id,
             'sub_category_id' => $request->sub_category_id,
+            'child_category_id' => $request->child_category_id,
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,
@@ -153,6 +173,7 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => true,
+              'message' => 'Products fetched successfully.',
             'data' => $products,
         ], 200);
     }
@@ -184,6 +205,7 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => true,
+              'message' => 'Products details fetched successfully.',
             'data' => $this->formatProduct($product),
         ], 200);
     }
@@ -196,8 +218,20 @@ class ProductController extends Controller
         return [
             'id' => $product->id,
             'store_id' => $product->store_id,
-            'category_id' => $product->category_id,
-            'sub_category_id' => $product->sub_category_id,
+             'category' => $product->category ? [
+            'id' => $product->category->id,
+                'name' => $product->category->name,
+            ] : null,
+
+            'sub_category' => $product->subCategory ? [
+                'id' => $product->subCategory->id,
+                'name' => $product->subCategory->name,
+            ] : null,
+
+            'child_category' => $product->childCategory ? [
+                'id' => $product->childCategory->id,
+                'name' => $product->childCategory->name,
+            ] : null,
             'name' => $product->name,
             'description' => $product->description,
             'price' => $product->price,
@@ -233,4 +267,62 @@ class ProductController extends Controller
             default => 'Unknown',
         };
     }
+
+    public function getstoreAllProducts($store_id)
+    {
+        /* ===============================
+        AUTHENTICATION (OPTIONAL)
+        =============================== */
+        $user = Auth::guard('api')->user();
+
+        // If this API should be public → remove this block
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        /* ===============================
+        STORE VALIDATION
+        =============================== */
+        $store = Store::where('id', $store_id)
+            ->where('status_id', 1) // 1 = Active
+            ->first();
+
+        if (!$store) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Store not found or not active.',
+            ], 404);
+        }
+
+        /* ===============================
+        FETCH STORE PRODUCTS
+        =============================== */
+        $products = Product::where('store_id', $store->id)->get();
+
+        if ($products->isEmpty()) {
+            return response()->json([
+                'status' => true,
+                'data' => [],
+                'message' => 'No products found for this store.'
+            ], 200);
+        }
+
+        /* ===============================
+        FORMAT PRODUCTS
+        =============================== */
+        $products = $products->map(function ($product) {
+            return $this->formatProduct($product);
+        });
+
+        return response()->json([
+            'status' => true,
+              'message' => 'Products fetched successfully.',
+            'data' => $products,
+        ], 200);
+    }
+
+
 }
