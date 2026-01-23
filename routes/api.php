@@ -54,6 +54,8 @@ Route::post('vendor/login/apple', [AuthController::class, 'VendorloginWithApple'
 
     Route::get('vendor/categories', [CategoryController::class, 'categories']); // All categories with subcategories
     Route::get('vendor/subcategories/{category_id}', [CategoryController::class, 'subcategories']); // Subcategories by category
+    Route::get('vendor/child-categories/{sub_category_id}',[CategoryController::class, 'childCategories']);
+
 
 
     // STORES

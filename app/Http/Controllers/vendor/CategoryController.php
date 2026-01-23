@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\SubCategory;
+use App\Models\ChildCategory;
+
 
 class CategoryController extends Controller
 {
@@ -14,56 +16,107 @@ class CategoryController extends Controller
     public function categories()
     {
         $categories = Category::where('status_id', 1)
-                        ->with(['subCategories' => function($q){
-                            $q->where('status_id', 1);
-                        }])
-                        ->get();
+            ->with([
+                'subCategories' => function ($q) {
+                    $q->where('status_id', 1)
+                    ->with(['childCategories' => function ($q2) {
+                        $q2->where('status_id', 1);
+                    }]);
+                }
+            ])
+            ->get();
 
-        $data = $categories->map(function($cat) {
+        $data = $categories->map(function ($cat) {
             return [
-                'id' => $cat->id,
+                'id'   => $cat->id,
                 'name' => $cat->name,
                 'slug' => $cat->slug,
-                'sub_categories' => $cat->subCategories->map(function($sub){
+                'sub_categories' => $cat->subCategories->map(function ($sub) {
                     return [
-                        'id' => $sub->id,
+                        'id'   => $sub->id,
                         'name' => $sub->name,
-                        'slug' => $sub->slug
+                        'slug' => $sub->slug,
+                        'child_categories' => $sub->childCategories->map(function ($child) {
+                            return [
+                                'id'   => $child->id,
+                                'name' => $child->name,
+                                'slug' => $child->slug,
+                            ];
+                        }),
                     ];
-                })
+                }),
             ];
         });
 
         return response()->json([
             'status' => true,
-            'data' => $data
+              'message' => 'Category successfully fetched.',
+            'data'   => $data,
         ], 200);
     }
+
 
     // Get subcategories by category ID
     public function subcategories($category_id)
     {
-        $category = Category::where('id', $category_id)->where('status_id', 1)->first();
-        if(!$category){
+        $subCategories = SubCategory::where('category_id', $category_id)
+            ->where('status_id', 1)
+            ->get();
+
+        if ($subCategories->isEmpty()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Category not found.'
+                'message' => 'No subcategories found for this category.',
             ], 404);
         }
 
-        $subCategories = $category->subCategories()->where('status_id', 1)->get();
-
-        $data = $subCategories->map(function($sub){
+        $data = $subCategories->map(function ($sub) {
             return [
-                'id' => $sub->id,
+                'id'   => $sub->id,
                 'name' => $sub->name,
-                'slug' => $sub->slug
+                'slug' => $sub->slug,
             ];
         });
 
         return response()->json([
             'status' => true,
-            'data' => $data
+            'message' => 'Category successfully fetched.',
+            'data'   => $data,
         ], 200);
     }
+
+
+    // Get child categories by sub-category ID
+    public function childCategories($sub_category_id)
+    {
+        $subCategory = SubCategory::where('id', $sub_category_id)
+            ->where('status_id', 1)
+            ->first();
+
+        if (!$subCategory) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sub category not found.'
+            ], 404);
+        }
+
+        $childCategories = $subCategory->childCategories()
+            ->where('status_id', 1)
+            ->get();
+
+        $data = $childCategories->map(function ($child) {
+            return [
+                'id'   => $child->id,
+                'name' => $child->name,
+                'slug' => $child->slug,
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Category successfully fetched.',
+            'data'   => $data
+        ], 200);
+    }
+
 }
