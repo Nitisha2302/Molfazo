@@ -208,6 +208,7 @@ class AuthController extends Controller
         $user->$verifyAt = now();
         $user->$otpCol = null;
         $user->$timeCol = null;
+        $user->role = 2;
         $user->save();
 
         return response()->json([
@@ -751,7 +752,7 @@ class AuthController extends Controller
             'message' => 'Logout successful.',
         ], 200);
     }
-    
+
 
     public function forgotPassword(Request $request)
     {
