@@ -751,6 +751,7 @@ class AuthController extends Controller
             'message' => 'Logout successful.',
         ], 200);
     }
+    
 
     public function forgotPassword(Request $request)
     {
