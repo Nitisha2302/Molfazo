@@ -215,6 +215,7 @@ class AuthController extends Controller
             'message' => 'OTP verified successfully.',
             'api_token' => $user->api_token,
         ], 200);
+        
     }
    
     //  Generate SHA-256 hash for OsonSMS
