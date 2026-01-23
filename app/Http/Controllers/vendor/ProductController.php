@@ -36,7 +36,7 @@ class ProductController extends Controller
             'store_id' => 'required|exists:stores,id',
             'category_id' => 'required|exists:categories,id',
             'sub_category_id' => 'required|exists:sub_categories,id',
-            'child_category_id' => 'required|exists:child_categories,id',
+            'child_category_id' => 'nullable|exists:child_categories,id',
             'name' => 'required|string',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
