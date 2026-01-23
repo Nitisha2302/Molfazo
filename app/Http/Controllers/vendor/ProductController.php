@@ -89,15 +89,17 @@ class ProductController extends Controller
             ], 403);
         }
 
-        $childCategory = ChildCategory::where('id', $request->child_category_id)
-            ->where('sub_category_id', $request->sub_category_id)
-            ->first();
+        if ($request->child_category_id) {
+            $childCategory = ChildCategory::where('id', $request->child_category_id)
+                ->where('sub_category_id', $request->sub_category_id)
+                ->first();
 
-        if (!$childCategory) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Child category does not belong to selected sub-category.',
-            ], 422);
+            if (!$childCategory) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Child category does not belong to selected sub-category.',
+                ], 422);
+            }
         }
 
 
