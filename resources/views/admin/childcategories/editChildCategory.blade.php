@@ -1,7 +1,8 @@
 @extends('admin.layouts.app')
 
 @section('content')
-<div class="main-box-content main-space-box ">
+
+<div class="main-box-content main-space-box">
     <section class="project-doorbox">
 
         <div class="heading-content-box">
@@ -28,9 +29,10 @@
                             <select id="sub_category_id"
                                     name="sub_category_id"
                                     class="form-control">
+                                <option value="">Select Sub Category</option>
                                 @foreach($subCategories as $id => $name)
                                     <option value="{{ $id }}"
-                                        {{ $childCategory->sub_category_id == $id ? 'selected' : '' }}>
+                                        {{ old('sub_category_id', $childCategory->sub_category_id) == $id ? 'selected' : '' }}>
                                         {{ $name }}
                                     </option>
                                 @endforeach
@@ -65,8 +67,12 @@
                             <select id="status_id"
                                     name="status_id"
                                     class="form-control">
-                                <option value="1" {{ $childCategory->status_id == 1 ? 'selected' : '' }}>Active</option>
-                                <option value="2" {{ $childCategory->status_id == 2 ? 'selected' : '' }}>Inactive</option>
+                                <option value="1" {{ old('status_id', $childCategory->status_id) == 1 ? 'selected' : '' }}>
+                                    Active
+                                </option>
+                                <option value="2" {{ old('status_id', $childCategory->status_id) == 2 ? 'selected' : '' }}>
+                                    Inactive
+                                </option>
                             </select>
 
                             @error('status_id')
@@ -89,4 +95,5 @@
 
     </section>
 </div>
+
 @endsection

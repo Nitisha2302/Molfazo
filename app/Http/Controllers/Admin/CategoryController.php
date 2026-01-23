@@ -70,40 +70,36 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
 
-        $request->validate(
-            [
-                'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-                'status_id' => 'required|in:1,2',
-            ],
-            [
-                'name.required' => 'Category name is required.',
-                'name.string'   => 'Category name must be text.',
-                'name.max'      => 'Category name cannot exceed 255 characters.',
-                'name.unique'   => 'This category already exists.',
-                'status_id.required' => 'Status is required.',
-                'status_id.in'       => 'Invalid status selected.',
-            ]
-        );
+        $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'status_id' => 'required|in:1,2',
+        ]);
 
         $category->update([
-            'name' => $request->name,
-            'slug' => \Illuminate\Support\Str::slug($request->name),
+            'name'      => $request->name,
+            'slug'      => Str::slug($request->name),
             'status_id' => $request->status_id,
         ]);
-         //  IMPORTANT LOGIC
-            // If category is inactive → make all sub-categories inactive
-            if ($request->status_id == 2) {
-                $category->subCategories()->each(function ($sub) {
-                    $sub->update(['status_id' => 2]);
-                    $sub->childCategories()->update(['status_id' => 2]);
-                });
-            }
 
+        //  If CATEGORY is INACTIVE → deactivate everything under it
+        if ($request->status_id == 2) {
+            $category->subCategories()->each(function ($sub) {
+                $sub->update(['status_id' => 2]);
+
+                $sub->childCategories()->update([
+                    'status_id' => 2
+                ]);
+            });
+        }
+
+        // 🟢 If CATEGORY is ACTIVE again → DO NOTHING
+        // (Sub-categories stay inactive intentionally)
 
         return redirect()
             ->route('dashboard.admin.categories')
             ->with('success', 'Category updated successfully.');
     }
+
 
     public function destroyCategory($id)
     {
@@ -198,29 +194,30 @@ class CategoryController extends Controller
         $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255|unique:sub_categories,name,' . $id . ',id,category_id,' . $request->category_id,
-        ], [
-            'category_id.required' => 'Please select a category.',
-            'category_id.exists' => 'Selected category is invalid.',
-            'name.required' => 'Sub-category name is required.',
-            'name.unique' => 'This sub-category already exists in the selected category.',
+            'status_id' => 'required|in:1,2',
         ]);
 
         $subCategory->update([
             'category_id' => $request->category_id,
-            'name' => $request->name,
-           'slug' => $this->generateUniqueSubCategorySlug($request->name, $subCategory->id),
-
+            'name'        => $request->name,
+            'slug'        => $this->generateUniqueSubCategorySlug($request->name, $subCategory->id),
+            'status_id'   => $request->status_id,
         ]);
 
+        //  If SUB-CATEGORY is INACTIVE → deactivate all children
         if ($request->status_id == 2) {
             $subCategory->childCategories()->update([
                 'status_id' => 2
             ]);
         }
 
+        // If SUB-CATEGORY is ACTIVE again → children stay inactive
 
-        return redirect()->route('dashboard.admin.subcategories')->with('success','Sub-category updated successfully.');
+        return redirect()
+            ->route('dashboard.admin.subcategories')
+            ->with('success', 'Sub-category updated successfully.');
     }
+
 
     // Delete sub-category
     public function destroySubCategory($id)
@@ -231,9 +228,6 @@ class CategoryController extends Controller
 
 
     
-    //////////////////////////////
-    // CHILD CATEGORY SLUG
-    //////////////////////////////
     private function generateUniqueChildCategorySlug($name, $id = null)
     {
         $slug = Str::slug($name);
@@ -251,9 +245,7 @@ class CategoryController extends Controller
         return $slug;
     }
 
-    //////////////////////////////
-    // LIST
-    //////////////////////////////
+
     public function childCategoryListing(Request $request)
     {
         $childCategories = ChildCategory::with('subCategory.category')
@@ -270,7 +262,7 @@ class CategoryController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $subCategories = SubCategory::where('status_id', 1)->pluck('name', 'id');
+        $subCategories = SubCategory::pluck('name', 'id');
 
         return view(
             'admin.childcategories.childCategoriesListing',
@@ -278,40 +270,45 @@ class CategoryController extends Controller
         );
     }
 
-    //////////////////////////////
-    // CREATE
-    //////////////////////////////
+
     public function createChildCategory()
     {
-        $subCategories = SubCategory::where('status_id', 1)->pluck('name', 'id');
+        $subCategories = SubCategory::where('status_id', 1)
+            ->whereHas('category', fn ($q) => $q->where('status_id', 1))
+            ->pluck('name', 'id');
+
         return view('admin.childcategories.addChildCategory', compact('subCategories'));
     }
 
-    //////////////////////////////
-    // STORE
-    //////////////////////////////
+
     public function storeChildCategory(Request $request)
     {
-        $rules = [
+        $request->validate([
             'sub_category_id' => 'required|exists:sub_categories,id',
             'name' => 'required|string|max:255|unique:child_categories,name,NULL,id,sub_category_id,' . $request->sub_category_id,
             'status_id' => 'required|in:1,2',
-        ];
-
-        $messages = [
+        ], [
             'sub_category_id.required' => 'Please select a sub category.',
-            'name.required' => 'Child category name is required.',
-            'name.unique' => 'This child category already exists for selected sub category.',
-            'status_id.required' => 'Please select status.',
-        ];
+            'sub_category_id.exists'   => 'Selected sub category is invalid.',
+            'name.required'            => 'Child category name is required.',
+            'name.unique'              => 'This child category already exists under the selected sub category.',
+            'status_id.required'       => 'Please select status.',
+        ]);
 
-        $request->validate($rules, $messages);
+        $sub = SubCategory::with('category')->findOrFail($request->sub_category_id);
+
+        if ($request->status_id == 1 &&
+            ($sub->status_id == 2 || $sub->category->status_id == 2)) {
+            return back()->withErrors([
+                'status_id' => 'You cannot activate this child category because its parent category is inactive.'
+            ])->withInput();
+        }
 
         ChildCategory::create([
             'sub_category_id' => $request->sub_category_id,
-            'name' => $request->name,
-            'slug' => $this->generateUniqueChildCategorySlug($request->name),
-            'status_id' => $request->status_id,
+            'name'            => $request->name,
+            'slug'            => $this->generateUniqueChildCategorySlug($request->name),
+            'status_id'       => $request->status_id,
         ]);
 
         return redirect()
@@ -319,13 +316,14 @@ class CategoryController extends Controller
             ->with('success', 'Child category added successfully.');
     }
 
-    //////////////////////////////
-    // EDIT
-    //////////////////////////////
+
     public function editChildCategory($id)
     {
-        $childCategory = ChildCategory::findOrFail($id);
-        $subCategories = SubCategory::where('status_id', 1)->pluck('name', 'id');
+        $childCategory = ChildCategory::with('subCategory.category')->findOrFail($id);
+
+        $subCategories = SubCategory::where('status_id', 1)
+            ->whereHas('category', fn ($q) => $q->where('status_id', 1))
+            ->pluck('name', 'id');
 
         return view(
             'admin.childcategories.editChildCategory',
@@ -333,24 +331,32 @@ class CategoryController extends Controller
         );
     }
 
-    //////////////////////////////
-    // UPDATE
-    //////////////////////////////
+
     public function updateChildCategory(Request $request, $id)
     {
-        $childCategory = ChildCategory::findOrFail($id);
+        $child = ChildCategory::findOrFail($id);
+        $sub   = SubCategory::with('category')->findOrFail($request->sub_category_id);
 
         $request->validate([
             'sub_category_id' => 'required|exists:sub_categories,id',
             'name' => 'required|string|max:255|unique:child_categories,name,' . $id . ',id,sub_category_id,' . $request->sub_category_id,
             'status_id' => 'required|in:1,2',
+        ], [
+            'name.unique' => 'This child category already exists under the selected sub category.'
         ]);
 
-        $childCategory->update([
+        if ($request->status_id == 1 &&
+            ($sub->status_id == 2 || $sub->category->status_id == 2)) {
+            return back()->withErrors([
+                'status_id' => 'You cannot activate this child category because its parent category is inactive.'
+            ]);
+        }
+
+        $child->update([
             'sub_category_id' => $request->sub_category_id,
-            'name' => $request->name,
-            'slug' => $this->generateUniqueChildCategorySlug($request->name, $id),
-            'status_id' => $request->status_id,
+            'name'            => $request->name,
+            'slug'            => $this->generateUniqueChildCategorySlug($request->name, $id),
+            'status_id'       => $request->status_id,
         ]);
 
         return redirect()
@@ -358,14 +364,15 @@ class CategoryController extends Controller
             ->with('success', 'Child category updated successfully.');
     }
 
-    //////////////////////////////
-    // DELETE
-    //////////////////////////////
+
     public function destroyChildCategory($id)
     {
         ChildCategory::findOrFail($id)->delete();
         return back()->with('success', 'Child category deleted successfully.');
     }
+
+
+
 
 
 

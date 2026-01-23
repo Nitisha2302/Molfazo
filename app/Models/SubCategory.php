@@ -17,7 +17,7 @@ class SubCategory extends Model
 
 
 
-    public function childCategories()
+   public function childCategories()
     {
         return $this->hasMany(ChildCategory::class);
     }

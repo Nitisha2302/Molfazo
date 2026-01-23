@@ -26,4 +26,7 @@ class ChildCategory extends Model
         return $this->belongsTo(Category::class);
     }
 
+
+    
+
 }
