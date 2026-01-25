@@ -29,7 +29,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
             'device_type'  => 'nullable|string|max:255',
-            'device_token'    => 'nullable|string|max:255',
+            'device_token' => 'nullable|string|max:255',
             'fcm_token'    => 'nullable|string|max:255',
         ], [
             'phone_number.required' => 'Mobile number is required.',
@@ -43,28 +43,37 @@ class AuthController extends Controller
             ], 201);
         }
 
+        $phone = $request->phone_number;
+
+        /** 🔴 CHECK IF MOBILE ALREADY EXISTS */
+        $existingUser = User::where('mobile', $phone)->first();
+
+        if ($existingUser) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This mobile number already exist',
+            ], 201);
+        }
+
+        /** ✅ GENERATE OTP */
         $otp = rand(100000, 999999);
 
-        $user = User::updateOrCreate(
-            ['mobile' => $request->phone_number],
-            [
-                'is_mobile_verified' => 0,
-                'device_type' => $request->device_type,
-                'device_token'   => $request->device_token,
-                'fcm_token'   => $request->fcm_token,
-            ]
-        );
+        /** ✅ CREATE NEW USER */
+        $user = User::create([
+            'mobile' => $phone,
+            'is_mobile_verified' => 0,
+            'device_type' => $request->device_type,
+            'device_token' => $request->device_token,
+            'fcm_token' => $request->fcm_token,
+            'mobile_otp' => $otp,
+            'mobile_otp_sent_at' => now(),
+        ]);
 
-        $user->mobile_otp = $otp;
-        $user->mobile_otp_sent_at = now();
-        $user->save();
-
-        $phone = $request->phone_number;
         $responseMessage = 'OTP sent to your mobile number.';
         $responseOtp = null;
 
+        /** 🌍 OSON SMS (9-digit numbers) */
         if (strlen($phone) === 9) {
-            // OSON SMS
             $txnId = 'otp_' . time();
             $hash = $this->generateSha256Hex(
                 "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
@@ -80,8 +89,8 @@ class AuthController extends Controller
             ]);
         }
 
+        /** 🇮🇳 INDIA TEST MODE */
         if (strlen($phone) === 10) {
-            // India testing
             $responseMessage = 'Auto OTP generated (testing mode)';
             $responseOtp = $otp;
         }
@@ -95,6 +104,81 @@ class AuthController extends Controller
             ]
         ], 200);
     }
+
+    /* =============================================
+    Anukool Vendor Register
+    ==============================================*/
+    // public function sendMobileOtp(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'phone_number' => 'required|digits_between:8,15',
+    //         'device_type'  => 'nullable|string|max:255',
+    //         'device_token'    => 'nullable|string|max:255',
+    //         'fcm_token'    => 'nullable|string|max:255',
+    //     ], [
+    //         'phone_number.required' => 'Mobile number is required.',
+    //         'phone_number.digits_between' => 'Invalid mobile number.',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validator->errors()->first(),
+    //         ], 201);
+    //     }
+
+    //     $otp = rand(100000, 999999);
+
+    //     $user = User::updateOrCreate(
+    //         ['mobile' => $request->phone_number],
+    //         [
+    //             'is_mobile_verified' => 0,
+    //             'device_type' => $request->device_type,
+    //             'device_token'   => $request->device_token,
+    //             'fcm_token'   => $request->fcm_token,
+    //         ]
+    //     );
+
+    //     $user->mobile_otp = $otp;
+    //     $user->mobile_otp_sent_at = now();
+    //     $user->save();
+
+    //     $phone = $request->phone_number;
+    //     $responseMessage = 'OTP sent to your mobile number.';
+    //     $responseOtp = null;
+
+    //     if (strlen($phone) === 9) {
+    //         // OSON SMS
+    //         $txnId = 'otp_' . time();
+    //         $hash = $this->generateSha256Hex(
+    //             "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
+    //         );
+
+    //         Http::get('https://api.osonsms.com/sendsms_v1.php', [
+    //             'login' => 'borafzo',
+    //             'from'  => 'BORAFZO',
+    //             'phone_number' => $phone,
+    //             'msg'   => "Your verification code: {$otp}",
+    //             'txn_id' => $txnId,
+    //             'str_hash' => $hash,
+    //         ]);
+    //     }
+
+    //     if (strlen($phone) === 10) {
+    //         // India testing
+    //         $responseMessage = 'Auto OTP generated (testing mode)';
+    //         $responseOtp = $otp;
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => $responseMessage,
+    //         'data' => [
+    //             'phone_number' => $phone,
+    //             'otp' => $responseOtp,
+    //         ]
+    //     ], 200);
+    // }
 
     public function sendEmailOtp(Request $request)
     {
@@ -419,12 +503,12 @@ class AuthController extends Controller
         /* ===============================
         VENDOR APPROVAL CHECK
         =============================== */
-        if ($user->status_id == 2) {
+        /*if ($user->status_id == 2) {
             return response()->json([
                 'status'  => false,
                 'message' => 'Your vendor account is pending admin approval.',
             ], 403);
-        }
+        }*/
 
         if ($user->status_id == 3) {
             return response()->json([

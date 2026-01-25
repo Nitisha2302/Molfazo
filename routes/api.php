@@ -3,11 +3,17 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Vendor\StoreController;
-use App\Http\Controllers\Vendor\ProductController;
-use App\Http\Controllers\Vendor\OrderController;
-use App\Http\Controllers\Vendor\ChatController;
-use App\Http\Controllers\Vendor\CategoryController;
+use App\Http\Controllers\vendor\StoreController;
+use App\Http\Controllers\vendor\ProductController;
+use App\Http\Controllers\vendor\OrderController;
+use App\Http\Controllers\vendor\ChatController;
+use App\Http\Controllers\vendor\CategoryController;
+//Anukool Code
+// use App\Http\Controllers\Vendor\StoreController;
+// use App\Http\Controllers\Vendor\ProductController;
+// use App\Http\Controllers\Vendor\OrderController;
+// use App\Http\Controllers\Vendor\ChatController;
+// use App\Http\Controllers\Vendor\CategoryController;
 
 
 /*
