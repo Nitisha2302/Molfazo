@@ -2,6 +2,7 @@
     <a href="{{route('login')}}">Copyright Molafzo</a>
     <a href="">Privacy Policy :</a>
    
+    
 
   </div>
 </section>
