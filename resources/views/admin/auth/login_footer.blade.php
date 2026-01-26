@@ -1,11 +1,13 @@
 <div class="footer-navbar">
     <a href="{{route('login')}}">Copyright Molafzo</a>
-    <a href="">Privacy Policy</a>
+    <a href="">Privacy Policy:</a>
    
+
   </div>
 </section>
 <script src="{{ asset('assets/admin/js/custom-js/jquery.min.js') }}"></script>
 <script src="{{ asset('assets/admin/js/custom-js/custom.js') }}"></script>
+
 
 </body>
 </html>
