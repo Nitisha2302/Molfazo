@@ -1,6 +1,6 @@
 <div class="footer-navbar">
     <a href="{{route('login')}}">Copyright Molafzo</a>
-    <a href="">Privacy Policy:</a>
+    <a href="">Privacy Policy :</a>
    
 
   </div>
