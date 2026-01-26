@@ -8,7 +8,7 @@
       <div class="col-md-12">
         <div class="d-block text-center banner-contentbox login-contentbox">
           <div class="logo-clr">
-            <img src="{{ asset('assets/admin/images/molofzo_logo.png') }}" width="200" alt="logo">
+            <img src="{{ asset('assets/admin/images/molofzo_logo.png') }}" width="100" alt="logo">
           </div>
           <div class="login-box mx-auto">  
                                
