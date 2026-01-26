@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Удаление аккаунта - QADAMPAYK</title>
+    <title>Удаление аккаунта - Molafzo</title>
     <link rel="icon" href="{{ asset('favicon-qadampayk.png') }}" type="image/x-icon">
 
     <!-- Bootstrap CSS -->
@@ -83,7 +83,7 @@
     <!-- HEADER SECTION -->
     <div class="qadam-policy-head">
         <div class="qadam-logo">
-            <img src="{{ asset('assets/admin/images/qadampayk-dash.png') }}" alt="QADAMPAYK Логотип">
+            <img src="{{ asset('assets/admin/images/molofzo_logo.png') }}" alt="QADAMPAYK Логотип">
         </div>
     </div>
 
