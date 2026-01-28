@@ -12,7 +12,7 @@ class Store extends Model
     protected $fillable = [
         'user_id', 'name', 'email', 'mobile', 'country', 'city', 'address',
         'type', 'delivery_by_seller', 'self_pickup', 'logo', 'description',
-        'working_hours', 'status_id', 'approved_at'
+        'working_hours', 'status_id', 'approved_at','government_id'
     ];
 
     public function vendor()

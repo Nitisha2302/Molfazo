@@ -113,6 +113,13 @@
 
         {{-- Store Details Modals --}}
         @foreach($stores as $store)
+            @php
+
+                $govDocs = $store->government_id
+                    ? json_decode($store->government_id, true)
+                    : [];
+            @endphp
+        
             <div class="modal fade" id="storeDetailsModal{{ $store->id }}" tabindex="-1" aria-labelledby="storeDetailsLabel{{ $store->id }}" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -150,6 +157,36 @@
                                         <tr><th>Self Pickup</th><td>{{ $store->self_pickup ? 'Yes' : 'No' }}</td></tr>
                                         <tr><th>Working Hours</th><td>{{ $store->working_hours }}</td></tr>
                                         <tr><th>Description</th><td>{{ $store->description }}</td></tr>
+                                        {{-- GOVERNMENT ID DOCUMENTS --}}
+                                        <tr>
+                                            <th>Government ID</th>
+                                            <td>
+                                                @if(count($govDocs))
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        @foreach($govDocs as $doc)
+                                                            @php
+                                                                $docUrl = asset('assets/store_documents/' . $doc);
+                                                                $ext = pathinfo($doc, PATHINFO_EXTENSION);
+                                                            @endphp
+
+                                                            @if(in_array(strtolower($ext), ['jpg','jpeg','png','webp']))
+                                                                <a href="{{ $docUrl }}" target="_blank">
+                                                                    <img src="{{ $docUrl }}"
+                                                                        style="width:70px;height:70px;object-fit:cover;border-radius:6px;border:1px solid #ccc;">
+                                                                </a>
+                                                            @else
+                                                                <a href="{{ $docUrl }}" target="_blank"
+                                                                    class="btn btn-outline-primary btn-sm">
+                                                                    <i class="fa fa-file-pdf"></i> View PDF
+                                                                </a>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">No documents uploaded</span>
+                                                @endif
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
                             </div>

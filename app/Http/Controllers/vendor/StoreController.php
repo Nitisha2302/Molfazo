@@ -44,6 +44,9 @@ class StoreController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'description' => 'nullable|string',
             'working_hours' => 'nullable|string',
+            'government_id'     => 'required|array',
+            'government_id.*'   => 'file|mimes:jpg,jpeg,png,pdf|max:4096',
+
         ], [
             'name.required' => 'Store Name is required.',
             'mobile.required' => 'Store Mobile Number is required.',
@@ -57,6 +60,9 @@ class StoreController extends Controller
             'logo.image' => 'Logo must be an image file.',
             'logo.mimes' => 'Logo must be jpeg, png, jpg, gif, or webp.',
             'logo.max' => 'Logo size cannot exceed 2MB.',
+            'government_id.required' => 'At least one store document is required.',
+            'government_id.*.mimes'  => 'Store documents must be jpg, png, or pdf.',
+
         ]);
 
         if ($validator->fails()) {
@@ -75,6 +81,19 @@ class StoreController extends Controller
             $logoPath =  $filename;
         }
 
+        $uploadedGovIds = [];
+
+        if ($request->hasFile('government_id')) {
+            foreach ($request->file('government_id') as $file) {
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('assets/store_documents'), $filename);
+                $uploadedGovIds[] = $filename;
+            }
+        }
+
+        $govIdJson = json_encode($uploadedGovIds);
+
+
         $store = Store::create([
             'user_id' => $user->id,
             'name' => $request->name,
@@ -89,6 +108,7 @@ class StoreController extends Controller
             'logo' => $logoPath,
             'description' => $request->description ?? null,
             'working_hours' => $request->working_hours ?? null,
+              'government_id' => $govIdJson,
             'status_id' => 2, // Pending admin approval
         ]);
 
@@ -183,6 +203,9 @@ class StoreController extends Controller
             'delivery_by_seller' => $store->delivery_by_seller,
             'self_pickup' => $store->self_pickup,
             'logo' => $store->logo ? $store->logo : null, // Full URL
+            'government_id' => $store->government_id 
+                ? json_decode($store->government_id, true) 
+                : [],
             'description' => $store->description,
             'working_hours' => $store->working_hours,
             'status_id' => $store->status_id,

@@ -7,6 +7,7 @@
 /public/assets/profile_image
 /public/assets/store_logo
 /public/assets/product_images
+/public/assets/store_documents
 /storage/*.key
 /vendor
 .env
