@@ -49,6 +49,7 @@ class ProductController extends Controller
             'tags' => 'nullable|array',
             'images' => 'required|array|min:1',
             'images.*' => 'file|mimes:jpeg,jpg,png,gif',
+            'attributes_json' => 'nullable|array',
         ], [
             'store_id.required' => 'Please select a store.',
             'store_id.exists' => 'The selected store does not exist.',
@@ -121,6 +122,7 @@ class ProductController extends Controller
             'delivery_time' => $request->delivery_time,
             'characteristics' => $request->characteristics ? json_encode($request->characteristics) : null,
             'tags' => $request->tags ? json_encode($request->tags) : null,
+            'attributes_json' => $request->attributes_json ? $request->attributes_json : null, // <-- SAVE ATTRIBUTES
             'status_id' => 1, // Active
         ]);
 
@@ -244,6 +246,7 @@ class ProductController extends Controller
             'tags' => $product->tags ? json_decode($product->tags, true) : null,
             'status_id' => $product->status_id,
             // 'status_name' => $this->getStatusName($product->status_id),
+            'attributes_json' => $product->attributes_json,
             'status_name' => $product->status_id,
             'images' => $product->images->map(function ($img) {
                 return [

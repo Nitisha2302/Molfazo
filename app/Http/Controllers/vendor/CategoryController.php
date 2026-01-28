@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\SubCategory;
 use App\Models\ChildCategory;
+use App\Models\CategoryAttribute;
 
 
 class CategoryController extends Controller
@@ -117,6 +118,41 @@ class CategoryController extends Controller
             'message' => 'Category successfully fetched.',
             'data'   => $data
         ], 200);
+    }
+
+
+    public function getAttributeByChildCategory($child_category_id)
+    {
+        $record = CategoryAttribute::where('child_category_id', $child_category_id)
+            ->first();
+
+        if (!$record) {
+            return response()->json([
+                'status' => true,
+                'data' => [],
+                'message' => 'No attributes found for this category.'
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Attributes fetched successfully.',
+            'data' => $this->formatAttributes($record->attributes_json),
+        ]);
+    }
+
+    private function formatAttributes(array $attributes)
+    {
+        $result = [];
+
+        foreach ($attributes as $name => $values) {
+            $result[] = [
+                'name' => $name,
+                'values' => array_values($values)
+            ];
+        }
+
+        return $result;
     }
 
 }

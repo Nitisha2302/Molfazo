@@ -5,7 +5,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GlobalSearchController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VendorController;
-use App\Http\Controllers\Admin\StoreController;;
+use App\Http\Controllers\Admin\StoreController;
+use App\Http\Controllers\Admin\CategoryAttributeController;
 
 Route::fallback(function () {
     return response()->view('404', [], 404);
@@ -70,6 +71,23 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
 
     Route::delete('child-categories/{id}', [CategoryController::class, 'destroyChildCategory'])
         ->name('childcategories.delete');
+
+
+    Route::get('attributes', [CategoryAttributeController::class, 'listing'])
+        ->name('attributes');
+
+    Route::get('attributes/create', [CategoryAttributeController::class, 'create'])
+        ->name('attributes.create');
+
+    Route::post('attributes/store', [CategoryAttributeController::class, 'store'])
+        ->name('attributes.store');
+
+    Route::get('attributes/{id}/edit', [CategoryAttributeController::class, 'edit'])
+        ->name('attributes.edit');
+
+    Route::put('attributes/{id}', [CategoryAttributeController::class, 'update'])
+        ->name('attributes.update');
+
 
 
 

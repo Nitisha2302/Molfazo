@@ -65,6 +65,15 @@
                 </a>
             </li>
 
+             <li class="@if (Route::currentRouteName() == 'dashboard.admin.attributes') active @endif">
+                <a href="{{ route('dashboard.admin.attributes') }}">
+                    <span class="d-flex gap-3 align-items-end">
+                        <i class="fas fa-building icon-font-size"></i>
+                        <span class="nav-content-menu">All attributes</span>
+                    </span>
+                </a>
+            </li>
+
             
 
         @endif

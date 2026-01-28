@@ -26,6 +26,14 @@ class ChildCategory extends Model
         return $this->belongsTo(Category::class);
     }
 
+    // App\Models\ChildCategory.php
+
+    public function attributeTemplate()
+    {
+        return $this->hasOne(CategoryAttribute::class);
+    }
+
+
 
     
 

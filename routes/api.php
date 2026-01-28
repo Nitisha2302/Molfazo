@@ -63,6 +63,10 @@ Route::post('vendor/login/apple', [AuthController::class, 'VendorloginWithApple'
     Route::get('vendor/child-categories/{sub_category_id}',[CategoryController::class, 'childCategories']);
 
 
+    Route::get(
+        'vendor/attributes/{child_category_id}',
+        [CategoryController::class, 'getAttributeByChildCategory']
+    );
 
     // STORES
     Route::post('vendor/store/create', [StoreController::class, 'create']);
