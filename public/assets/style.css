@@ -1495,3 +1495,28 @@ canvas {
 
  /* dashboard responsive end */
  
+ /* Pagination - Black Theme */
+.pagination .page-link {
+    color: #000;
+    background-color: #fff;
+    border: 1px solid #000;
+}
+
+.pagination .page-link:hover,
+.pagination .page-link:focus {
+    color: #fff !important; /* force white text */
+    background-color: #000 !important;
+    border-color: #000 !important;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #000;
+    border-color: #000;
+    color: #fff;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #999;
+    background-color: #f8f9fa;
+    border-color: #ddd;
+}
