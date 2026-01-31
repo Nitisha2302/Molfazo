@@ -114,12 +114,24 @@
                     </td>
 
                     <td>
-                        <button class="btn btn-info btn-sm"
-                                data-bs-toggle="modal"
-                                data-bs-target="#productDetailsModal{{ $product->id }}">
-                            <i class="fa fa-eye"></i>
-                        </button>
+                        <div class="d-flex align-items-center gap-2">
+                            <!-- View Button -->
+                            <button class="btn btn-info btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#productDetailsModal{{ $product->id }}">
+                                <i class="fa fa-eye"></i>
+                            </button>
+
+                            <!-- Delete Button -->
+                            <button class="btn btn-danger btn-sm delete-btn"
+                                    data-id="{{ $product->id }}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteProductModal">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
+
                 </tr>
 
             @empty
@@ -132,6 +144,33 @@
 
         {{ $products->links() }}
     </div>
+
+    <!-- Delete Product Modal -->
+    <div class="modal fade" id="deleteProductModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Are you sure?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Do you really want to delete this product?</p>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+
+                    <form method="POST" id="deleteProductForm">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     {{-- MODALS --}}
     @foreach($products as $product)
@@ -208,4 +247,18 @@
 
 </section>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    const deleteForm = document.getElementById('deleteProductForm');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const productId = this.getAttribute('data-id');
+            deleteForm.action = `/dashboard/admin/products/${productId}/delete`;
+        });
+    });
+});
+</script>
+
 @endsection

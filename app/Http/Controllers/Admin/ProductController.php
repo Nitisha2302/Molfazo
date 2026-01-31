@@ -40,8 +40,12 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        Product::where('id', $id)->update(['status_id' => 3]);
+        $product = Product::findOrFail($id);
+        $product->delete(); // or $product->update(['status_id'=>3]) if soft delete
 
-        return back()->with('success', 'Product deleted successfully.');
+        return redirect()
+            ->route('dashboard.admin.products')
+            ->with('success', 'Product deleted successfully.');
     }
+
 }

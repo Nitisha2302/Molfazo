@@ -108,6 +108,8 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
 
     Route::get('/products', [ProductController::class, 'index'])->name('products');
 
+   Route::delete('/products/{id}/delete', [ProductController::class, 'destroy'])
+    ->name('products.destroy');
 
 
     });  
