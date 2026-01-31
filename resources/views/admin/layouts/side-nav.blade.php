@@ -84,7 +84,7 @@
                 <a href="{{ route('dashboard.admin.products') }}">
                     <span class="d-flex gap-3 align-items-end">
                       <i class="fas fa-box-open icon-font-size"></i>
-                        <span class="nav-content-menu">All Projects</span>
+                        <span class="nav-content-menu">All Products</span>
                     </span>
                 </a>
             </li>
