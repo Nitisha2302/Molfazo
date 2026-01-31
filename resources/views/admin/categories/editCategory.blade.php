@@ -20,7 +20,7 @@
         <div class="project-ongoing-box">
             <form class="employe-form"
                   action="{{ route('dashboard.admin.categories.update', $category->id) }}"
-                  method="POST">
+                  method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -63,6 +63,24 @@
                             @enderror
                         </div>
                     </div>
+
+                    <div class="col-md-6 step-field">
+                      <label>Category Image</label>
+
+                        @if($category->image)
+                            <div class="mb-2">
+                                <img src="{{ asset('assets/category_images/'.$category->image) }}"
+                                    width="60"
+                                    style="border-radius:6px;">
+                            </div>
+                        @endif
+
+                        <input type="file"
+                            name="image"
+                            class="form-control"
+                            accept="image/*">
+                    </div>
+
 
                     <!-- Submit -->
                     <div class="col-md-12">

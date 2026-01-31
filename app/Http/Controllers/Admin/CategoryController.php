@@ -40,6 +40,7 @@ class CategoryController extends Controller
         $request->validate(
             [
                 'name' => 'required|string|max:255|unique:categories,name',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             ],
             [
                 'name.required' => 'Category name is required.',
@@ -49,9 +50,19 @@ class CategoryController extends Controller
             ]
         );
 
+        $imageName = null;
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $imageName = time().'_'.$file->getClientOriginalName();
+            $file->move(public_path('assets/category_images'), $imageName);
+        }
+
+
         Category::create([
             'name' => $request->name,
             'slug' => \Illuminate\Support\Str::slug($request->name),
+            'image'     => $imageName,
         ]);
 
         return redirect()
@@ -75,10 +86,26 @@ class CategoryController extends Controller
             'status_id' => 'required|in:1,2',
         ]);
 
+        if ($request->hasFile('image')) {
+
+            // delete old image
+            if ($category->image && file_exists(public_path('assets/category_images/'.$category->image))) {
+                unlink(public_path('assets/category_images/'.$category->image));
+            }
+
+            $file = $request->file('image');
+            $imageName = time().'_'.$file->getClientOriginalName();
+            $file->move(public_path('assets/category_images'), $imageName);
+
+            $category->image = $imageName;
+        }
+
+
         $category->update([
             'name'      => $request->name,
             'slug'      => Str::slug($request->name),
             'status_id' => $request->status_id,
+             'image'     => $category->image,
         ]);
 
         //  If CATEGORY is INACTIVE → deactivate everything under it

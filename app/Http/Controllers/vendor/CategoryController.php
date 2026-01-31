@@ -25,6 +25,7 @@ class CategoryController extends Controller
                     }]);
                 }
             ])
+            
             ->get();
 
         $data = $categories->map(function ($cat) {
@@ -32,6 +33,10 @@ class CategoryController extends Controller
                 'id'   => $cat->id,
                 'name' => $cat->name,
                 'slug' => $cat->slug,
+              'image' => $cat->image 
+                ? asset($cat->image)
+                : null,
+
                 'sub_categories' => $cat->subCategories->map(function ($sub) {
                     return [
                         'id'   => $sub->id,

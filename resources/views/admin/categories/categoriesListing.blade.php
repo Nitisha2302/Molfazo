@@ -44,6 +44,7 @@
             <table class="table table-striped table-bordered table-notification-list">
                 <thead>
                     <tr>
+                        <th>Image</th>
                         <th>Category</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -53,6 +54,21 @@
                 <tbody>
                     @forelse($categories as $category)
                         <tr>
+                            <td>
+                                @php
+                                    $img = $category->image
+                                        ? asset('assets/category_images/'.$category->image)
+                                        : asset('assets/no-image.png');
+                                @endphp
+
+                                <a href="{{ $img }}" target="_blank">
+                                    <img src="{{ $img }}"
+                                        width="40"
+                                        height="40"
+                                        style="object-fit:cover;border-radius:6px;">
+                                </a>
+                            </td>
+
                             <td>{{ $category->name }}</td>
                             <td>
                                 <span class="badge {{ $category->status_id == 1 ? 'bg-success' : 'bg-danger' }}">

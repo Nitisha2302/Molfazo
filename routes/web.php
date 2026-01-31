@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\CategoryAttributeController;
+use App\Http\Controllers\Admin\ProductController;
 
 Route::fallback(function () {
     return response()->view('404', [], 404);
@@ -104,6 +105,9 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
 
     Route::post('/stores/{store}/approve', [StoreController::class, 'approve'])->name('stores.approve');
     Route::post('/stores/{store}/reject', [StoreController::class, 'reject'])->name('stores.reject');
+
+    Route::get('/products', [ProductController::class, 'index'])->name('products');
+
 
 
     });  
