@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\SubCategory;
 use App\Models\ChildCategory;
 use App\Models\CategoryAttribute;
+use App\Models\Banner;
 
 
 class CategoryController extends Controller
@@ -158,6 +159,29 @@ class CategoryController extends Controller
         }
 
         return $result;
+    }
+
+
+    public function getBanners()
+    {
+        // Fetch all active banners
+        $banners = Banner::where('status', 1)
+            ->latest()
+            ->get()
+            ->map(function ($banner) {
+                return [
+                    'id' => $banner->id,
+                    'title' => $banner->title ?? null,
+                    'image' => $banner->image ?  $banner->image : null,
+                    'status' => $banner->status == 1 ? 'Active' : 'Inactive',
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Banners fetched successfully.',
+            'data' => $banners
+        ]);
     }
 
 }

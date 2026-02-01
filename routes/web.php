@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\CategoryAttributeController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\BannerController;
 
 Route::fallback(function () {
     return response()->view('404', [], 404);
@@ -102,14 +103,21 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
 
 
     Route::get('/stores', [StoreController::class, 'index'])->name('stores');
-
     Route::post('/stores/{store}/approve', [StoreController::class, 'approve'])->name('stores.approve');
     Route::post('/stores/{store}/reject', [StoreController::class, 'reject'])->name('stores.reject');
 
     Route::get('/products', [ProductController::class, 'index'])->name('products');
+    Route::delete('/products/{id}/delete', [ProductController::class, 'destroy'])->name('products.destroy');
 
-   Route::delete('/products/{id}/delete', [ProductController::class, 'destroy'])
-    ->name('products.destroy');
+
+    // Banner Routes
+    Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
+    Route::get('/banners/create', [BannerController::class, 'create'])->name('banners.create');
+    Route::post('/banners/store', [BannerController::class, 'store'])->name('banners.store');
+    Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])->name('banners.edit');
+    Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
+    Route::delete('/banners/{banner}/delete', [BannerController::class, 'destroy'])->name('banners.destroy');
+;
 
 
     });  

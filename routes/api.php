@@ -16,6 +16,15 @@ use App\Http\Controllers\vendor\CategoryController;
 // use App\Http\Controllers\Vendor\CategoryController;
 
 
+use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
+use App\Http\Controllers\Customer\AddressController;
+use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Customer\ProductController as CustomerProductController;
+use App\Http\Controllers\Customer\StoreController as CustomerStoreController;
+use App\Http\Controllers\Customer\CategoryController as CustomerCategoryController;
+
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -49,7 +58,7 @@ Route::post('vendor/forgot-password', [AuthController::class, 'forgotPassword'])
 Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgotPassword']);
 
 
-Route::post('vendor/login/apple', [AuthController::class, 'VendorloginWithApple']);
+ Route::post('vendor/login/apple', [AuthController::class, 'VendorloginWithApple']);
 
 
 
@@ -73,6 +82,8 @@ Route::post('vendor/login/apple', [AuthController::class, 'VendorloginWithApple'
     Route::get('vendor/store/list', [StoreController::class, 'list']);
     Route::get('vendor/store/details/{id}', [StoreController::class, 'details']);
 
+    Route::get('banners', [CategoryController::class, 'getBanners']);
+
     // PRODUCTS
      Route::post('vendor/product/create', [ProductController::class, 'create']);
     Route::get('vendor/product/list', [ProductController::class, 'list']);
@@ -89,3 +100,47 @@ Route::post('vendor/login/apple', [AuthController::class, 'VendorloginWithApple'
     // CHAT
     Route::get('vendor/chats', [ChatController::class, 'list']);
     Route::post('vendor/chat/send', [ChatController::class, 'send']);
+
+
+// CUSTOMER APIs
+
+
+Route::post('customer/login', [CustomerAuthController::class, 'login']);
+Route::post('customer/verify-otp', [CustomerAuthController::class, 'verifyOtp']);
+Route::post('customer/update-profile', [CustomerAuthController::class, 'updateProfile']);
+
+Route::post('customer/address/save', [CustomerAuthController::class, 'storeAddress']);
+Route::get('customer/address/list', [CustomerAuthController::class, 'addressList']);
+Route::delete('customer/address/remove/{id}', action: [CustomerAuthController::class, 'destroyAddress']);
+
+Route::get('customer/categories', [CustomerCategoryController::class, 'categories']); // All categories with sub & child
+Route::get('customer/category/{id}/subcategories', [CustomerCategoryController::class, 'subCategories']); // Subcategories only
+Route::get('customer/subcategory/{id}/childcategories', [CustomerCategoryController::class, 'childCategories']); // Child categories only
+
+
+// PRODUCTS (CUSTOMER VIEW)
+Route::get('customer/products', [CustomerProductController::class, 'list']);
+Route::get('customer/product/{id}', [CustomerProductController::class, 'details']);
+
+// stores (CUSTOMER VIEW)
+Route::get('customer/stores', [CustomerStoreController::class, 'list']);
+Route::get('customer/store/{id}', [CustomerStoreController::class, 'details']);
+
+
+
+// CART
+ Route::post('customer/cart/add', [CartController::class, 'add']);
+Route::get('customer/cart/list', [CartController::class, 'list']);
+Route::post('customer/cart/update', [CartController::class, 'update']);
+Route::delete('customer/cart/remove/{id}', [CartController::class, 'remove']);
+
+// ORDER
+ Route::post('customer/order/place', [CustomerOrderController::class, 'placeOrder']);
+Route::get('customer/orders', [CustomerOrderController::class, 'myOrders']);
+ Route::get('customer/order/{id}', [CustomerOrderController::class, 'orderDetails']);
+ 
+
+
+
+
+    
