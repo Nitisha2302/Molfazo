@@ -64,16 +64,47 @@ class CategoryController extends Controller
 
 
     // Get subcategories by category ID
+    // public function subcategories($category_id)
+    // {
+    //     $subCategories = SubCategory::where('category_id', $category_id)
+    //         ->where('status_id', 1)
+    //         ->get();
+
+    //     if ($subCategories->isEmpty()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'No subcategories found for this category.',
+    //         ], 404);
+    //     }
+
+    //     $data = $subCategories->map(function ($sub) {
+    //         return [
+    //             'id'   => $sub->id,
+    //             'name' => $sub->name,
+    //             'slug' => $sub->slug,
+    //         ];
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Category successfully fetched.',
+    //         'data'   => $data,
+    //     ], 200);
+    // }
+
     public function subcategories($category_id)
     {
         $subCategories = SubCategory::where('category_id', $category_id)
             ->where('status_id', 1)
+            ->with(['childCategories' => function ($q) {
+                $q->where('status_id', 1);
+            }])
             ->get();
 
         if ($subCategories->isEmpty()) {
             return response()->json([
                 'status' => false,
-                'message' => 'No subcategories found for this category.',
+                'message' => 'No subcategories found.',
             ], 404);
         }
 
@@ -82,34 +113,71 @@ class CategoryController extends Controller
                 'id'   => $sub->id,
                 'name' => $sub->name,
                 'slug' => $sub->slug,
+                'child_categories' => $sub->childCategories->map(function ($child) {
+                    return [
+                        'id'   => $child->id,
+                        'name' => $child->name,
+                        'slug' => $child->slug,
+                    ];
+                }),
             ];
         });
 
         return response()->json([
-            'status' => true,
-            'message' => 'Category successfully fetched.',
-            'data'   => $data,
+            'status'  => true,
+            'message' => 'Sub categories fetched successfully.',
+            'data'    => $data,
         ], 200);
     }
 
 
+
     // Get child categories by sub-category ID
+    // public function childCategories($sub_category_id)
+    // {
+    //     $subCategory = SubCategory::where('id', $sub_category_id)
+    //         ->where('status_id', 1)
+    //         ->first();
+
+    //     if (!$subCategory) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Sub category not found.'
+    //         ], 404);
+    //     }
+
+    //     $childCategories = $subCategory->childCategories()
+    //         ->where('status_id', 1)
+    //         ->get();
+
+    //     $data = $childCategories->map(function ($child) {
+    //         return [
+    //             'id'   => $child->id,
+    //             'name' => $child->name,
+    //             'slug' => $child->slug,
+    //         ];
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Category successfully fetched.',
+    //         'data'   => $data
+    //     ], 200);
+    // }
+
+
     public function childCategories($sub_category_id)
     {
-        $subCategory = SubCategory::where('id', $sub_category_id)
-            ->where('status_id', 1)
-            ->first();
-
-        if (!$subCategory) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Sub category not found.'
-            ], 404);
-        }
-
-        $childCategories = $subCategory->childCategories()
+        $childCategories = ChildCategory::where('sub_category_id', $sub_category_id)
             ->where('status_id', 1)
             ->get();
+
+        if ($childCategories->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No child categories found.',
+            ], 404);
+        }
 
         $data = $childCategories->map(function ($child) {
             return [
@@ -120,9 +188,9 @@ class CategoryController extends Controller
         });
 
         return response()->json([
-            'status' => true,
-            'message' => 'Category successfully fetched.',
-            'data'   => $data
+            'status'  => true,
+            'message' => 'Child categories fetched successfully.',
+            'data'    => $data,
         ], 200);
     }
 
