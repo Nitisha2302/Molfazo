@@ -10,6 +10,7 @@ use App\Models\UserAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
@@ -20,11 +21,36 @@ class OrderController extends Controller
     {
         $user = Auth::guard('api')->user();
 
-        $request->validate([
-            'address_id' => 'required|exists:user_addresses,id',
-            'payment_type' => 'required|in:cod,online', // Payment type validation
-            'delivery_method' => 'nullable|string'
-        ]);
+       if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // 🔥 Custom validation
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'address_id'      => 'required|exists:user_addresses,id',
+                'payment_type'    => 'required|in:cod,online',
+                'delivery_method' => 'nullable|string'
+            ],
+            [
+                'address_id.required'   => 'Delivery address is required',
+                'address_id.exists'     => 'Selected address is invalid',
+                'payment_type.required' => 'Payment type is required',
+                'payment_type.in'       => 'Payment type must be COD or Online'
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first()
+            ], 201);
+        }
+
 
         $cartItems = Cart::with('product')
             ->where('user_id', $user->id)
@@ -61,14 +87,14 @@ class OrderController extends Controller
 
         // Check stock availability
         // Check stock availability
-    foreach ($cartItems as $item) {
-        if ($item->quantity > $item->product->available_quantity) {
-            return response()->json([
-                'status' => false,
-                'message' => "Product {$item->product->name} does not have enough stock."
-            ], 400);
+        foreach ($cartItems as $item) {
+            if ($item->quantity > $item->product->available_quantity) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Product {$item->product->name} does not have enough stock."
+                ], 400);
+            }
         }
-    }
 
 
         DB::beginTransaction();

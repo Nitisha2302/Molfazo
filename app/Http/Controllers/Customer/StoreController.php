@@ -23,8 +23,16 @@ class StoreController extends Controller
             $query->where('type', $request->type);
         }
 
-        $perPage = $request->get('per_page', 10);
-        $stores = $query->paginate($perPage);
+         // 🔥 NO PAGINATION
+        $stores = $query->get();
+
+        // Optional: handle no data case
+        if ($stores->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No stores found'
+            ], 201);
+        }
 
         return response()->json([
             'status' => true,
@@ -45,12 +53,25 @@ class StoreController extends Controller
             ], 404);
         }
 
-        // Paginate products for this store
-        $perPage = $request->get('per_page', 10);
-
+         // 🔥 Get all products (NO PAGINATION)
         $products = Product::where('store_id', $store->id)
-                    ->with('primaryImage') // Make sure Product model has primaryImage relation
-                    ->paginate($perPage);
+            ->with('primaryImage')
+            ->get();
+
+        // 🔥 Convert primaryImage object → value
+        $products = $products->map(function ($product) {
+            $product->primaryimage = optional($product->primaryImage)->image;
+            unset($product->primaryImage);
+            return $product;
+        });
+
+        // Optional: no products case
+        if ($products->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No products found for this store'
+            ], 201);
+        }
 
         return response()->json([
             'status' => true,

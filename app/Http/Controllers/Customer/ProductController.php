@@ -54,9 +54,26 @@ class ProductController extends Controller
             $query->orderBy('id', 'desc');
         }
 
-        // Pagination
-        $perPage = $request->get('per_page', 10);
-        $products = $query->paginate($perPage);
+         // 🔥 NO PAGINATION
+        $products = $query->get();
+
+        // ❌ If no products found → return 201
+        if ($products->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No products available'
+            ], 201);
+        }
+
+        $products = $products->map(function ($product) {
+
+            $product->primaryimage = optional($product->primaryImage)->image;
+
+            // remove relation object
+            unset($product->primaryImage);
+
+            return $product;
+        });
 
         return response()->json([
             'status' => true,
@@ -78,27 +95,27 @@ class ProductController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Product not found'
-            ], 404);
+            ], 201);
         }
 
-        // Related products pagination
-        $perPage = $request->get('related_per_page', 5); // default 5
-        $page = $request->get('related_page', 1); // default first page
+         // 🔥 Convert primaryImage object → value
+        $product->primaryimage = optional($product->primaryImage)->image;
+        unset($product->primaryImage);
 
-        $relatedQuery = Product::with(['primaryImage'])
+        // 🔥 Related products (NO PAGINATION)
+        $relatedProducts = Product::with('primaryImage')
             ->where('status_id', 1)
             ->where('id', '!=', $product->id)
-            ->where('category_id', $product->category_id);
+            ->where('category_id', $product->category_id)
+            ->get();
 
-        $relatedProducts = $relatedQuery->paginate($perPage, ['*'], 'related_page', $page);
-
-        // Optional: full URL for primary image
-        $relatedProducts->getCollection()->transform(function ($item) {
-            if ($item->primaryImage) {
-                $item->primaryImage->image =  $item->primaryImage->image;
-            }
+        // 🔥 Transform related products primary image
+        $relatedProducts = $relatedProducts->map(function ($item) {
+            $item->primaryimage = optional($item->primaryImage)->image;
+            unset($item->primaryImage);
             return $item;
         });
+
 
         return response()->json([
             'status' => true,

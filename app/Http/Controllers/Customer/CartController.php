@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+     use Illuminate\Support\Facades\Validator;
 
 class CartController extends Controller
 {
@@ -40,7 +41,7 @@ class CartController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Product not available'
-            ], 404);
+            ], 201);
         }
 
         $cartItem = Cart::where('user_id', $user->id)
@@ -91,8 +92,19 @@ class CartController extends Controller
             $price = $item->product->discount_price ?? $item->product->price;
             $item->item_total = $price * $item->quantity;
             $total += $item->item_total;
+            // 🔥 primary image as value
+            $item->product->primaryimage = optional($item->product->primaryImage)->image;
+            unset($item->product->primaryImage);
             return $item;
         });
+
+         // Optional: empty cart case
+        if ($cartItems->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cart is empty'
+            ], 201);
+        }
 
         return response()->json([
             'status' => true,
@@ -107,34 +119,64 @@ class CartController extends Controller
     /**
      * UPDATE QUANTITY
      */
+   
+
     public function update(Request $request)
     {
-        $request->validate([
-            'cart_id'  => 'required|exists:carts,id',
-            'quantity' => 'required|integer|min:1'
-        ]);
-
         $user = Auth::guard('api')->user();
 
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // 🔥 Custom validation
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'cart_id'  => 'required|exists:carts,id',
+                'quantity' => 'required|integer|min:1'
+            ],
+            [
+                'cart_id.required'  => 'Cart ID is required',
+                'cart_id.exists'    => 'Invalid cart item',
+                'quantity.required' => 'Quantity is required',
+                'quantity.integer'  => 'Quantity must be a number',
+                'quantity.min'      => 'Quantity must be at least 1'
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first()
+            ], 201);
+        }
+
+        // 🔥 Fetch cart item safely
         $cartItem = Cart::where('id', $request->cart_id)
-                    ->where('user_id', $user->id)
-                    ->first();
+            ->where('user_id', $user->id)
+            ->first();
 
         if (!$cartItem) {
             return response()->json([
                 'status' => false,
                 'message' => 'Cart item not found'
-            ], 404);
+            ], 201);
         }
 
+        // 🔥 Update quantity
         $cartItem->quantity = $request->quantity;
         $cartItem->save();
 
         return response()->json([
             'status' => true,
             'message' => 'Cart updated successfully'
-        ]);
+        ], 200);
     }
+
 
     /**
      * REMOVE ITEM
@@ -151,7 +193,7 @@ class CartController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Cart item not found'
-            ], 404);
+            ], 201);
         }
 
         $cartItem->delete();
