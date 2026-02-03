@@ -24,10 +24,16 @@ class Product extends Model
     public function store() { return $this->belongsTo(Store::class); }
     public function category() { return $this->belongsTo(Category::class); }
     public function subCategory() { return $this->belongsTo(SubCategory::class,'sub_category_id'); }
+    // public function childCategory()
+    // {
+    //     return $this->belongsTo(ChildCategory::class);
+    // }
+
     public function childCategory()
     {
-        return $this->belongsTo(ChildCategory::class);
+        return $this->belongsTo(ChildCategory::class, 'child_category_id');
     }
+
 
 
     // Relation for multiple images

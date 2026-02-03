@@ -159,16 +159,30 @@ class OrderController extends Controller
     {
         $user = Auth::guard('api')->user();
 
-        $orders = Order::where('user_id', $user->id)
+         $orders = Order::with('items.product.primaryImage')
+            ->where('user_id', $user->id)
             ->orderBy('id', 'desc')
             ->get()
             ->map(function ($order) {
                 return [
                     'order_id'     => $order->id,
                     'total_amount' => $order->total_amount,
-                    'status'       => $this->getStatusText($order->status_id),
+                    'status'       => $order->status_id,
                     'payment_type' => $order->payment_type,
                     'created_at'   => $order->created_at->format('d M Y'),
+
+                    // 🔥 PRODUCT INFO
+                    'products' => $order->items->map(function ($item) {
+                        return [
+                            'product_id'   => $item->product_id,
+                            'product_name' => $item->product->name ?? '',
+                            'quantity'     => $item->quantity,
+                            'price'        => $item->price,
+                            'image' => optional($item->product->primaryImage)->image
+                                ? $item->product->primaryImage->image
+                                : null,
+                        ];
+                    })
                 ];
             });
 
@@ -185,7 +199,7 @@ class OrderController extends Controller
     {
         $user = Auth::guard('api')->user();
 
-        $order = Order::with('items.product')
+        $order = Order::with('items.product.primaryImage')
             ->where('id', $id)
             ->where('user_id', $user->id)
             ->first();
@@ -202,15 +216,19 @@ class OrderController extends Controller
             'data' => [
                 'order_id' => $order->id,
                 'total_amount' => $order->total_amount,
-                'status' => $this->getStatusText($order->status_id),
+                'status' => $order->status_id,
                 'payment_type' => $order->payment_type,
                 'delivery_address' => $order->delivery_address,
                 'items' => $order->items->map(function ($item) {
+                      $product = $item->product; 
                     return [
                         'product_id' => $item->product_id,
                         'product_name' => $item->product->name ?? '',
                         'quantity' => $item->quantity,
                         'price' => $item->price,
+                        'image' => $product && $product->primaryImage
+                            ? $product->primaryImage->image
+                            : null,
                     ];
                 })
             ]

@@ -264,10 +264,6 @@ class AuthController extends Controller
     }
 
 
-    
-   /* =========================
-       SAVE ADDRESS
-    ========================= */
     public function storeAddress(Request $request)
     {
         $user = Auth::guard('api')->user();
@@ -324,9 +320,6 @@ class AuthController extends Controller
     }
 
 
-    /* =========================
-       GET ALL ADDRESSES
-    ========================= */
     public function addressList()
     {
         $user = Auth::guard('api')->user();
@@ -375,5 +368,67 @@ class AuthController extends Controller
             'message' => 'Address removed successfully.',
         ]);
     }
+
+
+    public function setDefaultAddress(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'address_id' => 'required|exists:user_addresses,id',
+            ],
+            [
+                'address_id.required' => 'Please select an address.',
+                'address_id.exists'   => 'Selected address does not exist.',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ], 201);
+        }
+
+        // Check address ownership
+        $address = UserAddress::where('id', $request->address_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$address) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'This address does not belong to your account.',
+            ], 403);
+        }
+
+        // Already default check
+        if ($address->is_default == 1) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'This address is already set as default.',
+            ], 200);
+        }
+
+        // Update default address (safe way)
+        \DB::transaction(function () use ($user, $address) {
+            UserAddress::where('user_id', $user->id)
+                ->update(['is_default' => 0]);
+
+            $address->update(['is_default' => 1]);
+        });
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Default address updated successfully.',
+            'data'    => $address,
+        ], 200);
+    }
+
+
+
+
 
 }
