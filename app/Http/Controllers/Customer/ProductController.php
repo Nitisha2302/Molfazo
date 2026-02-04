@@ -54,10 +54,10 @@ class ProductController extends Controller
             $query->orderBy('id', 'desc');
         }
 
-         // 🔥 NO PAGINATION
+         //  NO PAGINATION
         $products = $query->get();
 
-        // ❌ If no products found → return 201
+        // If no products found → return 201
         if ($products->isEmpty()) {
             return response()->json([
                 'status' => false,
@@ -124,9 +124,6 @@ class ProductController extends Controller
             'related_products' => $relatedProducts
         ]);
     }
-
-
-
 
     public function search(Request $request)
     {
