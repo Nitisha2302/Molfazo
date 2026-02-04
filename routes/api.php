@@ -93,9 +93,8 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
 
 
     // ORDERS
-    Route::get('vendor/orders', [OrderController::class, 'list']);
-    Route::post('vendor/order/accept/{id}', [OrderController::class, 'accept']);
-    Route::post('vendor/order/complete/{id}', [OrderController::class, 'complete']);
+     Route::get('vendor/orders', action: [OrderController::class, 'list']);
+    Route::post('vendor/orders/{id}/status', [OrderController::class, 'updateStatus']);
 
     // CHAT
     Route::get('vendor/chats', [ChatController::class, 'list']);
@@ -140,6 +139,9 @@ Route::delete('customer/cart/remove/{id}', [CartController::class, 'remove']);
  Route::post('customer/order/place', [CustomerOrderController::class, 'placeOrder']);
 Route::get('customer/orders', [CustomerOrderController::class, 'myOrders']);
  Route::get('customer/order/{id}', [CustomerOrderController::class, 'orderDetails']);
+
+ Route::get('customer/products/search', [CustomerProductController::class, 'search']);
+
  
 
 

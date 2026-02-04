@@ -65,7 +65,7 @@ class CategoryController extends Controller
     /* =========================
        GET CHILD CATEGORIES BY SUBCATEGORY
     ========================= */
-   public function childCategories($subCategoryId)
+    public function childCategories($subCategoryId)
     {
         $childCategories = ChildCategory::where('sub_category_id', $subCategoryId)
             ->where('status_id', 1)

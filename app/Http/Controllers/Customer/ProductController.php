@@ -125,4 +125,109 @@ class ProductController extends Controller
         ]);
     }
 
+
+
+
+    public function search(Request $request)
+    {
+        $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage'])
+            ->where('status_id', 1);
+
+        //  Search Keyword
+        if ($request->has('search') && $request->search != '') {
+
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+
+                // Product Name
+                $q->where('name', 'like', '%' . $search . '%')
+
+                    // Store Name
+                    ->orWhereHas('store', function ($q2) use ($search) {
+                        $q2->where('name', 'like', '%' . $search . '%');
+                    })
+
+                    // Category Name
+                    ->orWhereHas('category', function ($q3) use ($search) {
+                        $q3->where('name', 'like', '%' . $search . '%');
+                    })
+
+                    // SubCategory Name
+                    ->orWhereHas('subCategory', function ($q4) use ($search) {
+                        $q4->where('name', 'like', '%' . $search . '%');
+                    })
+
+                    // ChildCategory Name
+                    ->orWhereHas('childCategory', function ($q5) use ($search) {
+                        $q5->where('name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        // 🔥 Filters (Optional)
+        if ($request->has('category_id') && $request->category_id != '') {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->has('sub_category_id') && $request->sub_category_id != '') {
+            $query->where('sub_category_id', $request->sub_category_id);
+        }
+
+        if ($request->has('child_category_id') && $request->child_category_id != '') {
+            $query->where('child_category_id', $request->child_category_id);
+        }
+
+        if ($request->has('store_id') && $request->store_id != '') {
+            $query->where('store_id', $request->store_id);
+        }
+
+        // 🔥 Sorting
+        if ($request->has('sort') && $request->sort != '') {
+            switch ($request->sort) {
+                case 'latest':
+                    $query->orderBy('id', 'desc');
+                    break;
+
+                case 'price_low':
+                    $query->orderBy('price', 'asc');
+                    break;
+
+                case 'price_high':
+                    $query->orderBy('price', 'desc');
+                    break;
+
+                default:
+                    $query->orderBy('id', 'desc');
+            }
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        // 🔥 No Pagination
+        $products = $query->get();
+
+        if ($products->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No products found.',
+                'data' => []
+            ], 201);
+        }
+
+        // 🔥 Convert primaryImage object -> primaryimage key
+        $products = $products->map(function ($product) {
+            $product->primaryimage = optional($product->primaryImage)->image;
+            unset($product->primaryImage);
+            return $product;
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Search results fetched successfully.',
+            'data' => $products
+        ], 200);
+    }
+
+
 }
