@@ -52,11 +52,11 @@ class AuthController extends Controller
         // 👤 Check user by mobile
         $user = User::where('mobile', $phone)->first();
 
-        // ❌ If user exists but NOT customer
+        //  If user exists but NOT customer
         if ($user && $user->role != 3) {
             return response()->json([
                 'status'  => false,
-                'message' => 'This number is not registered as a customer.',
+                'message' => 'This number is already register with us as a Vendor.',
             ], 403);
         }
 
