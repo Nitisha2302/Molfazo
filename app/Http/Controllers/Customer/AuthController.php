@@ -49,6 +49,17 @@ class AuthController extends Controller
             $otp = env('TEST_OTP');
         }
 
+        // 👤 Check user by mobile
+        $user = User::where('mobile', $phone)->first();
+
+        // ❌ If user exists but NOT customer
+        if ($user && $user->role != 3) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'This number is not registered as a customer.',
+            ], 403);
+        }
+
         // 👤 Find or Create Customer (role = 3)
         $user = User::firstOrCreate(
             ['mobile' => $phone],
