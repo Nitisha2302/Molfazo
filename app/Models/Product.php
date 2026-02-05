@@ -48,5 +48,11 @@ class Product extends Model
         return $this->hasOne(ProductImage::class)
                     ->where('is_primary', 1);
     }
+
+     /* ✅ ORDER ITEMS (TRENDING PRODUCTS) */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'product_id', 'id');
+    }
     
 }

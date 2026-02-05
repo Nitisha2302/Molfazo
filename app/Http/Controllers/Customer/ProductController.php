@@ -31,29 +31,47 @@ class ProductController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // Only active products
-        $query->where('status_id', 1);
+        // Type Based (Trending / Latest)
+        if ($request->has('type') && $request->type != '') {
 
-        // Sorting
-        if ($request->has('sort')) {
-            switch ($request->sort) {
-                case 'latest':
-                    $query->orderBy('id', 'desc');
-                    break;
-                case 'price_low':
-                    $query->orderBy('price', 'asc');
-                    break;
-                case 'price_high':
-                    $query->orderBy('price', 'desc');
-                    break;
-                default:
-                    $query->orderBy('id', 'desc');
+            if ($request->type == 'trending') {
+
+                // ✅ Trending = Most sold products (Top 10)
+                $query->withSum('orderItems as total_sold', 'quantity')
+                    ->orderByDesc('total_sold')
+                    ->limit(10);
+
+            } elseif ($request->type == 'latest') {
+
+                // ✅ Latest = Last 10 added products
+                $query->orderBy('id', 'desc')
+                    ->limit(10);
             }
-        } else {
-            // Default: latest first
-            $query->orderBy('id', 'desc');
-        }
 
+        } else {
+
+            //  Sorting Normal
+            if ($request->has('sort') && $request->sort != '') {
+                switch ($request->sort) {
+                    case 'latest':
+                        $query->orderBy('id', 'desc');
+                        break;
+
+                    case 'price_low':
+                        $query->orderBy('price', 'asc');
+                        break;
+
+                    case 'price_high':
+                        $query->orderBy('price', 'desc');
+                        break;
+
+                    default:
+                        $query->orderBy('id', 'desc');
+                }
+            } else {
+                $query->orderBy('id', 'desc');
+            }
+        }
          //  NO PAGINATION
         $products = $query->get();
 

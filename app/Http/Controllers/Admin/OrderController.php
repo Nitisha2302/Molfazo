@@ -8,15 +8,13 @@ use App\Models\Order;
 
 class OrderController extends Controller
 {
-    public function index(Request $request)
+     public function index(Request $request)
     {
-        $orders = Order::with([
-                'user',
-                'store',
-                'items.product'
-            ])
-            ->when($request->order_id, function ($q) use ($request) {
-                $q->where('id', $request->order_id);
+        $orders = Order::with(['user', 'store', 'items.product'])
+            ->when($request->store_name, function ($q) use ($request) {
+                $q->whereHas('store', function ($storeQuery) use ($request) {
+                    $storeQuery->where('name', 'LIKE', '%' . $request->store_name . '%');
+                });
             })
             ->when($request->status_id, function ($q) use ($request) {
                 $q->where('status_id', $request->status_id);
