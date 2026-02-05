@@ -137,7 +137,7 @@ Route::delete('customer/cart/remove/{id}', [CartController::class, 'remove']);
 
 // ORDER
  Route::post('customer/order/place', [CustomerOrderController::class, 'placeOrder']);
-Route::get('customer/orders', [CustomerOrderController::class, 'myOrders']);
+ Route::get('customer/orders', [CustomerOrderController::class, 'myOrders']);
  Route::get('customer/order/{id}', [CustomerOrderController::class, 'orderDetails']);
 
  Route::get('customer/products/search', [CustomerProductController::class, 'search']);
