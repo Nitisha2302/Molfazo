@@ -9,7 +9,7 @@ use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\CategoryAttributeController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\BannerController;
-
+use App\Http\Controllers\Admin\OrderController;
 Route::fallback(function () {
     return response()->view('404', [], 404);
 });
@@ -118,6 +118,9 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
     Route::delete('/banners/{banner}/delete', [BannerController::class, 'destroy'])->name('banners.destroy');
 ;
+
+   Route::get('/orders', [OrderController::class, 'index'])
+    ->name('orders');
 
 
     });  

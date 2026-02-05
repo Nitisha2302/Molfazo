@@ -98,6 +98,15 @@
                 </a>
             </li>
 
+            <li class="@if (Route::currentRouteName() == 'dashboard.admin.orders') active @endif">
+                <a href="{{ route('dashboard.admin.orders') }}">
+                    <span class="d-flex gap-3 align-items-end">
+                      <i class="fas fa-box-open icon-font-size"></i>
+                        <span class="nav-content-menu">All Orders</span>
+                    </span>
+                </a>
+            </li>
+
         @endif
     </ul>
 

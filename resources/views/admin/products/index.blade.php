@@ -50,7 +50,7 @@
                     <th>Store</th>
                     <th>Category</th>
                     <th>Price</th>
-                    <th>Status</th>
+                    <!-- <th>Status</th> -->
                     <th>Action</th>
                 </tr>
             </thead>
@@ -76,8 +76,20 @@
 
                             <div>
                                 <strong>{{ $product->name }}</strong><br>
-                                <small class="text-muted">
+                                <!-- <small class="text-muted">
                                     Qty: {{ $product->available_quantity }}
+                                </small> -->
+
+                                  <small>
+                                    @if($product->available_quantity > 0)
+                                        <span class="text-muted m-0">
+                                            Qty: {{ $product->available_quantity }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-danger m-0">
+                                            Out of Stock
+                                        </span>
+                                    @endif
                                 </small>
                             </div>
                         </div>
@@ -102,7 +114,7 @@
                         @endif
                     </td>
 
-                    <td>
+                    <!-- <td>
                         <span class="badge
                             @if($product->status_id == 1) bg-success
                             @elseif($product->status_id == 2) bg-warning
@@ -111,7 +123,7 @@
                             @elseif($product->status_id == 2) Blocked
                             @else Deleted @endif
                         </span>
-                    </td>
+                    </td> -->
 
                     <td>
                         <div class="d-flex align-items-center gap-2">
@@ -209,7 +221,21 @@
                     <tr><th>Category</th><td>{{ $product->category?->name }}</td></tr>
                     <tr><th>Price</th><td>₹{{ $product->price }}</td></tr>
                     <tr><th>Discount Price</th><td>{{ $product->discount_price ?? '-' }}</td></tr>
-                    <tr><th>Quantity</th><td>{{ $product->available_quantity }}</td></tr>
+                   <tr>
+                        <th>Quantity</th>
+                        <td>
+                            @if($product->available_quantity > 0)
+                                <span class="badge bg-success">
+                                    {{ $product->available_quantity }}
+                                </span>
+                            @else
+                                <span class="badge bg-danger">
+                                    Out of stock
+                                </span>
+                            @endif
+                        </td>
+                    </tr>
+
                     <tr><th>Delivery Available</th>
                         <td>{{ $product->delivery_available ? 'Yes' : 'No' }}</td>
                     </tr>
