@@ -43,6 +43,7 @@ class OrderController extends Controller
                 'payment_type.in'       => 'Payment type must be COD or Online'
             ]
         );
+        
 
         if ($validator->fails()) {
             return response()->json([
