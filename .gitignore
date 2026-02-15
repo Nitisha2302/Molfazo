@@ -10,6 +10,7 @@
 /public/assets/banner_images
 /public/assets/store_documents
 /public/assets/category_images
+/public/assets/customervendorchat_images
 /storage/*.key
 /vendor
 .env

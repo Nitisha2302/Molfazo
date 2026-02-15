@@ -8,22 +8,19 @@ use App\Http\Controllers\vendor\ProductController;
 use App\Http\Controllers\vendor\OrderController;
 use App\Http\Controllers\vendor\ChatController;
 use App\Http\Controllers\vendor\CategoryController;
-//Anukool Code
-// use App\Http\Controllers\Vendor\StoreController;
-// use App\Http\Controllers\Vendor\ProductController;
-// use App\Http\Controllers\Vendor\OrderController;
-// use App\Http\Controllers\Vendor\ChatController;
-// use App\Http\Controllers\Vendor\CategoryController;
+
 
 
 use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Customer\AddressController;
 use App\Http\Controllers\Customer\CartController;
+
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\StoreController as CustomerStoreController;
 use App\Http\Controllers\Customer\CategoryController as CustomerCategoryController;
 
+use App\Http\Controllers\Customer\ChatController as CustomerChatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,8 +94,8 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
     Route::post('vendor/orders/{id}/status', [OrderController::class, 'updateStatus']);
 
     // CHAT
-    Route::get('vendor/chats', [ChatController::class, 'list']);
-    Route::post('vendor/chat/send', [ChatController::class, 'send']);
+    // Route::get('vendor/chats', [ChatController::class, 'list']);
+    // Route::post('vendor/chat/send', [ChatController::class, 'send']);
 
 
 // CUSTOMER APIs
@@ -142,7 +139,16 @@ Route::delete('customer/cart/remove/{id}', [CartController::class, 'remove']);
 
  Route::get('customer/products/search', [CustomerProductController::class, 'search']);
 
- 
+
+
+// CUSTOMER CHAT
+// CUSTOMER CHAT
+Route::post('customer/chat/start', [CustomerChatController::class, 'start']);
+Route::get('customer/chat/conversations', [CustomerChatController::class, 'allConversation']);
+Route::post('customer/chat/messages', [CustomerChatController::class, 'allMessages']);
+Route::post('customer/chat/send', [CustomerChatController::class, 'send']);
+Route::post('customer/chat/mark-read', [CustomerChatController::class, 'markRead']);
+
 
 
 
