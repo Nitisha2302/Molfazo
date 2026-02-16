@@ -43,11 +43,13 @@ class CategoryController extends Controller
                         'id'   => $sub->id,
                         'name' => $sub->name,
                         'slug' => $sub->slug,
+                         'image' => $sub->image,
                         'child_categories' => $sub->childCategories->map(function ($child) {
                             return [
                                 'id'   => $child->id,
                                 'name' => $child->name,
                                 'slug' => $child->slug,
+                                'image' => $child->image,
                             ];
                         }),
                     ];
@@ -113,11 +115,13 @@ class CategoryController extends Controller
                 'id'   => $sub->id,
                 'name' => $sub->name,
                 'slug' => $sub->slug,
+                 'image' => $sub->image,
                 'child_categories' => $sub->childCategories->map(function ($child) {
                     return [
                         'id'   => $child->id,
                         'name' => $child->name,
                         'slug' => $child->slug,
+                         'image' => $child->image,
                     ];
                 }),
             ];
@@ -184,6 +188,7 @@ class CategoryController extends Controller
                 'id'   => $child->id,
                 'name' => $child->name,
                 'slug' => $child->slug,
+                'image' => $child->image,
             ];
         });
 

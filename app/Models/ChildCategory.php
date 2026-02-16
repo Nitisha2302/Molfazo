@@ -11,6 +11,7 @@ class ChildCategory extends Model
         'name',
         'slug',
         'status_id',
+        'image',
     ];
 
     public function subCategory()

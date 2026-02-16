@@ -12,7 +12,7 @@
         </div>
 
         <div class="project-ongoing-box">
-            <form action="{{ route('dashboard.admin.subcategories.update', $subCategory->id) }}" method="POST">
+            <form action="{{ route('dashboard.admin.subcategories.update', $subCategory->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="row">
@@ -60,6 +60,30 @@
                             @enderror
                         </div>
                     </div>
+
+
+                    <div class="col-md-6 step-field">
+                        <label>Sub-Category Image</label>
+
+                        @if($subCategory->image)
+                            <div class="mb-2">
+                                <img src="{{ asset('assets/subcategory_images/'.$subCategory->image) }}"
+                                    width="60"
+                                    height="60"
+                                    style="border-radius:6px; object-fit:cover;">
+                            </div>
+                        @endif
+
+                        <input type="file"
+                            name="image"
+                            class="form-control"
+                            accept="image/*">
+
+                        @error('image')
+                            <div class="text-danger error-message">{{ $message }}</div>
+                        @enderror
+                    </div>
+
 
                     <div class="col-md-12">
                         <button type="submit" class="btn-box btn-submt-user py-block justify-content-center ms-0 mt-3">

@@ -56,6 +56,8 @@
             <table class="table table-striped table-bordered table-notification-list">
                 <thead>
                     <tr>
+                        <th>Image</th>
+
                         <th>Child Category</th>
                         <th>Sub Category</th>
                         <th>Category</th>
@@ -67,6 +69,21 @@
                 <tbody>
                     @forelse($childCategories as $child)
                         <tr>
+                            <td>
+                                @php
+                                    $img = $child->image
+                                        ? asset('assets/childcategory_images/'.$child->image)
+                                        : asset('assets/no-image.png');
+                                @endphp
+
+                                <a href="{{ $img }}" target="_blank">
+                                    <img src="{{ $img }}"
+                                        width="40"
+                                        height="40"
+                                        style="object-fit:cover;border-radius:6px;">
+                                </a>
+                            </td>
+
                             <td>{{ $child->name }}</td>
                             <td>{{ $child->subCategory->name ?? 'N/A' }}</td>
                             <td>

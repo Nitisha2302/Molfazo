@@ -16,7 +16,7 @@
         <div class="project-ongoing-box">
             <form class="employe-form"
                   action="{{ route('dashboard.admin.childcategories.update', $childCategory->id) }}"
-                  method="POST">
+                  method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -80,6 +80,29 @@
                             @enderror
                         </div>
                     </div>
+
+                    <div class="col-md-6 step-field">
+                        <label>Child Category Image</label>
+
+                        @if($childCategory->image)
+                            <div class="mb-2">
+                                <img src="{{ asset('assets/childcategory_images/'.$childCategory->image) }}"
+                                    width="60"
+                                    height="60"
+                                    style="border-radius:6px; object-fit:cover;">
+                            </div>
+                        @endif
+
+                        <input type="file"
+                            name="image"
+                            class="form-control"
+                            accept="image/*">
+
+                        @error('image')
+                            <div class="text-danger error-message">{{ $message }}</div>
+                        @enderror
+                    </div>
+
 
                     <!-- Submit -->
                     <div class="col-md-12">
