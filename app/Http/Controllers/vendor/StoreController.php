@@ -46,6 +46,7 @@ class StoreController extends Controller
             'working_hours' => 'nullable|string',
             'government_id'     => 'required|array',
             'government_id.*'   => 'file|mimes:jpg,jpeg,png,pdf|max:4096',
+            'store_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
 
         ], [
             'name.required' => 'Store Name is required.',
@@ -62,6 +63,11 @@ class StoreController extends Controller
             'logo.max' => 'Logo size cannot exceed 2MB.',
             'government_id.required' => 'At least one store document is required.',
             'government_id.*.mimes'  => 'Store documents must be jpg, png, or pdf.',
+
+            'store_background_image.image' => 'Store background must be an image file.',
+            'store_background_image.mimes' => 'Store background must be jpeg, png, jpg, gif, or webp.',
+            'store_background_image.max'   => 'Store background image size cannot exceed 4MB.',
+
 
         ]);
 
@@ -80,6 +86,16 @@ class StoreController extends Controller
             $file->move(public_path('assets/store_logo'), $filename);
             $logoPath =  $filename;
         }
+
+        $backgroundImagePath = null;
+
+        if ($request->hasFile('store_background_image')) {
+            $file = $request->file('store_background_image');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('assets/store_background'), $filename);
+            $backgroundImagePath = $filename;
+        }
+
 
         $uploadedGovIds = [];
 
@@ -110,6 +126,8 @@ class StoreController extends Controller
             'working_hours' => $request->working_hours ?? null,
               'government_id' => $govIdJson,
             'status_id' => 2, // Pending admin approval
+            'store_background_image' => $backgroundImagePath,
+
         ]);
 
         return response()->json([
@@ -203,6 +221,7 @@ class StoreController extends Controller
             'delivery_by_seller' => $store->delivery_by_seller,
             'self_pickup' => $store->self_pickup,
             'logo' => $store->logo ? $store->logo : null, // Full URL
+            'store_background_image' => $store->store_background_image ? $store->store_background_image : null, // Full URL
             'government_id' => $store->government_id 
                 ? json_decode($store->government_id, true) 
                 : [],

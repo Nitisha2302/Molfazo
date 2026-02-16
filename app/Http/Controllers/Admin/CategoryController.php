@@ -188,6 +188,7 @@ class CategoryController extends Controller
         $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255|unique:sub_categories,name,NULL,id,category_id,' . $request->category_id,
+               'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'category_id.required' => 'Please select a category.',
             'category_id.exists' => 'Selected category is invalid.',
@@ -195,11 +196,20 @@ class CategoryController extends Controller
             'name.unique' => 'This sub-category already exists in the selected category.',
         ]);
 
+         $imageName = null;
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $imageName = time().'_'.$file->getClientOriginalName();
+            $file->move(public_path('assets/subcategory_images'), $imageName);
+        }
+
         SubCategory::create([
             'category_id' => $request->category_id,
             'name' => $request->name,
            'slug' => $this->generateUniqueSubCategorySlug($request->name),
             'status_id' => 1,
+              'image'       => $imageName,
         ]);
 
         return redirect()->route('dashboard.admin.subcategories')->with('success','Sub-category added successfully.');
@@ -222,7 +232,23 @@ class CategoryController extends Controller
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255|unique:sub_categories,name,' . $id . ',id,category_id,' . $request->category_id,
             'status_id' => 'required|in:1,2',
+             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        // image upload
+        if ($request->hasFile('image')) {
+
+            // delete old image
+            if ($subCategory->image && file_exists(public_path('assets/subcategory_images/'.$subCategory->image))) {
+                unlink(public_path('assets/subcategory_images/'.$subCategory->image));
+            }
+
+            $file = $request->file('image');
+            $imageName = time().'_'.$file->getClientOriginalName();
+            $file->move(public_path('assets/subcategory_images'), $imageName);
+
+            $subCategory->image = $imageName;
+        }
 
         $subCategory->update([
             'category_id' => $request->category_id,
@@ -250,6 +276,7 @@ class CategoryController extends Controller
     public function destroySubCategory($id)
     {
         SubCategory::findOrFail($id)->delete();
+        
         return back()->with('success','Sub-category deleted successfully.');
     }
 
@@ -314,6 +341,7 @@ class CategoryController extends Controller
             'sub_category_id' => 'required|exists:sub_categories,id',
             'name' => 'required|string|max:255|unique:child_categories,name,NULL,id,sub_category_id,' . $request->sub_category_id,
             'status_id' => 'required|in:1,2',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'sub_category_id.required' => 'Please select a sub category.',
             'sub_category_id.exists'   => 'Selected sub category is invalid.',
@@ -331,11 +359,20 @@ class CategoryController extends Controller
             ])->withInput();
         }
 
+        $imageName = null;
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $imageName = time().'_'.$file->getClientOriginalName();
+            $file->move(public_path('assets/childcategory_images'), $imageName);
+        }
+
         ChildCategory::create([
             'sub_category_id' => $request->sub_category_id,
             'name'            => $request->name,
             'slug'            => $this->generateUniqueChildCategorySlug($request->name),
             'status_id'       => $request->status_id,
+              'image'           => $imageName,
         ]);
 
         return redirect()
@@ -368,6 +405,7 @@ class CategoryController extends Controller
             'sub_category_id' => 'required|exists:sub_categories,id',
             'name' => 'required|string|max:255|unique:child_categories,name,' . $id . ',id,sub_category_id,' . $request->sub_category_id,
             'status_id' => 'required|in:1,2',
+             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'name.unique' => 'This child category already exists under the selected sub category.'
         ]);
@@ -377,6 +415,20 @@ class CategoryController extends Controller
             return back()->withErrors([
                 'status_id' => 'You cannot activate this child category because its parent category is inactive.'
             ]);
+        }
+        // Image upload
+        if ($request->hasFile('image')) {
+
+            // delete old image
+            if ($child->image && file_exists(public_path('assets/childcategory_images/'.$child->image))) {
+                unlink(public_path('assets/childcategory_images/'.$child->image));
+            }
+
+            $file = $request->file('image');
+            $imageName = time().'_'.$file->getClientOriginalName();
+            $file->move(public_path('assets/childcategory_images'), $imageName);
+
+            $child->image = $imageName;
         }
 
         $child->update([
