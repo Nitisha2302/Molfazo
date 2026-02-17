@@ -110,96 +110,6 @@ class OrderController extends Controller
        UPDATE ORDER STATUS (ONE API)
        1=New,2=Accepted,3=Completed,4=Cancelled
     =============================== */
-    // public function updateStatus(Request $request, $id)
-    // {
-    //     $user = Auth::guard('api')->user();
-
-    //     if (!$user || $user->role != 2 || $user->status_id != 1) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Vendor account not approved or unauthenticated.'
-    //         ], 403);
-    //     }
-
-    //     /* ===============================
-    //        VALIDATION WITH CUSTOM MESSAGE
-    //     =============================== */
-    //     $validator = Validator::make($request->all(), [
-    //         'status_id' => 'required|in:2,3,4'
-    //     ], [
-    //         'status_id.required' => 'Status is required.',
-    //         'status_id.in' => 'Invalid status. Allowed values: 2=Accepted, 3=Completed, 4=Cancelled.'
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $validator->errors()->first()
-    //         ], 422);
-    //     }
-
-    //     /* ===============================
-    //        FETCH ORDER WITH VENDOR CHECK
-    //     =============================== */
-    //     $order = Order::where('id', $id)
-    //         ->whereHas('store', function ($q) use ($user) {
-    //             $q->where('user_id', $user->id);
-    //         })
-    //         ->first();
-
-    //     if (!$order) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Order not found.'
-    //         ], 404);
-    //     }
-
-    //     /* ===============================
-    //        ORDER STATUS LOGIC
-    //     =============================== */
-
-    //     // If already completed or cancelled, block update
-    //     if ($order->status_id == 3) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Order is already completed. Status cannot be changed.'
-    //         ], 400);
-    //     }
-
-    //     if ($order->status_id == 4) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Order is already cancelled. Status cannot be changed.'
-    //         ], 400);
-    //     }
-
-    //     // If order is new and vendor wants to complete directly (not allowed)
-    //     if ($order->status_id == 1 && $request->status_id == 3) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Order must be accepted before completing.'
-    //         ], 400);
-    //     }
-
-    //     $order->status_id = $request->status_id;
-    //     $order->save();
-
-    //     $statusName = match ((int)$request->status_id) {
-    //         2 => 'Accepted',
-    //         3 => 'Completed',
-    //         4 => 'Cancelled',
-    //         default => 'Unknown'
-    //     };
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => "Order status updated successfully to {$statusName}.",
-    //         'data' => $order
-    //     ], 200);
-    // }
-
-
-    // with notification 
 
      public function updateStatus(Request $request, $id)
     {
@@ -326,6 +236,7 @@ class OrderController extends Controller
                 'notification_type' => 5,
                 'title' => $title,
                 'body'  => $body,
+                 'order_id' => $order->id, 
             ];
 
             $fcmService = new \App\Services\FCMService();
