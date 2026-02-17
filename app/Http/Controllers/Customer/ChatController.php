@@ -198,132 +198,6 @@ class ChatController extends Controller
         ], 200);
     }
 
-
-    // ✅ Send Message
-    // public function send(Request $request)
-    // {
-    //     $user = Auth::guard('api')->user();
-
-    //     if (!$user) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'User not authenticated'
-    //         ], 401);
-    //     }
-
-    //     $validator = Validator::make($request->all(), [
-    //         'conversation_id' => 'nullable|exists:conversations,id',
-    //         'other_user_id'   => 'nullable|exists:users,id',
-    //         'message'         => 'nullable|string|max:5000',
-    //           'image'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-    //         'type'            => 'nullable|in:text,image,file,system',
-    //         'meta'            => 'nullable'
-    //     ], [
-    //         'conversation_id.exists' => 'Conversation not found',
-    //         'other_user_id.exists'   => 'User not found',
-    //         'message.required'       => 'Message is required',
-    //         'message.string'         => 'Message must be string',
-    //         'message.max'            => 'Message too long (max 5000)',
-    //          'image.image'            => 'Invalid image file',
-    //         'image.mimes'            => 'Image must be jpg,jpeg,png,webp',
-    //         'image.max'              => 'Image size must be max 2MB',
-    //         'type.in'                => 'Invalid message type',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $validator->errors()->first()
-    //         ], 201);
-    //     }
-
-    //     // Conversation detect
-    //     if ($request->conversation_id) {
-    //         $conversation = Conversation::find($request->conversation_id);
-    //     } else {
-    //         if (!$request->other_user_id) {
-    //             return response()->json([
-    //                 'status' => false,
-    //                 'message' => 'Other user id is required if conversation id not passed'
-    //             ], 201);
-    //         }
-
-    //         $conversation = Conversation::between($user->id, $request->other_user_id);
-    //     }
-
-    //     // Participant check
-    //     if (!in_array($user->id, [$conversation->user_one_id, $conversation->user_two_id])) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'You are not a participant in this conversation'
-    //         ], 403);
-    //     }
-
-    //     // Upload Image if exists
-    //    $imagePath = null;
-
-    //     if ($request->hasFile('image')) {
-
-    //         $image = $request->file('image');
-
-    //         $fileName = time() . '_' . rand(1000, 9999) . '.' . $image->getClientOriginalExtension();
-
-    //         $destinationPath = public_path('assets/customervendorchat_images');
-
-    //         if (!file_exists($destinationPath)) {
-    //             mkdir($destinationPath, 0777, true);
-    //         }
-
-    //         $image->move($destinationPath, $fileName);
-
-    //         $imagePath =  $fileName;
-    //     }
-
-
-    //     // Message type auto detect
-    //     $type = 'text';
-
-    //     if ($request->hasFile('image') && $request->message) {
-    //         $type = 'text_image';
-    //     } elseif ($request->hasFile('image')) {
-    //         $type = 'image';
-    //     }
-
-    //     $message = Message::create([
-    //         'conversation_id' => $conversation->id,
-    //         'sender_id'       => $user->id,
-    //         'message'         => $request->message,
-    //         'image'           => $imagePath,
-    //         'type'            => $type,
-    //         'meta'            => $request->meta,
-    //         'send_at'         => now()
-    //     ]);
-
-    //     $conversation->update([
-    //         'last_message_id'      => $message->id,
-    //         'last_message_preview' => $request->message ? substr($request->message, 0, 200) : '📷 Image',
-    //         'last_message_at'      => now()
-    //     ]);
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Message sent successfully',
-    //         'message_data' => [
-    //             'id' => $message->id,
-    //             'conversation_id' => $message->conversation_id,
-    //             'sender_id' => $message->sender_id,
-    //             'message' => $message->message,
-    //             'image' => $message->image,
-    //             'type' => $message->type,
-    //             'meta' => $message->meta,
-    //             'send_at' => $message->send_at ? $message->send_at->toDateTimeString() : null,
-    //             'read_at' => $message->read_at ? $message->read_at->toDateTimeString() : null,
-    //             'created_at' => $message->created_at->toDateTimeString(),
-    //         ]
-    //     ], 200);
-    // }
-
-
     // with notifications 
 
     public function send(Request $request)
@@ -403,6 +277,7 @@ class ChatController extends Controller
             $image->move($destinationPath, $fileName);
 
             $imagePath =  $fileName;
+             $imagePath = url('assets/customervendorchat_images/' . $fileName);
         }
 
 
@@ -468,6 +343,7 @@ class ChatController extends Controller
                 'body'  => $user->name . ": " . $body,
                 'conversation_id' => $conversation->id,
                 'sender_id' => $user->id,
+                'image_url' => $imagePath ?? null,
             ];
 
             $fcmService = new \App\Services\FCMService();

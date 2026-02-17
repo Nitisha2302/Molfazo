@@ -17,9 +17,9 @@ use App\Services\FCMService;
 
 class OrderController extends Controller
 {
-    /* =========================
-       PLACE ORDER
-    ========================= */
+
+    // with notification 
+
     // public function placeOrder(Request $request)
     // {
     //     $user = Auth::guard('api')->user();
@@ -137,6 +137,46 @@ class OrderController extends Controller
     //         // Clear cart
     //         Cart::where('user_id', $user->id)->delete();
 
+    //          // ✅ SEND NOTIFICATION TO STORE OWNER / VENDOR
+    //         $store = Store::find($storeId);
+
+    //         if ($store) {
+
+    //             $vendor = User::find($store->user_id);
+
+    //             if ($vendor && $vendor->fcm_token) {
+
+    //                 // product name message
+    //                 $firstProduct = $cartItems->first()->product->name ?? 'Product';
+    //                 $productCount = $cartItems->count();
+
+    //                 $productText = $productCount > 1
+    //                     ? $firstProduct . " + " . ($productCount - 1) . " more"
+    //                     : $firstProduct;
+
+    //                 $title = "🛒 New Order";
+    //                 $body  = $user->name . " placed a new order for " . $productText;
+
+    //                 $tokens = [
+    //                     [
+    //                         'fcm_token' => $vendor->fcm_token,
+    //                         'device_type'  => $vendor->device_type ?? 'android',
+    //                         'user_id'      => $vendor->id,
+    //                     ]
+    //                 ];
+
+    //                 $notificationData = [
+    //                     'notification_type' => 3,
+    //                     'title' => $title,
+    //                     'body'  => $body,
+    //                 ];
+
+    //                 $fcmService = new FCMService();
+    //                $fcmService->sendNotification($tokens, $notificationData, true);
+
+    //             }
+    //         }
+
     //         DB::commit();
 
     //         return response()->json([
@@ -156,11 +196,9 @@ class OrderController extends Controller
     //     }
     // }
 
+    // with order id 
 
-
-    // with notification 
-
-    public function placeOrder(Request $request)
+     public function placeOrder(Request $request)
     {
         $user = Auth::guard('api')->user();
 
@@ -309,6 +347,7 @@ class OrderController extends Controller
                         'notification_type' => 3,
                         'title' => $title,
                         'body'  => $body,
+                          'order_id' => $order->id, 
                     ];
 
                     $fcmService = new FCMService();
