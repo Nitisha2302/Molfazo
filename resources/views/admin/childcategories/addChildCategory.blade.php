@@ -20,7 +20,7 @@
         <div class="project-ongoing-box">
             <form class="employe-form"
                   action="{{ route('dashboard.admin.childcategories.store') }}"
-                  method="POST">
+                  method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="row">
@@ -84,6 +84,21 @@
                             @enderror
                         </div>
                     </div>
+
+                    <div class="col-md-6 step-field">
+                        <div class="form-group mb-4">
+                            <label>Child Category Image</label>
+                            <input type="file"
+                                name="image"
+                                class="form-control"
+                                accept="image/*">
+
+                            @error('image')
+                                <div class="text-danger error-message">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
 
                     <!-- Submit -->
                     <div class="col-md-12">

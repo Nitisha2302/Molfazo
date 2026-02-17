@@ -11,6 +11,9 @@
 /public/assets/store_documents
 /public/assets/category_images
 /public/assets/customervendorchat_images
+/public/assets/store_background
+/public/assets/subcategories
+/public/assets/childcategory_images
 /storage/*.key
 /vendor
 .env

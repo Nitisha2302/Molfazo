@@ -30,7 +30,7 @@ class OrderController extends Controller
             $q->where('user_id', $user->id);
         })
         ->with([
-            'user:id,name,email,mobile',
+            'user:id,name,email,mobile,profile_photo',
             'items.product.primaryImage'
         ]);
 
@@ -69,6 +69,7 @@ class OrderController extends Controller
                     'name' => $order->user->name,
                     'email' => $order->user->email,
                     'mobile' => $order->user->mobile,
+                    'profile_photo' => $order->user->profile_photo ?? null,
                 ] : null,
 
                 // ✅ Products / Items

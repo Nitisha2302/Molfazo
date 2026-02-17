@@ -395,6 +395,7 @@ class OrderController extends Controller
                 'message' => 'Order not found.'
             ], 404);
         }
+          $vendor = $order->store->vendor ?? null;
 
         return response()->json([
             'status' => true,
@@ -404,6 +405,17 @@ class OrderController extends Controller
                 'status' => $order->status_id,
                 'payment_type' => $order->payment_type,
                 'delivery_address' => $order->delivery_address,
+                 // ✅ Vendor Details
+                'vendor' => $vendor ? [
+                    'vendor_id' => $vendor->id,
+                    'vendor_name' => $vendor->name,
+                    'vendor_email' => $vendor->email,
+                    'vendor_mobile' => $vendor->mobile ?? null,
+                    'vendor_image' => $vendor->profile_photo ?? null,
+                    'store_id' => $order->store->id ?? null,
+                    'store_name' => $order->store->name ?? null,
+                    'store_address' => $order->store->address ?? null,
+                ] : null,
                 'items' => $order->items->map(function ($item) {
                       $product = $item->product; 
                     return [
