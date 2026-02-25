@@ -24,6 +24,7 @@ class ChatController extends Controller
 
         $validator = Validator::make($request->all(), [
             'other_user_id' => 'required|exists:users,id|not_in:' . $user->id,
+             'product_id'    => 'required|exists:products,id',
         ], [
             'other_user_id.required' => 'Other user id is required',
             'other_user_id.exists'   => 'Other user does not exist',
@@ -37,7 +38,12 @@ class ChatController extends Controller
             ], 201);
         }
 
-        $conversation = Conversation::between($user->id, $request->other_user_id);
+        $conversation = Conversation::between(
+            $user->id,
+            $request->other_user_id,
+            $request->product_id
+        );
+
 
         return response()->json([
             'status' => true,
@@ -63,7 +69,7 @@ class ChatController extends Controller
 
         $conversations = Conversation::where('user_one_id', $meId)
             ->orWhere('user_two_id', $meId)
-            ->with(['userOne', 'userTwo'])
+            ->with(['userOne', 'userTwo', 'product.primaryImage'])
             ->orderByDesc('last_message_at')
             ->get();
 
@@ -102,6 +108,10 @@ class ChatController extends Controller
 
             return [
                 'conversation_id' => $c->id,
+
+                 'product_id' => $c->product_id,
+                'product_name' => $c->product->name ?? null,
+                'product_image' => $c->product->primaryImage->image ?? null,
 
                 'other_user_id' => $otherUser->id ?? null,
                 'other_user_name' => $otherUser->name ?? null,
@@ -214,6 +224,7 @@ class ChatController extends Controller
         $validator = Validator::make($request->all(), [
             'conversation_id' => 'nullable|exists:conversations,id',
             'other_user_id'   => 'nullable|exists:users,id',
+               'product_id'      => 'required_without:conversation_id|exists:products,id',
             'message'         => 'nullable|string|max:5000',
               'image'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'type'            => 'nullable|in:text,image,file,system',
@@ -248,7 +259,7 @@ class ChatController extends Controller
                 ], 201);
             }
 
-            $conversation = Conversation::between($user->id, $request->other_user_id);
+            $conversation = Conversation::between($user->id, $request->other_user_id,$request->product_id);
         }
 
         // Participant check
