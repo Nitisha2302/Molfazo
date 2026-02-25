@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Product;
 
 class Conversation extends Model
 {
@@ -15,6 +16,7 @@ class Conversation extends Model
         'last_message_id',
         'last_message_preview',
         'last_message_at',
+        'product_id',
     ];
 
     protected $casts = [
@@ -42,26 +44,28 @@ class Conversation extends Model
     }
 
     // ✅ Get conversation between 2 users
-    public static function between($user1, $user2)
+    public static function between($user1, $user2, $productId)
     {
-        $conversation = self::where(function ($q) use ($user1, $user2) {
-            $q->where('user_one_id', $user1)->where('user_two_id', $user2);
-        })
-        ->orWhere(function ($q) use ($user1, $user2) {
-            $q->where('user_one_id', $user2)->where('user_two_id', $user1);
-        })
-        ->first();
+        $userOne = min($user1, $user2);
+        $userTwo = max($user1, $user2);
+
+        $conversation = self::where('user_one_id', $userOne)
+            ->where('user_two_id', $userTwo)
+            ->where('product_id', $productId)
+            ->first();
 
         if (!$conversation) {
             $conversation = self::create([
-                'user_one_id' => $user1,
-                'user_two_id' => $user2,
+                'user_one_id' => $userOne,
+                'user_two_id' => $userTwo,
+                'product_id'  => $productId,
                 'last_message_at' => now()
             ]);
         }
 
         return $conversation;
     }
+
 
     public function otherUserId($myId)
     {
@@ -71,5 +75,10 @@ class Conversation extends Model
     public function otherUser($myId)
     {
         return $this->user_one_id == $myId ? $this->userTwo : $this->userOne;
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 }
