@@ -37,16 +37,34 @@ class FCMService
                         'title' => (string) $data['title'],
                         'body'  => (string) $data['body'],
                     ],
-                    'data' => [
-                        'title' => (string) $data['title'],
-                        'body'  => (string) $data['body'],
-                        'notification_type' => (string) $data['notification_type'],
+                    'data' => array_map(function ($value) {
+                            return (string) $value;
+                        }, array_filter([
+                            'title' => $data['title'] ?? '',
+                            'body'  => $data['body'] ?? '',
+                            'notification_type' => $data['notification_type'] ?? '',
 
-                        // optional extra fields
-                        'conversation_id' => (string) ($data['conversation_id'] ?? ''),
-                        'sender_id'       => (string) ($data['sender_id'] ?? ''),
-                        'order_id'        => (string) ($data['order_id'] ?? ''),
-                    ]
+                            'conversation_id' => $data['conversation_id'] ?? null,
+                            'sender_id'       => $data['sender_id'] ?? null,
+                            'order_id'        => $data['order_id'] ?? null,
+
+                            // ✅ Chat extra fields (only sent if exist)
+                            'product_id'    => $data['product_id'] ?? null,
+                            'product_name'  => $data['product_name'] ?? null,
+                            'product_image' => $data['product_image'] ?? null,
+                            'store_name'    => $data['store_name'] ?? null,
+                            'store_image'   => $data['store_image'] ?? null,
+                        ]))
+                    // 'data' => [
+                    //     'title' => (string) $data['title'],
+                    //     'body'  => (string) $data['body'],
+                    //     'notification_type' => (string) $data['notification_type'],
+
+                    //     // optional extra fields
+                    //     'conversation_id' => (string) ($data['conversation_id'] ?? ''),
+                    //     'sender_id'       => (string) ($data['sender_id'] ?? ''),
+                    //     'order_id'        => (string) ($data['order_id'] ?? ''),
+                    // ]
                 ]
             ];
 

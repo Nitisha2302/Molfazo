@@ -14,6 +14,7 @@
 /public/assets/store_background
 /public/assets/subcategory_images
 /public/assets/childcategory_images
+/public/assets/review_images
 /storage/*.key
 /vendor
 .env

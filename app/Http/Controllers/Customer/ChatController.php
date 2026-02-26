@@ -348,6 +348,14 @@ class ChatController extends Controller
                 $body = "New message received";
             }
 
+            $product = $conversation->product;
+            $store = $product ? $product->store : null;
+            $productId = $product->id ?? null;
+            $productName = $product->name ?? null;
+            $productImage = $product->primaryImage->image ?? null;
+            $storeName = $store->name ?? null;
+            $storeImage = $store->image ?? null;
+
             $notificationData = [
                 'notification_type' => 2,
                 'title' => "💬 New Message",
@@ -355,6 +363,13 @@ class ChatController extends Controller
                 'conversation_id' => $conversation->id,
                 'sender_id' => $user->id,
                 'image_url' => $imagePath ?? null,
+
+                // ✅ NEW CHAT-ONLY EXTRA DATA
+                'product_id'      => $productId,
+                'product_name'    => $productName,
+                'product_image'   => $productImage,
+                'store_name'      => $storeName,
+                'store_image'     => $storeImage,
             ];
 
             $fcmService = new \App\Services\FCMService();
