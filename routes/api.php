@@ -14,6 +14,7 @@ use App\Http\Controllers\vendor\CategoryController;
 use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Customer\AddressController;
 use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\ProductReviewController;
 
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
@@ -120,6 +121,8 @@ Route::get('customer/subcategory/{id}/childcategories', [CustomerCategoryControl
 Route::get('customer/products', [CustomerProductController::class, 'list']);
 Route::get('customer/product/{id}', [CustomerProductController::class, 'details']);
 
+
+
 // stores (CUSTOMER VIEW)
 Route::get('customer/stores', [CustomerStoreController::class, 'list']);
 Route::get('customer/store/{id}', [CustomerStoreController::class, 'details']);
@@ -148,6 +151,11 @@ Route::get('customer/chat/conversations', [CustomerChatController::class, 'allCo
 Route::post('customer/chat/messages', [CustomerChatController::class, 'allMessages']);
 Route::post('customer/chat/send', [CustomerChatController::class, 'send']);
 Route::post('customer/chat/mark-read', [CustomerChatController::class, 'markRead']);
+
+
+
+  Route::post('/product/review/store', [ProductReviewController::class, 'store']);
+  Route::get('/product/{id}/reviews', [ProductReviewController::class, 'list']);
 
 
 

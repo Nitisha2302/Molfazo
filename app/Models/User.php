@@ -78,6 +78,11 @@ class User extends Authenticatable
             default => 'Unknown'
         };
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
     
 }
 
