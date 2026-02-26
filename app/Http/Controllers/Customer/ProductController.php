@@ -120,6 +120,7 @@ class ProductController extends Controller
         ->where('id', $id)
         ->where('status_id', 1)
         ->first();
+        
 
         if (!$product) {
             return response()->json([
