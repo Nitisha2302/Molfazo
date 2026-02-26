@@ -8,8 +8,12 @@ use App\Models\Product;
 use App\Models\Store;
 use App\Models\ChildCategory;
 use App\Models\ProductImage;
+use App\Models\Order;
+use App\Models\OrderItem;
 use Auth;
 use Validator;
+
+
 
 class ProductController extends Controller
 {
@@ -326,6 +330,80 @@ class ProductController extends Controller
             'data' => $products,
         ], 200);
     }
+
+
+   public function dashboard()
+{
+      $vendor = Auth::guard('api')->user();
+
+        // If this API should be public → remove this block
+        if (!$vendor) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+    if ($vendor->role != 2) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Unauthorized'
+        ], 403);
+    }
+
+    // 🔥 Get ALL store IDs of vendor
+    $storeIds = $vendor->stores()->pluck('id');
+
+    if ($storeIds->isEmpty()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'No stores found'
+        ], 404);
+    }
+
+    // ✅ Total Products (All Stores)
+    $totalProducts = Product::whereIn('store_id', $storeIds)->count();
+
+    // ✅ Out of Stock Products
+    $outOfStock = Product::whereIn('store_id', $storeIds)
+                        ->where('available_quantity', 0)
+                        ->count();
+
+    // ✅ Order Items of Vendor Products
+    $orderItems = OrderItem::whereHas('product', function ($q) use ($storeIds) {
+            $q->whereIn('store_id', $storeIds);
+        })
+        ->whereHas('order', function ($q) {
+            $q->where('status_id', '3'); // change if using status_id
+        })
+        ->get();
+
+    // ✅ Total Revenue
+    $totalRevenue = $orderItems->sum(function ($item) {
+        return $item->price * $item->quantity;
+    });
+
+    // ✅ Total Orders (unique)
+    $totalOrders = $orderItems->pluck('order_id')->unique()->count();
+
+    // ✅ Total Customers
+    $totalCustomers = Order::whereIn('id', $orderItems->pluck('order_id'))
+                            ->pluck('user_id')
+                            ->unique()
+                            ->count();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Dashboard data fetched successfully',
+        'data' => [
+            'total_revenue'   => $totalRevenue,
+            'total_orders'    => $totalOrders,
+            'total_customers' => $totalCustomers,
+            'total_products'  => $totalProducts,
+            'out_of_stock'    => $outOfStock,
+        ]
+    ]);
+}
 
 
 }
