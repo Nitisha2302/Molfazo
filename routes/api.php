@@ -11,6 +11,7 @@ use App\Http\Controllers\vendor\CategoryController;
 
 
 
+
 use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Customer\AddressController;
 use App\Http\Controllers\Customer\CartController;
@@ -88,6 +89,8 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
     Route::get('vendor/product/details/{id}', [ProductController::class, 'details']);
 
     Route::get('vendor/store/{store_id}/products', [ProductController::class, 'getstoreAllProducts']);
+
+     Route::get('/vendor/dashboard', [ProductController::class, 'dashboard']);
 
 
     // ORDERS

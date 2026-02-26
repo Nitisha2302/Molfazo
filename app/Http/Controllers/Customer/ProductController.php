@@ -11,7 +11,8 @@ class ProductController extends Controller
     // List products with filters and sorting
     public function list(Request $request)
     {
-        $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage']);
+        $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage', 'reviews.images'])->withAvg('reviews', 'rating')
+         ->withCount('reviews');
 
         // Filters
         if ($request->has('category_id')) {
@@ -104,10 +105,22 @@ class ProductController extends Controller
     public function details(Request $request, $id)
     {
         // Get main product
-        $product = Product::with(['store', 'category', 'subCategory', 'childCategory', 'images'])
-                    ->where('id', $id)
-                    ->where('status_id', 1)
-                    ->first();
+       $product = Product::with([
+            'store',
+            'category',
+            'subCategory',
+            'childCategory',
+            'images',
+            'primaryImage',
+            'reviews.user',
+            'reviews.images'
+        ])
+        ->withAvg('reviews', 'rating')
+        ->withCount('reviews')
+        ->where('id', $id)
+        ->where('status_id', 1)
+        ->first();
+        
 
         if (!$product) {
             return response()->json([
