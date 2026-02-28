@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Auth;
 use Validator;
+use Carbon\Carbon;
 
 
 
@@ -332,78 +333,268 @@ class ProductController extends Controller
     }
 
 
-   public function dashboard()
-{
-      $vendor = Auth::guard('api')->user();
+    // public function dashboard()
+    // {
+    //     $vendor = Auth::guard('api')->user();
 
-        // If this API should be public → remove this block
-        if (!$vendor) {
+    //         // If this API should be public → remove this block
+    //         if (!$vendor) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Unauthenticated.',
+    //             ], 401);
+    //         }
+
+    //     if ($vendor->role != 2) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Unauthorized'
+    //         ], 403);
+    //     }
+
+    //     // 🔥 Get ALL store IDs of vendor
+    //     $storeIds = $vendor->stores()->pluck('id');
+
+    //     if ($storeIds->isEmpty()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'No stores found'
+    //         ], 404);
+    //     }
+
+    //     // ✅ Total Products (All Stores)
+    //     $totalProducts = Product::whereIn('store_id', $storeIds)->count();
+
+    //     // ✅ Out of Stock Products
+    //     $outOfStock = Product::whereIn('store_id', $storeIds)
+    //                         ->where('available_quantity', 0)
+    //                         ->count();
+
+    //     // ✅ Order Items of Vendor Products
+    //     $orderItems = OrderItem::whereHas('product', function ($q) use ($storeIds) {
+    //             $q->whereIn('store_id', $storeIds);
+    //         })
+    //         ->whereHas('order', function ($q) {
+    //             $q->where('status_id', '3'); // change if using status_id
+    //         })
+    //         ->get();
+
+    //     // ✅ Total Revenue
+    //     $totalRevenue = $orderItems->sum(function ($item) {
+    //         return $item->price * $item->quantity;
+    //     });
+
+    //     // ✅ Total Orders (unique)
+    //     $totalOrders = $orderItems->pluck('order_id')->unique()->count();
+
+    //     // ✅ Total Customers
+    //     $totalCustomers = Order::whereIn('id', $orderItems->pluck('order_id'))
+    //                             ->pluck('user_id')
+    //                             ->unique()
+    //                             ->count();
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Dashboard data fetched successfully',
+    //         'data' => [
+    //             'total_revenue'   => $totalRevenue,
+    //             'total_orders'    => $totalOrders,
+    //             'total_customers' => $totalCustomers,
+    //             'total_products'  => $totalProducts,
+    //             'out_of_stock'    => $outOfStock,
+    //         ]
+    //     ]);
+    // }
+
+
+    public function dashboard(Request $request)
+    {
+        $vendor = Auth::guard('api')->user();
+
+        if (!$vendor || $vendor->role != 2) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthenticated.',
+                'message' => 'Unauthorized'
             ], 401);
         }
 
-    if ($vendor->role != 2) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Unauthorized'
-        ], 403);
-    }
+        /*
+        |--------------------------------------------------------------------------
+        | DATE FILTER LOGIC
+        |--------------------------------------------------------------------------
+        */
 
-    // 🔥 Get ALL store IDs of vendor
-    $storeIds = $vendor->stores()->pluck('id');
+        if ($request->today == 1) {
+            $startDate = Carbon::today();
+            $endDate   = Carbon::today()->endOfDay();
+        } else {
+            $startDate = $request->start_date
+                ? Carbon::parse($request->start_date)->startOfDay()
+                : null;
 
-    if ($storeIds->isEmpty()) {
-        return response()->json([
-            'status' => false,
-            'message' => 'No stores found'
-        ], 404);
-    }
+            $endDate = $request->end_date
+                ? Carbon::parse($request->end_date)->endOfDay()
+                : null;
+        }
 
-    // ✅ Total Products (All Stores)
-    $totalProducts = Product::whereIn('store_id', $storeIds)->count();
+        /*
+        |--------------------------------------------------------------------------
+        | Vendor Stores
+        |--------------------------------------------------------------------------
+        */
 
-    // ✅ Out of Stock Products
-    $outOfStock = Product::whereIn('store_id', $storeIds)
-                        ->where('available_quantity', 0)
-                        ->count();
+        $storeIds = $vendor->stores()->pluck('id');
 
-    // ✅ Order Items of Vendor Products
-    $orderItems = OrderItem::whereHas('product', function ($q) use ($storeIds) {
+        /*
+        |--------------------------------------------------------------------------
+        | ORDER ITEMS QUERY (BASE)
+        |--------------------------------------------------------------------------
+        */
+
+        $orderItemsQuery = OrderItem::whereHas('product', function ($q) use ($storeIds) {
             $q->whereIn('store_id', $storeIds);
-        })
-        ->whereHas('order', function ($q) {
-            $q->where('status_id', '3'); // change if using status_id
-        })
-        ->get();
+        });
 
-    // ✅ Total Revenue
-    $totalRevenue = $orderItems->sum(function ($item) {
-        return $item->price * $item->quantity;
-    });
+        if ($startDate && $endDate) {
+            $orderItemsQuery->whereBetween('created_at', [$startDate, $endDate]);
+        }
 
-    // ✅ Total Orders (unique)
-    $totalOrders = $orderItems->pluck('order_id')->unique()->count();
+        $orderItems = $orderItemsQuery->get();
 
-    // ✅ Total Customers
-    $totalCustomers = Order::whereIn('id', $orderItems->pluck('order_id'))
-                            ->pluck('user_id')
-                            ->unique()
-                            ->count();
+        /*
+        |--------------------------------------------------------------------------
+        | ORDERS DATA
+        |--------------------------------------------------------------------------
+        */
 
-    return response()->json([
-        'status' => true,
-        'message' => 'Dashboard data fetched successfully',
-        'data' => [
-            'total_revenue'   => $totalRevenue,
-            'total_orders'    => $totalOrders,
-            'total_customers' => $totalCustomers,
-            'total_products'  => $totalProducts,
-            'out_of_stock'    => $outOfStock,
-        ]
-    ]);
-}
+        $orderIds = $orderItems->pluck('order_id')->unique();
+
+        $orders = Order::whereIn('id', $orderIds);
+
+        if ($startDate && $endDate) {
+            $orders->whereBetween('created_at', [$startDate, $endDate]);
+        }
+
+        $orders = $orders->get();
+
+        $totalOrders = $orders->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | REVENUE
+        |--------------------------------------------------------------------------
+        */
+
+        $totalRevenue = $orderItems->sum(fn($i) =>
+            $i->price * $i->quantity
+        );
+
+        $dailyRevenue = $orderItems
+            ->groupBy(fn($i) => Carbon::parse($i->created_at)->format('Y-m-d'))
+            ->map(fn($items) => $items->sum(fn($i)=>$i->price*$i->quantity))
+            ->values();
+
+        $weeklyRevenue = $orderItems
+            ->where('created_at','>=',Carbon::now()->subDays(7))
+            ->sum(fn($i)=>$i->price*$i->quantity);
+
+        $monthlyRevenue = $orderItems
+            ->where('created_at','>=',Carbon::now()->startOfMonth())
+            ->sum(fn($i)=>$i->price*$i->quantity);
+
+        $yearlyRevenue = $orderItems
+            ->where('created_at','>=',Carbon::now()->startOfYear())
+            ->sum(fn($i)=>$i->price*$i->quantity);
+
+        /*
+        |--------------------------------------------------------------------------
+        | PRODUCTS
+        |--------------------------------------------------------------------------
+        */
+
+        $productQuery = Product::whereIn('store_id', $storeIds);
+
+        if ($request->stock == 'out') {
+            $productQuery->where('available_quantity', 0);
+        }
+
+        if ($request->stock == 'in') {
+            $productQuery->where('available_quantity', '>', 0);
+        }
+
+        $products = $productQuery->get();
+
+        $outOfStock = Product::whereIn('store_id', $storeIds)
+            ->where('available_quantity', 0)
+            ->count();
+
+        $mostPurchased = OrderItem::selectRaw(
+                'product_id, SUM(quantity) as total_sold'
+            )
+            ->whereHas('product', fn($q)=>$q->whereIn('store_id',$storeIds))
+            ->groupBy('product_id')
+            ->orderByDesc('total_sold')
+            ->with('product')
+            ->limit(10)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | CUSTOMERS
+        |--------------------------------------------------------------------------
+        */
+
+        $totalCustomers = Order::whereIn('id', $orderIds)
+            ->distinct('user_id')
+            ->count('user_id');
+
+        /*
+        |--------------------------------------------------------------------------
+        | TODAY ORDERS (ALL STATUS)
+        |--------------------------------------------------------------------------
+        */
+
+        $todayOrders = Order::whereDate('created_at', Carbon::today())
+            ->whereHas('items.product', fn($q)=>$q->whereIn('store_id',$storeIds))
+            ->latest()
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | RESPONSE
+        |--------------------------------------------------------------------------
+        */
+
+        return response()->json([
+            'status' => true,
+
+            'orders' => [
+                'total_orders' => $totalOrders,
+                'recent_orders' => $orders->take(10),
+            ],
+
+            'revenue' => [
+                'total_revenue' => $totalRevenue,
+                'daily_revenue' => $dailyRevenue,
+                'weekly_revenue' => $weeklyRevenue,
+                'monthly_revenue' => $monthlyRevenue,
+                'yearly_revenue' => $yearlyRevenue,
+            ],
+
+            'products' => [
+                'total_products' => $products->count(),
+                'out_of_stock' => $outOfStock,
+                'all_products' => $products,
+                'most_purchased' => $mostPurchased,
+            ],
+
+            'customers' => [
+                'total_customers' => $totalCustomers
+            ],
+
+            'today_orders' => $todayOrders
+        ]);
+    }
 
 
 }
