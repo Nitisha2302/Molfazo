@@ -512,7 +512,9 @@ class ProductController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $productQuery = Product::whereIn('store_id', $storeIds);
+        // $productQuery = Product::whereIn('store_id', $storeIds);
+        $productQuery = Product::with('primaryImage')
+    ->whereIn('store_id', $storeIds);
 
         if ($request->stock == 'out') {
             $productQuery->where('available_quantity', 0);
@@ -534,7 +536,7 @@ class ProductController extends Controller
             ->whereHas('product', fn($q)=>$q->whereIn('store_id',$storeIds))
             ->groupBy('product_id')
             ->orderByDesc('total_sold')
-            ->with('product')
+           ->with('product.primaryImage')
             ->limit(10)
             ->get();
 
