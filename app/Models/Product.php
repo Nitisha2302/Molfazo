@@ -12,7 +12,7 @@ class Product extends Model
     protected $fillable = [
         'store_id','category_id','sub_category_id','child_category_id','name','description',
         'price','discount_price','available_quantity','delivery_available',
-        'delivery_price','delivery_time','characteristics','tags','status_id','attributes_json'
+        'delivery_price','delivery_time','characteristics','tags','status_id','attributes_json','payment_mode'
     ];
 
     protected $casts = [
@@ -67,6 +67,11 @@ class Product extends Model
     public function averageRating()
     {
         return $this->reviews()->avg('rating');
+    }
+
+    public function banks()
+    {
+        return $this->belongsToMany(Bank::class, 'product_bank');
     }
     
 }

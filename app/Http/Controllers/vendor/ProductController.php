@@ -10,6 +10,7 @@ use App\Models\ChildCategory;
 use App\Models\ProductImage;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Bank;
 use Auth;
 use Validator;
 use Carbon\Carbon;
@@ -21,6 +22,145 @@ class ProductController extends Controller
     /**
      * Add a new product
      */
+    // public function create(Request $request)
+    // {
+    //     /* ===============================
+    //        AUTHENTICATED USER
+    //     =============================== */
+    //     $user = Auth::guard('api')->user();
+    //     if (!$user || $user->role != 2 || $user->status_id != 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Vendor account is not approved or authenticated.',
+    //         ], 403);
+    //     }
+
+    //     /* ===============================
+    //        VALIDATION
+    //     =============================== */
+    //     $validator = Validator::make($request->all(), [
+    //         'store_id' => 'required|exists:stores,id',
+    //         'category_id' => 'required|exists:categories,id',
+    //         'sub_category_id' => 'required|exists:sub_categories,id',
+    //         'child_category_id' => 'nullable|exists:child_categories,id',
+    //         'name' => 'required|string',
+    //         'description' => 'nullable|string',
+    //         'price' => 'required|numeric',
+    //         'discount_price' => 'nullable|numeric',
+    //         'available_quantity' => 'required|integer|min:0',
+    //         'delivery_available' => 'nullable|boolean',
+    //         'delivery_price' => 'nullable|numeric',
+    //         'delivery_time' => 'nullable|string',
+    //         'characteristics' => 'nullable|array',
+    //         'tags' => 'nullable|array',
+    //         'images' => 'required|array|min:1',
+    //         'images.*' => 'file|mimes:jpeg,jpg,png,gif',
+    //         'attributes_json' => 'nullable|array',
+    //     ], [
+    //         'store_id.required' => 'Please select a store.',
+    //         'store_id.exists' => 'The selected store does not exist.',
+    //         'category_id.required' => 'Please select a category.',
+    //         'category_id.exists' => 'The selected category does not exist.',
+    //         'sub_category_id.required' => 'Please select a subcategory.',
+    //         'sub_category_id.exists' => 'The selected subcategory does not exist.',
+    //         'child_category_id.required' => 'Please select a child category.',
+    //         'child_category_id.exists' => 'The selected child category does not exist.',
+    //         'name.required' => 'Product name is required.',
+    //         'price.required' => 'Product price is required.',
+    //         'price.numeric' => 'Price must be a valid number.',
+    //         'discount_price.numeric' => 'Discount price must be a valid number.',
+    //         'available_quantity.required' => 'Available quantity is required.',
+    //         'available_quantity.integer' => 'Available quantity must be an integer.',
+    //         'characteristics.array' => 'Characteristics must be sent as an array.',
+    //         'tags.array' => 'Tags must be sent as an array.',
+    //         'images.required' => 'At least one image is required.',
+    //         'images.array' => 'Images must be sent as an array.',
+    //         'images.*.mimes' => 'Each image must be jpeg, jpg, png, or gif.',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validator->errors()->first(),
+    //         ], 422);
+    //     }
+
+    //     /* ===============================
+    //        CHECK STORE OWNERSHIP
+    //     =============================== */
+    //     $store = $user->stores()->where('id', $request->store_id)->first();
+    //     if (!$store || $store->status_id != 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid or unapproved store.',
+    //         ], 403);
+    //     }
+
+    //     if ($request->child_category_id) {
+    //         $childCategory = ChildCategory::where('id', $request->child_category_id)
+    //             ->where('sub_category_id', $request->sub_category_id)
+    //             ->first();
+
+    //         if (!$childCategory) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Child category does not belong to selected sub-category.',
+    //             ], 422);
+    //         }
+    //     }
+
+
+    //     /* ===============================
+    //        CREATE PRODUCT
+    //     =============================== */
+    //     $product = Product::create([
+    //         'store_id' => $request->store_id,
+    //         'category_id' => $request->category_id,
+    //         'sub_category_id' => $request->sub_category_id,
+    //         'child_category_id' => $request->child_category_id,
+    //         'name' => $request->name,
+    //         'description' => $request->description,
+    //         'price' => $request->price,
+    //         'discount_price' => $request->discount_price,
+    //         'available_quantity' => $request->available_quantity,
+    //         'delivery_available' => $request->delivery_available ?? 1,
+    //         'delivery_price' => $request->delivery_price,
+    //         'delivery_time' => $request->delivery_time,
+    //         'characteristics' => $request->characteristics ? json_encode($request->characteristics) : null,
+    //         'tags' => $request->tags ? json_encode($request->tags) : null,
+    //         'attributes_json' => $request->attributes_json ? $request->attributes_json : null, // <-- SAVE ATTRIBUTES
+    //         'status_id' => 1, // Active
+    //     ]);
+
+    //     /* ===============================
+    //        UPLOAD PRODUCT IMAGES
+    //     =============================== */
+    //     if ($request->hasFile('images')) {
+    //         foreach ($request->file('images') as $index => $file) {
+    //             $filename = time() . '_' . $file->getClientOriginalName();
+    //             $file->move(public_path('assets/product_images'), $filename);
+
+    //             ProductImage::create([
+    //                 'product_id' => $product->id,
+    //                 'image' => $filename,
+    //                 'is_primary' => $index === 0 ? 1 : 0,
+    //             ]);
+    //         }
+    //     }
+
+    //     // Reload relationship so $product->images is a Collection
+    //     $product->load('images');
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Product added successfully.',
+    //         'data' => $this->formatProduct($product),
+    //     ], 200);
+    // }
+
+
+    // with new payment method 
+
     public function create(Request $request)
     {
         /* ===============================
@@ -55,6 +195,10 @@ class ProductController extends Controller
             'images' => 'required|array|min:1',
             'images.*' => 'file|mimes:jpeg,jpg,png,gif',
             'attributes_json' => 'nullable|array',
+           // ✅ NEW PAYMENT VALIDATION
+            'payment_mode' => 'required|in:cod,bank',
+            'bank_ids' => 'required_if:payment_mode,bank|array',
+            'bank_ids.*' => 'exists:banks,id',
         ], [
             'store_id.required' => 'Please select a store.',
             'store_id.exists' => 'The selected store does not exist.',
@@ -75,6 +219,15 @@ class ProductController extends Controller
             'images.required' => 'At least one image is required.',
             'images.array' => 'Images must be sent as an array.',
             'images.*.mimes' => 'Each image must be jpeg, jpg, png, or gif.',
+
+             // ✅ PAYMENT MODE
+            'payment_mode.required' => 'Please select a payment mode.',
+            'payment_mode.in' => 'Payment mode must be either COD or Bank.',
+
+            // ✅ BANK VALIDATION
+            'bank_ids.required_if' => 'Please select at least one bank when payment mode is Bank.',
+            'bank_ids.array' => 'Banks must be sent as an array.',
+            'bank_ids.*.exists' => 'One or more selected banks are invalid.',
         ]);
 
         if ($validator->fails()) {
@@ -128,8 +281,16 @@ class ProductController extends Controller
             'characteristics' => $request->characteristics ? json_encode($request->characteristics) : null,
             'tags' => $request->tags ? json_encode($request->tags) : null,
             'attributes_json' => $request->attributes_json ? $request->attributes_json : null, // <-- SAVE ATTRIBUTES
+               'payment_mode' => $request->payment_mode,
             'status_id' => 1, // Active
         ]);
+
+        /* ===============================
+        SAVE BANKS (ONLY IF BANK MODE)
+        =============================== */
+        if ($request->payment_mode === 'bank' && $request->bank_ids) {
+            $product->banks()->sync($request->bank_ids);
+        }
 
         /* ===============================
            UPLOAD PRODUCT IMAGES
@@ -253,6 +414,15 @@ class ProductController extends Controller
             // 'status_name' => $this->getStatusName($product->status_id),
             'attributes_json' => $product->attributes_json,
             'status_name' => $product->status_id,
+           'payment_mode' => $product->payment_mode,
+             // ✅ BANK DATA ADDED HERE
+            'banks' => $product->banks->map(function ($bank) {
+                return [
+                    'id' => $bank->id,
+                    'name' => $bank->name,
+                     'logo' => $bank->logo,
+                ];
+            }),
             'images' => $product->images->map(function ($img) {
                 return [
                     'id' => $img->id,
@@ -330,6 +500,36 @@ class ProductController extends Controller
               'message' => 'Products fetched successfully.',
             'data' => $products,
         ], 200);
+    }
+
+    public function getBankList(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized user.'
+            ], 401);
+        }
+
+        $banks = Bank::select('id','name','logo')->get();
+
+        $data = $banks->map(function ($bank) {
+            return [
+                'id' => $bank->id,
+                'name' => $bank->name,
+                'logo' => $bank->logo
+                    ? $bank->logo
+                    : null,
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Bank list fetched successfully.',
+            'data' => $data
+        ]);
     }
 
 
