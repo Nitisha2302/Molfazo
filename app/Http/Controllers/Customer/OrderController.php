@@ -18,7 +18,7 @@ use App\Services\FCMService;
 class OrderController extends Controller
 {
    
-     public function placeOrder(Request $request)
+    public function placeOrder(Request $request)
     {
         $user = Auth::guard('api')->user();
 

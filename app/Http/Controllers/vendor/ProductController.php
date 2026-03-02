@@ -11,6 +11,7 @@ use App\Models\ProductImage;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Bank;
+use App\Models\ProductBank;
 use Auth;
 use Validator;
 use Carbon\Carbon;
@@ -197,8 +198,13 @@ class ProductController extends Controller
             'attributes_json' => 'nullable|array',
            // ✅ NEW PAYMENT VALIDATION
             'payment_mode' => 'required|in:cod,bank',
-            'bank_ids' => 'required_if:payment_mode,bank|array',
-            'bank_ids.*' => 'exists:banks,id',
+            'banks' => 'required_if:payment_mode,bank|array',
+            'banks.*.bank_id' => 'required|exists:banks,id',
+            'banks.*.account_holder_name' => 'required|string',
+            'banks.*.account_number' => 'required|string',
+            'banks.*.ifsc_code' => 'required|string',
+            'banks.*.phone_number' => 'required|string',
+            
         ], [
             'store_id.required' => 'Please select a store.',
             'store_id.exists' => 'The selected store does not exist.',
@@ -225,9 +231,7 @@ class ProductController extends Controller
             'payment_mode.in' => 'Payment mode must be either COD or Bank.',
 
             // ✅ BANK VALIDATION
-            'bank_ids.required_if' => 'Please select at least one bank when payment mode is Bank.',
-            'bank_ids.array' => 'Banks must be sent as an array.',
-            'bank_ids.*.exists' => 'One or more selected banks are invalid.',
+           'banks.required_if' => 'Please add bank details when payment mode is Bank.',
         ]);
 
         if ($validator->fails()) {
@@ -288,9 +292,21 @@ class ProductController extends Controller
         /* ===============================
         SAVE BANKS (ONLY IF BANK MODE)
         =============================== */
-        if ($request->payment_mode === 'bank' && $request->bank_ids) {
-            $product->banks()->sync($request->bank_ids);
+        if ($request->payment_mode === 'bank' && $request->banks) {
+
+            foreach ($request->banks as $bank) {
+
+                ProductBank::create([
+                    'product_id' => $product->id,
+                    'bank_id' => $bank['bank_id'],
+                    'account_holder_name' => $bank['account_holder_name'],
+                    'account_number' => $bank['account_number'],
+                    'ifsc_code' => $bank['ifsc_code'],
+                    'phone_number' => $bank['phone_number'],
+                ]);
+            }
         }
+
 
         /* ===============================
            UPLOAD PRODUCT IMAGES
@@ -416,13 +432,22 @@ class ProductController extends Controller
             'status_name' => $product->status_id,
            'payment_mode' => $product->payment_mode,
              // ✅ BANK DATA ADDED HERE
+            /* ===============================
+           ✅ BANKS WITH ACCOUNT DETAILS
+            =============================== */
             'banks' => $product->banks->map(function ($bank) {
                 return [
                     'id' => $bank->id,
                     'name' => $bank->name,
-                     'logo' => $bank->logo,
+                    'logo' => $bank->logo,
+
+                    // pivot data
+                    'account_holder_name' => $bank->pivot->account_holder_name,
+                    'account_number' => $bank->pivot->account_number,
+                    'ifsc_code' => $bank->pivot->ifsc_code,
+                    'phone_number' => $bank->pivot->phone_number,
                 ];
-            }),
+            })->values(),
             'images' => $product->images->map(function ($img) {
                 return [
                     'id' => $img->id,

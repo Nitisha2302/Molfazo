@@ -82,7 +82,8 @@ class CartController extends Controller
         $cartItems = Cart::where('user_id', $user->id)
             ->with([
                 'product:id,name,price,discount_price,store_id',
-                'product.primaryImage'
+                'product.primaryImage',
+                 'product.banks' 
             ])
             ->get();
 
@@ -95,6 +96,18 @@ class CartController extends Controller
             // 🔥 primary image as value
             $item->product->primaryimage = optional($item->product->primaryImage)->image;
             unset($item->product->primaryImage);
+            // ✅ BANK DETAILS (Same as details API)
+        $item->product->banks =
+            $item->product->payment_mode == 'bank'
+            ? $item->product->banks->map(function ($bank) {
+                return [
+                    'id' => $bank->id,
+                    'name' => $bank->name,
+                    'logo' => $bank->logo ? $bank->logo : null,
+                ];
+            })
+            : [];
+
             return $item;
         });
 

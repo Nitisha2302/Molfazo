@@ -69,9 +69,24 @@ class Product extends Model
         return $this->reviews()->avg('rating');
     }
 
+
+    // Product → Product Banks
+    public function productBanks()
+    {
+        return $this->hasMany(ProductBank::class);
+    }
+
+    // Product → Banks (Many-to-Many with extra fields)
     public function banks()
     {
-        return $this->belongsToMany(Bank::class, 'product_bank');
+        return $this->belongsToMany(Bank::class, 'product_bank')
+            ->withPivot([
+                'account_holder_name',
+                'account_number',
+                'ifsc_code',
+                'phone_number'
+            ])
+            ->withTimestamps();
     }
     
 }
