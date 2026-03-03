@@ -82,6 +82,8 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
     Route::get('vendor/store/details/{id}', [StoreController::class, 'details']);
 
     Route::get('banners', [CategoryController::class, 'getBanners']);
+    Route::get('vendor/banks', [ProductController::class, 'getBankList']);
+
 
     // PRODUCTS
      Route::post('vendor/product/create', [ProductController::class, 'create']);
@@ -139,6 +141,7 @@ Route::post('customer/cart/update', [CartController::class, 'update']);
 Route::delete('customer/cart/remove/{id}', [CartController::class, 'remove']);
 
 // ORDER
+Route::get('customer/available-banks', [CustomerOrderController::class, 'availableBanks']);
  Route::post('customer/order/place', [CustomerOrderController::class, 'placeOrder']);
  Route::get('customer/orders', [CustomerOrderController::class, 'myOrders']);
  Route::get('customer/order/{id}', [CustomerOrderController::class, 'orderDetails']);
