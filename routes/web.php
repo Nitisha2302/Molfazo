@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\CategoryAttributeController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\BankController;
+
 Route::fallback(function () {
     return response()->view('404', [], 404);
 });
@@ -91,6 +93,25 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
         ->name('attributes.update');
 
 
+            Route::get('banks', [BankController::class, 'index'])
+            ->name('banks.index');
+
+        Route::get('banks/create', [BankController::class, 'create'])
+            ->name('banks.create');
+
+        Route::post('banks/store', [BankController::class, 'store'])
+            ->name('banks.store');
+
+        Route::get('banks/{bank}/edit', [BankController::class, 'edit'])
+            ->name('banks.edit');
+
+        Route::put('banks/{bank}/update', [BankController::class, 'update'])
+            ->name('banks.update');
+
+        Route::delete('banks/{bank}/delete', [BankController::class, 'destroy'])
+            ->name('banks.delete');
+
+
 
 
 
@@ -119,8 +140,7 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     Route::delete('/banners/{banner}/delete', [BannerController::class, 'destroy'])->name('banners.destroy');
 ;
 
-   Route::get('/orders', [OrderController::class, 'index'])
-    ->name('orders');
+   Route::get('/orders', [OrderController::class, 'index']) ->name('orders');
 
 
     });  

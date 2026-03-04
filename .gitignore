@@ -15,6 +15,7 @@
 /public/assets/subcategory_images
 /public/assets/childcategory_images
 /public/assets/review_images
+/public/assets/bank_images
 /storage/*.key
 /vendor
 .env

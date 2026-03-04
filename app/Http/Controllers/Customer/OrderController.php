@@ -111,6 +111,29 @@ class OrderController extends Controller
                 $total += $item->product->price * $item->quantity;
             }
 
+             // 🔐 Secure Bank Account Fetch
+            $accountNumber = null;
+
+            if ($request->payment_type === 'online') {
+
+                $productId = $cartItems->first()->product_id;
+
+                $productBank = DB::table('product_bank')
+                    ->where('product_id', $productId)
+                    ->where('bank_id', $request->bank_id)
+                    ->first();
+
+                if (!$productBank) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Selected bank is not available for this product.'
+                    ], 400);
+                }
+
+                $accountNumber = $productBank->account_number;
+            }
+
+
             // Create order
             $order = Order::create([
                 'user_id'          => $user->id,
@@ -123,6 +146,7 @@ class OrderController extends Controller
                 'bank_id' => $request->payment_type == 'online'
                 ? $request->bank_id
                 : null,
+                'account_number'   => $accountNumber,
             ]);
 
             // Create order items & decrement stock

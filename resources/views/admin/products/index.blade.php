@@ -241,6 +241,23 @@
                     </tr>
                     <tr><th>Description</th><td>{{ $product->description }}</td></tr>
 
+                    {{-- BANK DETAILS --}}
+                    @if($product->payment_mode == 'bank' && $product->banks->count())
+                        <tr>
+                            <th>Bank Details</th>
+                            <td>
+                                @foreach($product->banks as $bank)
+                                    <div class="mb-2">
+                                        <strong>{{ $bank->name }}</strong><br>
+                                        <span class="text-muted">
+                                            {{ $bank->pivot->account_number ?? '-' }}
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </td>
+                        </tr>
+                        @endif
+
                     {{-- ATTRIBUTES --}}
                     @if(!empty($product->attributes_json))
                     <tr>
