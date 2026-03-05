@@ -133,8 +133,10 @@ class ProductController extends Controller
         }
 
         // Search by product name
+        // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
+
             $query->where(function ($q) use ($search) {
 
                 // Search in product name
@@ -145,6 +147,14 @@ class ProductController extends Controller
                     $storeQuery->where('city', 'like', '%' . $search . '%');
                 });
 
+            });
+        }
+
+
+        // City filter
+        if ($request->filled('city')) {
+            $query->whereHas('store', function ($q) use ($request) {
+                $q->where('city', 'like', '%' . $request->city . '%');
             });
         }
         // if ($request->has('search')) {
