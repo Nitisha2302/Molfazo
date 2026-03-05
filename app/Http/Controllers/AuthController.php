@@ -366,8 +366,8 @@ class AuthController extends Controller
             'mobile.required'          => 'Mobile number is required.',
             'mobile.unique'            => 'This mobile number is already registered.',
             'password.confirmed'       => 'Password and confirm password do not match.',
-            'gov_id_document.required' => 'At least one Government ID document is required.',
-            'gov_id_document.*.mimes'  => 'Government ID must be a file of type: jpg, png, pdf.',
+            // 'gov_id_document.required' => 'At least one Government ID document is required.',
+            // 'gov_id_document.*.mimes'  => 'Government ID must be a file of type: jpg, png, pdf.',
             'terms_accepted.in'        => 'You must accept terms & conditions.',
         ];
 
