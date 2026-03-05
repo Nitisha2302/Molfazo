@@ -133,28 +133,9 @@ class ProductController extends Controller
         }
 
         // Search by product name
-        if ($request->filled('search') || $request->filled('city')) {
-            $query->where(function ($q) use ($request) {
-                if ($request->filled('search')) {
-                    $q->where('name', 'like', '%' . $request->search . '%');
-                }
-                if ($request->filled('city')) {
-                    $q->whereHas('store', function ($storeQuery) use ($request) {
-                        $storeQuery->where('city', 'like', '%' . $request->city . '%');
-                    });
-                }
-                if ($request->filled('country')) {
-                    $q->whereHas('store', function ($storeQuery) use ($request) {
-                        $storeQuery->where('country', 'like', '%' . $request->country . '%');
-                    });
-                }
-
-            });
-
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
         }
-        // if ($request->has('search')) {
-        //     $query->where('name', 'like', '%' . $request->search . '%');
-        // }
 
         // Type Based (Trending / Latest)
         if ($request->has('type') && $request->type != '') {
@@ -353,6 +334,19 @@ class ProductController extends Controller
             });
         }
 
+         // 🔥 City Filter
+        if ($request->filled('city')) {
+            $query->whereHas('store', function ($q) use ($request) {
+                $q->where('city', 'like', '%' . $request->city . '%');
+            });
+        }
+
+        // 🔥 Country Filter
+        if ($request->filled('country')) {
+            $query->whereHas('store', function ($q) use ($request) {
+                $q->where('country', 'like', '%' . $request->country . '%');
+            });
+        }
         // 🔥 Filters (Optional)
         if ($request->has('category_id') && $request->category_id != '') {
             $query->where('category_id', $request->category_id);
