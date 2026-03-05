@@ -10,7 +10,7 @@ class OrderController extends Controller
 {
      public function index(Request $request)
     {
-        $orders = Order::with(['user', 'store', 'items.product'])
+        $orders = Order::with(['user', 'store', 'items.product', 'bank'])
             ->when($request->store_name, function ($q) use ($request) {
                 $q->whereHas('store', function ($storeQuery) use ($request) {
                     $storeQuery->where('name', 'LIKE', '%' . $request->store_name . '%');

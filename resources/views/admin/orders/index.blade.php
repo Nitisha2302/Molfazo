@@ -161,6 +161,18 @@
                         <td>{{ strtoupper($order->payment_type ?? '-') }}</td>
                     </tr>
 
+                    @if($order->payment_type == 'online' && $order->bank_id)
+                        <tr>
+                            <th>Bank</th>
+                            <td>
+                                {{ $order->bank?->name ?? '-' }} 
+                                @if($order->account_number)
+                                    - {{ $order->account_number }}
+                                @endif
+                            </td>
+                        </tr>
+                    @endif
+
                     <tr>
                         <th>Total Amount</th>
                         <td><strong>₹{{ $order->total_amount }}</strong></td>

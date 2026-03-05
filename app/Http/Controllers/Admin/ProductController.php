@@ -18,6 +18,7 @@ class ProductController extends Controller
             'subCategory',
             'images',
             'primaryImage',
+            'banks'
         ]);
 
         if ($request->filled('search')) {
