@@ -133,28 +133,18 @@ class ProductController extends Controller
         }
 
         // Search by product name
-        // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
 
             $query->where(function ($q) use ($search) {
-
-                // Search in product name
-                $q->where('name', 'like', '%' . $search . '%')
-
-                // Search in store city
-                ->orWhereHas('store', function ($storeQuery) use ($search) {
-                    $storeQuery->where('city', 'like', '%' . $search . '%');
-                });
-
+                $q->where('name', 'like', "%$search%");
             });
         }
-
 
         // City filter
         if ($request->filled('city')) {
             $query->whereHas('store', function ($q) use ($request) {
-                $q->where('city', 'like', '%' . $request->city . '%');
+                $q->where('city', 'like', "%{$request->city}%");
             });
         }
         // if ($request->has('search')) {
