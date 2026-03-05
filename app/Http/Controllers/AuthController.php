@@ -341,12 +341,8 @@ class AuthController extends Controller
         $rules = [
             'name'            => 'required|string|max:255',
             'email'           => 'required|email|unique:users,email',
-            // 'mobile'          => 'required|digits_between:8,15|unique:users,mobile',
             'password'        => 'required|min:6|confirmed',
-            'gov_id_type'     => 'nullable|string',
-            'gov_id_number'   => 'nullable|string',
-            'gov_id_document' => 'nullable|array', // multiple files
-            'gov_id_document.*' => 'file|mimes:jpg,png,pdf',
+
             'city'            => 'required|string',
             'country'         => 'required|string',
             'terms_accepted'  => 'required|in:1',
@@ -354,10 +350,36 @@ class AuthController extends Controller
             'profile_photo'   => 'nullable|image|mimes:jpg,png',
             'alt_mobile'      => 'nullable|digits_between:8,15',
 
+            // Government ID fields (OPTIONAL)
+            'gov_id_type'     => 'nullable|string',
+            'gov_id_number'   => 'nullable|string',
+            'gov_id_document' => 'nullable|array',
+            'gov_id_document.*' => 'file|mimes:jpg,png,pdf',
+
             'device_id'       => 'nullable|string',
             'device_type'     => 'nullable|string',
             'fcm_token'       => 'nullable|string',
         ];
+        // $rules = [
+        //     'name'            => 'required|string|max:255',
+        //     'email'           => 'required|email|unique:users,email',
+        //     // 'mobile'          => 'required|digits_between:8,15|unique:users,mobile',
+        //     'password'        => 'required|min:6|confirmed',
+        //     'gov_id_type'     => 'nullable|string',
+        //     'gov_id_number'   => 'nullable|string',
+        //     'gov_id_document' => 'nullable|array', // multiple files
+        //     'gov_id_document.*' => 'file|mimes:jpg,png,pdf',
+        //     'city'            => 'required|string',
+        //     'country'         => 'required|string',
+        //     'terms_accepted'  => 'required|in:1',
+
+        //     'profile_photo'   => 'nullable|image|mimes:jpg,png',
+        //     'alt_mobile'      => 'nullable|digits_between:8,15',
+
+        //     'device_id'       => 'nullable|string',
+        //     'device_type'     => 'nullable|string',
+        //     'fcm_token'       => 'nullable|string',
+        // ];
 
         $messages = [
             'name.required'            => 'Full name is required.',
