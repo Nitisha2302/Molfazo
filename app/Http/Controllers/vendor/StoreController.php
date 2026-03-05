@@ -40,7 +40,7 @@ class StoreController extends Controller
             'address' => 'required|string',
             // UPDATED HERE
             'type' => 'required|array',
-            'type.*' => 'in:1,2,3',
+            'type.*' => 'in:1,2,3,4',
             // 'type' => 'required|in:1,2,3',
             'delivery_by_seller' => 'nullable|boolean',
             'self_pickup' => 'nullable|boolean',
@@ -62,7 +62,7 @@ class StoreController extends Controller
             // UPDATED MESSAGE
             'type.required' => 'Store Type is required.',
             'type.array' => 'Store Type must be an array.',
-            'type.*.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale.',
+            'type.*.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale,4=Offline.',
             // 'type.required' => 'Store Type is required.',
             // 'type.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale.',
             'logo.image' => 'Logo must be an image file.',
