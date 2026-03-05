@@ -133,9 +133,23 @@ class ProductController extends Controller
         }
 
         // Search by product name
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+
+                // Search in product name
+                $q->where('name', 'like', '%' . $search . '%')
+
+                // Search in store city
+                ->orWhereHas('store', function ($storeQuery) use ($search) {
+                    $storeQuery->where('city', 'like', '%' . $search . '%');
+                });
+
+            });
         }
+        // if ($request->has('search')) {
+        //     $query->where('name', 'like', '%' . $request->search . '%');
+        // }
 
         // Type Based (Trending / Latest)
         if ($request->has('type') && $request->type != '') {
