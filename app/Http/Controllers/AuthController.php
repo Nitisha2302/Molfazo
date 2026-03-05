@@ -343,9 +343,9 @@ class AuthController extends Controller
             'email'           => 'required|email|unique:users,email',
             // 'mobile'          => 'required|digits_between:8,15|unique:users,mobile',
             'password'        => 'required|min:6|confirmed',
-            'gov_id_type'     => 'required|string',
-            'gov_id_number'   => 'required|string',
-            'gov_id_document' => 'required|array', // multiple files
+            'gov_id_type'     => 'nullable|string',
+            'gov_id_number'   => 'nullable|string',
+            'gov_id_document' => 'nullable|array', // multiple files
             'gov_id_document.*' => 'file|mimes:jpg,png,pdf',
             'city'            => 'required|string',
             'country'         => 'required|string',
