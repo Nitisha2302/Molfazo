@@ -38,13 +38,16 @@ class StoreController extends Controller
             'country' => 'required|string',
             'city' => 'required|string',
             'address' => 'required|string',
-            'type' => 'required|in:1,2,3',
+            // UPDATED HERE
+            'type' => 'required|array',
+            'type.*' => 'in:1,2,3',
+            // 'type' => 'required|in:1,2,3',
             'delivery_by_seller' => 'nullable|boolean',
             'self_pickup' => 'nullable|boolean',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'description' => 'nullable|string',
             'working_hours' => 'nullable|string',
-            'government_id'     => 'required|array',
+            'government_id'     => 'nullable|array',
             'government_id.*'   => 'file|mimes:jpg,jpeg,png,pdf|max:4096',
             'store_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
 
@@ -56,13 +59,17 @@ class StoreController extends Controller
             'country.required' => 'Country is required.',
             'city.required' => 'City is required.',
             'address.required' => 'Complete Address is required.',
+            // UPDATED MESSAGE
             'type.required' => 'Store Type is required.',
-            'type.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale.',
+            'type.array' => 'Store Type must be an array.',
+            'type.*.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale.',
+            // 'type.required' => 'Store Type is required.',
+            // 'type.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale.',
             'logo.image' => 'Logo must be an image file.',
             'logo.mimes' => 'Logo must be jpeg, png, jpg, gif, or webp.',
             'logo.max' => 'Logo size cannot exceed 2MB.',
-            'government_id.required' => 'At least one store document is required.',
-            'government_id.*.mimes'  => 'Store documents must be jpg, png, or pdf.',
+            // 'government_id.required' => 'At least one store document is required.',
+            // 'government_id.*.mimes'  => 'Store documents must be jpg, png, or pdf.',
 
             'store_background_image.image' => 'Store background must be an image file.',
             'store_background_image.mimes' => 'Store background must be jpeg, png, jpg, gif, or webp.',
@@ -108,7 +115,8 @@ class StoreController extends Controller
         }
 
         $govIdJson = json_encode($uploadedGovIds);
-
+        // Convert type array to JSON
+        $typeJson = json_encode($request->type);
 
         $store = Store::create([
             'user_id' => $user->id,
@@ -118,13 +126,15 @@ class StoreController extends Controller
             'country' => $request->country,
             'city' => $request->city,
             'address' => $request->address,
-            'type' => $request->type,
+            // UPDATED HERE
+            'type' => $typeJson,
+            // 'type' => $request->type,
             'delivery_by_seller' => $request->delivery_by_seller ?? false,
             'self_pickup' => $request->self_pickup ?? false,
             'logo' => $logoPath,
             'description' => $request->description ?? null,
             'working_hours' => $request->working_hours ?? null,
-              'government_id' => $govIdJson,
+            'government_id' => $govIdJson,
             'status_id' => 2, // Pending admin approval
             'store_background_image' => $backgroundImagePath,
 
