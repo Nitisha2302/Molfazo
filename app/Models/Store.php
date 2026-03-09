@@ -24,4 +24,9 @@ class Store extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function vendorBanks()
+    {
+        return $this->hasMany(\App\Models\VendorBank::class, 'user_id', 'user_id');
+    }
 }

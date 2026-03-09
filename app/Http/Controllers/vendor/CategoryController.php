@@ -1,7 +1,7 @@
 <?php
 
 // app/Http/Controllers/Vendor/CategoryController.php
-namespace App\Http\Controllers\Vendor;
+namespace App\Http\Controllers\vendor;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;

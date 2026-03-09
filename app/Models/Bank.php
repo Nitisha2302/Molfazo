@@ -23,19 +23,6 @@ class Bank extends Model
     //                 ->withTimestamps();
     // }
 
-    public function productBanks()
-{
-    return $this->hasMany(ProductBank::class);
-}
+    
 
-    public function products()
-    {
-        return $this->belongsToMany(Product::class, 'product_bank')
-            ->withPivot([
-                'account_holder_name',
-                'account_number',
-                'ifsc_code',
-                'phone_number'
-            ]);
-    }
 }

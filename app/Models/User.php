@@ -44,6 +44,7 @@ class User extends Authenticatable
         'device_token',
         'api_token',
         'fcm_token',
+        'payment_mode',
     ];
 
     // Role helpers
@@ -82,6 +83,11 @@ class User extends Authenticatable
     public function reviews()
     {
         return $this->hasMany(ProductReview::class);
+    }
+
+  public function vendorBank()
+    {
+        return $this->hasOne(VendorBank::class, 'user_id');
     }
     
 }

@@ -116,22 +116,24 @@ class OrderController extends Controller
 
             if ($request->payment_type === 'online') {
 
-                $productId = $cartItems->first()->product_id;
+                // get vendor id from store
+                $store = Store::find($storeId);
 
-                $productBank = DB::table('product_bank')
-                    ->where('product_id', $productId)
+                $vendorBank = DB::table('vendor_banks')
+                    ->where('user_id', $store->user_id)
                     ->where('bank_id', $request->bank_id)
                     ->first();
 
-                if (!$productBank) {
+                if (!$vendorBank) {
                     return response()->json([
                         'status' => false,
-                        'message' => 'Selected bank is not available for this product.'
+                        'message' => 'Selected bank is not available for this vendor.'
                     ], 400);
                 }
 
-                $accountNumber = $productBank->account_number;
+                $accountNumber = $vendorBank->account_number;
             }
+            
 
 
             // Create order

@@ -21,6 +21,7 @@ use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\StoreController as CustomerStoreController;
 use App\Http\Controllers\Customer\CategoryController as CustomerCategoryController;
+use App\Http\Controllers\vendor\VendorBankController;
 
 use App\Http\Controllers\Customer\ChatController as CustomerChatController;
 
@@ -83,6 +84,9 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
 
     Route::get('banners', [CategoryController::class, 'getBanners']);
     Route::get('vendor/banks', [ProductController::class, 'getBankList']);
+    
+    Route::post('vendor/payment/save', [VendorBankController::class, 'saveVendorPayment']);
+    Route::get('vendor/payment/details', [VendorBankController::class, 'getVendorPayment']);
 
 
     // PRODUCTS
