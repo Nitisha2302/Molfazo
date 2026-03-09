@@ -12,7 +12,7 @@ class Product extends Model
     protected $fillable = [
         'store_id','category_id','sub_category_id','child_category_id','name','description',
         'price','discount_price','available_quantity','delivery_available',
-        'delivery_price','delivery_time','characteristics','tags','status_id','attributes_json','payment_mode'
+        'delivery_price','delivery_time','characteristics','tags','status_id','attributes_json',
     ];
 
     protected $casts = [
@@ -69,24 +69,17 @@ class Product extends Model
         return $this->reviews()->avg('rating');
     }
 
-
-    // Product → Product Banks
-    public function productBanks()
+    public function vendorBanks()
     {
-        return $this->hasMany(ProductBank::class);
+        return $this->hasManyThrough(
+            \App\Models\VendorBank::class,
+            \App\Models\Store::class,
+            'id',        // Store PK
+            'user_id',   // VendorBank FK
+            'store_id',  // Product FK
+            'user_id'    // Store FK
+        );
     }
 
-    // Product → Banks (Many-to-Many with extra fields)
-    public function banks()
-    {
-        return $this->belongsToMany(Bank::class, 'product_bank')
-            ->withPivot([
-                'account_holder_name',
-                'account_number',
-                'ifsc_code',
-                'phone_number'
-            ])
-            ->withTimestamps();
-    }
     
 }

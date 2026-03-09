@@ -83,7 +83,7 @@ class CartController extends Controller
             ->with([
                 'product:id,name,price,discount_price,store_id',
                 'product.primaryImage',
-                 'product.banks' 
+                 'product.store.vendorBanks.bank'
             ])
             ->get();
 
@@ -97,16 +97,16 @@ class CartController extends Controller
             $item->product->primaryimage = optional($item->product->primaryImage)->image;
             unset($item->product->primaryImage);
             // ✅ BANK DETAILS (Same as details API)
-        $item->product->banks =
-            $item->product->payment_mode == 'bank'
-            ? $item->product->banks->map(function ($bank) {
-                return [
-                    'id' => $bank->id,
-                    'name' => $bank->name,
-                    'logo' => $bank->logo ? $bank->logo : null,
-                ];
-            })
-            : [];
+       $item->product->banks =
+        $item->product->payment_mode == 'bank'
+        ? $item->product->store->vendorBanks->map(function ($vendorBank) {
+            return [
+                'bank_id' => $vendorBank->bank->id ?? null,
+                'name' => $vendorBank->bank->name ?? null,
+                'logo' => $vendorBank->bank->logo ?? null,
+            ];
+        })
+        : [];
 
             return $item;
         });

@@ -116,22 +116,24 @@ class OrderController extends Controller
 
             if ($request->payment_type === 'online') {
 
-                $productId = $cartItems->first()->product_id;
+                // get vendor id from store
+                $store = Store::find($storeId);
 
-                $productBank = DB::table('product_bank')
-                    ->where('product_id', $productId)
+                $vendorBank = DB::table('vendor_banks')
+                    ->where('user_id', $store->user_id)
                     ->where('bank_id', $request->bank_id)
                     ->first();
 
-                if (!$productBank) {
+                if (!$vendorBank) {
                     return response()->json([
                         'status' => false,
-                        'message' => 'Selected bank is not available for this product.'
+                        'message' => 'Selected bank is not available for this vendor.'
                     ], 400);
                 }
 
-                $accountNumber = $productBank->account_number;
+                $accountNumber = $vendorBank->account_number;
             }
+            
 
 
             // Create order
@@ -166,45 +168,45 @@ class OrderController extends Controller
             Cart::where('user_id', $user->id)->delete();
 
              // ✅ SEND NOTIFICATION TO STORE OWNER / VENDOR
-            $store = Store::find($storeId);
+            // $store = Store::find($storeId);
 
-            if ($store) {
+            // if ($store) {
 
-                $vendor = User::find($store->user_id);
+            //     $vendor = User::find($store->user_id);
 
-                if ($vendor && $vendor->fcm_token) {
+            //     if ($vendor && $vendor->fcm_token) {
 
-                    // product name message
-                    $firstProduct = $cartItems->first()->product->name ?? 'Product';
-                    $productCount = $cartItems->count();
+            //         // product name message
+            //         $firstProduct = $cartItems->first()->product->name ?? 'Product';
+            //         $productCount = $cartItems->count();
 
-                    $productText = $productCount > 1
-                        ? $firstProduct . " + " . ($productCount - 1) . " more"
-                        : $firstProduct;
+            //         $productText = $productCount > 1
+            //             ? $firstProduct . " + " . ($productCount - 1) . " more"
+            //             : $firstProduct;
 
-                    $title = "🛒 New Order";
-                    $body  = $user->name . " placed a new order for " . $productText;
+            //         $title = "🛒 New Order";
+            //         $body  = $user->name . " placed a new order for " . $productText;
 
-                    $tokens = [
-                        [
-                            'fcm_token' => $vendor->fcm_token,
-                            'device_type'  => $vendor->device_type ?? 'android',
-                            'user_id'      => $vendor->id,
-                        ]
-                    ];
+            //         $tokens = [
+            //             [
+            //                 'fcm_token' => $vendor->fcm_token,
+            //                 'device_type'  => $vendor->device_type ?? 'android',
+            //                 'user_id'      => $vendor->id,
+            //             ]
+            //         ];
 
-                    $notificationData = [
-                        'notification_type' => 3,
-                        'title' => $title,
-                        'body'  => $body,
-                          'order_id' => $order->id, 
-                    ];
+            //         $notificationData = [
+            //             'notification_type' => 3,
+            //             'title' => $title,
+            //             'body'  => $body,
+            //               'order_id' => $order->id, 
+            //         ];
 
-                    $fcmService = new FCMService();
-                   $fcmService->sendNotification($tokens, $notificationData, true);
+            //         $fcmService = new FCMService();
+            //        $fcmService->sendNotification($tokens, $notificationData, true);
 
-                }
-            }
+            //     }
+            // }
 
             DB::commit();
 
