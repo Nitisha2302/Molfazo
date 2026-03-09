@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
 use App\Models\Bank;
 use App\Models\VendorBank;
 
@@ -17,7 +16,6 @@ class VendorBankController extends Controller
     | Save Vendor Payment
     |--------------------------------------------------------------------------
     */
-
     public function saveVendorPayment(Request $request)
     {
         $vendor = Auth::guard('api')->user();
@@ -29,77 +27,62 @@ class VendorBankController extends Controller
             ], 403);
         }
 
-        $messages = [
-            'payment_modes.required' => 'Payment mode is required.',
-            'payment_modes.array' => 'Payment mode must be an array.',
-              'payment_modes.*.in' => 'Payment mode must be COD or Bank.',
-            'bank_id.required_if' => 'Bank is required when payment mode is Bank.',
-            'bank_id.exists' => 'Selected bank does not exist.',
-            'account_number.required_if' => 'Account number is required when payment mode is Bank.'
-        ];
-
+        // ✅ Validation
         $validator = Validator::make($request->all(), [
             'payment_modes' => 'required|array',
             'payment_modes.*' => 'in:cod,bank',
-            'bank_id' => 'required_if:payment_modes.*,bank|exists:banks,id',
-            'account_holder_name' => 'nullable|string|max:255',
-            'account_number' => 'required_if:payment_modes.*,bank|string|max:50',
-        ], $messages);
+            'banks' => 'required_if:payment_modes.*,bank|array',
+            'banks.*.bank_id' => 'required|exists:banks,id',
+            'banks.*.account_holder_name' => 'required|string|max:255',
+            'banks.*.account_number' => 'required|string|max:50',
+        ], [
+            'payment_modes.required' => 'Payment mode is required.',
+            'payment_modes.array' => 'Payment mode must be an array.',
+            'payment_modes.*.in' => 'Payment mode must be COD or Bank.',
+            'banks.required_if' => 'Bank details are required when payment mode includes Bank.',
+            'banks.*.bank_id.required' => 'Bank ID is required.',
+            'banks.*.bank_id.exists' => 'Selected bank does not exist.',
+            'banks.*.account_holder_name.required' => 'Account holder name is required.',
+            'banks.*.account_number.required' => 'Account number is required.',
+        ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
                 'message' => $validator->errors()->first(),
-                'errors' => $validator->errors()->first()
+                'errors' => $validator->errors()
             ], 422);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Update Payment Mode
-        |--------------------------------------------------------------------------
-        */
-
+        // ✅ Save payment modes
         $vendor->update([
             'payment_modes' => $request->payment_modes
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | If COD → Delete Bank
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->payment_mode === 'cod') {
-
+        // ✅ Remove all existing bank entries if 'bank' not in payment_modes
+        if (!in_array('bank', $request->payment_modes)) {
             VendorBank::where('user_id', $vendor->id)->delete();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Payment mode set to COD successfully.'
-            ]);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | If BANK → Save / Update Bank
-        |--------------------------------------------------------------------------
-        */
-
-        VendorBank::updateOrCreate(
-            [
-                'user_id' => $vendor->id,
-                'bank_id' => $request->bank_id
-            ],
-            [
-                'account_holder_name' => $request->account_holder_name,
-                'account_number' => $request->account_number,
-            ]
-        );
+        // ✅ Save/update multiple banks
+        if (in_array('bank', $request->payment_modes)) {
+            foreach ($request->banks as $bank) {
+                VendorBank::updateOrCreate(
+                    [
+                        'user_id' => $vendor->id,
+                        'bank_id' => $bank['bank_id'],
+                    ],
+                    [
+                        'account_holder_name' => $bank['account_holder_name'],
+                        'account_number' => $bank['account_number'],
+                    ]
+                );
+            }
+        }
 
         return response()->json([
             'status' => true,
-            'message' => 'Payment mode set to Bank and bank details saved successfully.'
+            'message' => 'Payment modes updated successfully.'
         ]);
     }
 
@@ -108,8 +91,7 @@ class VendorBankController extends Controller
     | Get Vendor Payment Details
     |--------------------------------------------------------------------------
     */
-
-   public function getVendorPayment()
+    public function getVendorPayment()
     {
         $vendor = Auth::guard('api')->user();
 
