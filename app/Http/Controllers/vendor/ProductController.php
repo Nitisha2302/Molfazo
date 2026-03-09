@@ -276,7 +276,7 @@ class ProductController extends Controller
             // 'status_name' => $this->getStatusName($product->status_id),
             'attributes_json' => $product->attributes_json,
             'status_name' => $product->status_id,
-           'payment_mode' => $product->payment_mode,
+           'payment_modes' => $product->payment_modes,
              // ✅ BANK DATA ADDED HERE
             /* ===============================
            ✅ BANKS WITH ACCOUNT DETAILS

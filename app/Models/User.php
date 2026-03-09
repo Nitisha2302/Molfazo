@@ -44,7 +44,11 @@ class User extends Authenticatable
         'device_token',
         'api_token',
         'fcm_token',
-        'payment_mode',
+        'payment_modes',
+    ];
+
+    protected $casts = [
+        'payment_modes' => 'array',
     ];
 
     // Role helpers

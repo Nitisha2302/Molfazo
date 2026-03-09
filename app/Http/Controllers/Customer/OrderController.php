@@ -79,6 +79,17 @@ class OrderController extends Controller
 
         $storeId = $storeIds->first();
 
+        $store = Store::with('user')->find($storeId);
+
+        $paymentModes = $store->user->payment_modes ?? [];
+
+        if ($request->payment_type == 'online' && !in_array('bank', $paymentModes)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This vendor does not support bank payment.'
+            ], 400);
+        }
+
         $address = UserAddress::where('id', $request->address_id)
             ->where('user_id', $user->id)
             ->first();
