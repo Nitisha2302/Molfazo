@@ -107,7 +107,7 @@ class ProductController extends Controller
 
     public function list(Request $request)
     {
-        $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage', 'reviews.images','store.vendorBanks.bank' ])->withAvg('reviews', 'rating')
+        $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage', 'reviews.images','store.user','store.vendorBanks.bank' ])->withAvg('reviews', 'rating')
         ->withCount('reviews');
 
         // Filters
@@ -196,15 +196,23 @@ class ProductController extends Controller
             // remove relation object
             unset($product->primaryImage);
              // ✅ Banks List
-            $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
-                return [
-                    'bank_id' => $vendorBank->bank->id ?? null,
-                    'name' => $vendorBank->bank->name ?? null,
-                    'logo' => $vendorBank->bank->logo ?? null,
-                    'account_holder_name' => $vendorBank->account_holder_name,
-                    'account_number' => $vendorBank->account_number,
-                ];
-            });
+            $paymentModes = $product->store->user->payment_modes ?? [];
+
+                if (in_array('bank', $paymentModes)) {
+
+                    $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
+                        return [
+                            'bank_id' => $vendorBank->bank->id ?? null,
+                            'name' => $vendorBank->bank->name ?? null,
+                            'logo' => $vendorBank->bank->logo ?? null,
+                            'account_holder_name' => $vendorBank->account_holder_name,
+                            'account_number' => $vendorBank->account_number,
+                        ];
+                    });
+
+                } else {
+                    $product->banks = [];
+                }
 
             return $product;
         });
@@ -229,7 +237,7 @@ class ProductController extends Controller
             'primaryImage',
             'reviews.user',
             'reviews.images',
-            'store.vendorBanks.bank'
+            'store.user','store.vendorBanks.bank'
         ])
         ->withAvg('reviews', 'rating')
         ->withCount('reviews')
@@ -249,18 +257,26 @@ class ProductController extends Controller
         $product->primaryimage = optional($product->primaryImage)->image;
         unset($product->primaryImage);
 
-        $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
-            return [
-                'bank_id' => $vendorBank->bank->id ?? null,
-                'name' => $vendorBank->bank->name ?? null,
-                'logo' => $vendorBank->bank->logo ?? null,
-                'account_holder_name' => $vendorBank->account_holder_name,
-                'account_number' => $vendorBank->account_number,
-            ];
-        });
+        $paymentModes = $product->store->user->payment_modes ?? [];
+
+        if (in_array('bank', $paymentModes)) {
+
+            $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
+                return [
+                    'bank_id' => $vendorBank->bank->id ?? null,
+                    'name' => $vendorBank->bank->name ?? null,
+                    'logo' => $vendorBank->bank->logo ?? null,
+                    'account_holder_name' => $vendorBank->account_holder_name,
+                    'account_number' => $vendorBank->account_number,
+                ];
+            });
+
+        } else {
+            $product->banks = [];
+        }
 
         // 🔥 Related products (NO PAGINATION)
-        $relatedProducts = Product::with(['primaryImage','store.vendorBanks.bank'])
+        $relatedProducts = Product::with(['primaryImage','store.user','store.vendorBanks.bank'])
         ->where('status_id', 1)
         ->where('id', '!=', $product->id)
         ->where('category_id', $product->category_id)
@@ -271,13 +287,21 @@ class ProductController extends Controller
             $item->primaryimage = optional($item->primaryImage)->image;
             unset($item->primaryImage);
 
-            $item->banks = $item->store->vendorBanks->map(function ($vendorBank) {
-                return [
-                    'bank_id' => $vendorBank->bank->id ?? null,
-                    'name' => $vendorBank->bank->name ?? null,
-                    'logo' => $vendorBank->bank->logo ?? null,
-                ];
-            });
+            $paymentModes = $item->store->user->payment_modes ?? [];
+
+                if (in_array('bank', $paymentModes)) {
+
+                    $item->banks = $item->store->vendorBanks->map(function ($vendorBank) {
+                        return [
+                            'bank_id' => $vendorBank->bank->id ?? null,
+                            'name' => $vendorBank->bank->name ?? null,
+                            'logo' => $vendorBank->bank->logo ?? null,
+                        ];
+                    });
+
+                } else {
+                    $item->banks = [];
+                }
 
             return $item;
         });
@@ -293,7 +317,7 @@ class ProductController extends Controller
 
     public function search(Request $request)
     {
-        $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage','store.vendorBanks.bank' ])
+        $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage','store.user','store.vendorBanks.bank' ])
             ->where('status_id', 1);
 
         //  Search Keyword
@@ -383,15 +407,23 @@ class ProductController extends Controller
             $product->primaryimage = optional($product->primaryImage)->image;
             unset($product->primaryImage);
              // ✅ Product Banks
-           $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
-                return [
-                    'bank_id' => $vendorBank->bank->id ?? null,
-                    'name' => $vendorBank->bank->name ?? null,
-                    'logo' => $vendorBank->bank->logo ?? null,
-                    'account_holder_name' => $vendorBank->account_holder_name,
-                    'account_number' => $vendorBank->account_number,
-                ];
-            });
+           $paymentModes = $product->store->user->payment_modes ?? [];
+
+                if (in_array('bank', $paymentModes)) {
+
+                    $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
+                        return [
+                            'bank_id' => $vendorBank->bank->id ?? null,
+                            'name' => $vendorBank->bank->name ?? null,
+                            'logo' => $vendorBank->bank->logo ?? null,
+                            'account_holder_name' => $vendorBank->account_holder_name,
+                            'account_number' => $vendorBank->account_number,
+                        ];
+                    });
+
+                } else {
+                    $product->banks = [];
+                }
             return $product;
         });
 

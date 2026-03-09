@@ -30,18 +30,20 @@ class VendorBankController extends Controller
         }
 
         $messages = [
-            'payment_mode.required' => 'Payment mode is required.',
-            'payment_mode.in' => 'Payment mode must be either COD or Bank.',
+            'payment_modes.required' => 'Payment mode is required.',
+            'payment_modes.array' => 'Payment mode must be an array.',
+              'payment_modes.*.in' => 'Payment mode must be COD or Bank.',
             'bank_id.required_if' => 'Bank is required when payment mode is Bank.',
             'bank_id.exists' => 'Selected bank does not exist.',
             'account_number.required_if' => 'Account number is required when payment mode is Bank.'
         ];
 
         $validator = Validator::make($request->all(), [
-            'payment_mode' => 'required|in:cod,bank',
-            'bank_id' => 'required_if:payment_mode,bank|exists:banks,id',
+            'payment_modes' => 'required|array',
+            'payment_modes.*' => 'in:cod,bank',
+            'bank_id' => 'required_if:payment_modes.*,bank|exists:banks,id',
             'account_holder_name' => 'nullable|string|max:255',
-            'account_number' => 'required_if:payment_mode,bank|string|max:50',
+            'account_number' => 'required_if:payment_modes.*,bank|string|max:50',
         ], $messages);
 
         if ($validator->fails()) {
@@ -59,7 +61,7 @@ class VendorBankController extends Controller
         */
 
         $vendor->update([
-            'payment_mode' => $request->payment_mode
+            'payment_modes' => $request->payment_modes
         ]);
 
         /*
@@ -107,7 +109,7 @@ class VendorBankController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function getVendorPayment()
+   public function getVendorPayment()
     {
         $vendor = Auth::guard('api')->user();
 
@@ -133,9 +135,8 @@ class VendorBankController extends Controller
 
         return response()->json([
             'status' => true,
-            'payment_mode' => $vendor->payment_mode,
-            'bank_details' => $vendor->payment_mode === 'bank' ? $banks : []
+            'payment_modes' => $vendor->payment_modes ?? [],
+            'bank_details' => in_array('bank', $vendor->payment_modes ?? []) ? $banks : []
         ]);
     }
-    
 }
