@@ -60,6 +60,15 @@
                 </a>
             </li>
 
+            <li class="@if (Route::currentRouteName() == 'dashboard.admin.cities.index') active @endif">
+                <a href="{{ route('dashboard.admin.cities.index') }}">
+                    <span class="d-flex gap-3 align-items-end">
+                        <i class="fas fa-store-alt icon-font-size"></i>
+                        <span class="nav-content-menu">All Cities</span>
+                    </span>
+                </a>
+            </li>
+
             <!-- Vendors -->
             <li class="@if (Route::currentRouteName() == 'dashboard.admin.vendors') active @endif">
                 <a href="{{ route('dashboard.admin.vendors') }}">

@@ -83,6 +83,7 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
     Route::get('vendor/store/details/{id}', [StoreController::class, 'details']);
 
     Route::get('banners', [CategoryController::class, 'getBanners']);
+    Route::get('cities', [CategoryController::class, 'getCities']);
     Route::get('vendor/banks', [ProductController::class, 'getBankList']);
     
     Route::post('vendor/payment/save', [VendorBankController::class, 'saveVendorPayment']);

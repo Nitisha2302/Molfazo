@@ -17,9 +17,16 @@ class BannerController extends Controller
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
-        $banners = $query->latest()->paginate(10)->withQueryString();
+        // Filter by city
+        if ($request->filled('city')) {
+            $query->where('city', $request->city);
+        }
 
-        return view('admin.banners.index', compact('banners'));
+        $banners = $query->latest()->paginate(10)->withQueryString();
+       // Get unique cities for dropdown
+      $cities = Banner::select('city')->distinct()->pluck('city');
+
+        return view('admin.banners.index', compact('banners', 'cities'));
     }
 
     // Show create form
@@ -33,6 +40,7 @@ class BannerController extends Controller
     {
         $request->validate([
             'title' => 'nullable|string|max:255',
+               'city' => 'required|string|max:100',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'status' => 'required|in:0,1',
         ], [
@@ -40,6 +48,7 @@ class BannerController extends Controller
             'image.image' => 'File must be an image!',
             'image.mimes' => 'Allowed image types: jpeg, png, jpg, gif, webp',
             'image.max' => 'Image cannot exceed 2MB',
+             'city.required' => 'City is required.', 
         ]);
 
             // Save image in public/assets/banner_images
@@ -51,6 +60,7 @@ class BannerController extends Controller
 
         Banner::create([
             'title' => $request->title,
+            'city' => $request->city,
             'image' => $fileName,
             'status' => $request->status ?? 1,
         ]);
@@ -70,12 +80,14 @@ class BannerController extends Controller
     {
         $request->validate([
             'title' => 'nullable|string|max:255',
+            'city' => 'required|string|max:100',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'status' => 'required|in:0,1',
         ], [
             'image.image' => 'File must be an image!',
             'image.mimes' => 'Allowed image types: jpeg, png, jpg, gif, webp',
             'image.max' => 'Image cannot exceed 2MB',
+             'city.required' => 'City is required.',
         ]);
 
         if ($request->hasFile('image')) {
@@ -91,6 +103,7 @@ class BannerController extends Controller
         }
 
         $banner->title = $request->title;
+        $banner->city = $request->city;
         $banner->status = $request->status ?? 1;
         $banner->save();
 

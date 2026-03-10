@@ -10,6 +10,7 @@ use App\Models\SubCategory;
 use App\Models\ChildCategory;
 use App\Models\CategoryAttribute;
 use App\Models\Banner;
+use App\Models\City;
 
 
 class CategoryController extends Controller
@@ -235,25 +236,66 @@ class CategoryController extends Controller
     }
 
 
-    public function getBanners()
+    // public function getBanners()
+    // {
+    //     // Fetch all active banners
+    //     $banners = Banner::where('status', 1)
+    //         ->latest()
+    //         ->get()
+    //         ->map(function ($banner) {
+    //             return [
+    //                 'id' => $banner->id,
+    //                 'title' => $banner->title ?? null,
+    //                 'image' => $banner->image ?  $banner->image : null,
+    //                 'status' => $banner->status == 1 ? 'Active' : 'Inactive',
+    //             ];
+    //         });
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Banners fetched successfully.',
+    //         'data' => $banners
+    //     ]);
+    // }
+
+
+    public function getBanners(Request $request)
     {
-        // Fetch all active banners
-        $banners = Banner::where('status', 1)
-            ->latest()
-            ->get()
-            ->map(function ($banner) {
-                return [
-                    'id' => $banner->id,
-                    'title' => $banner->title ?? null,
-                    'image' => $banner->image ?  $banner->image : null,
-                    'status' => $banner->status == 1 ? 'Active' : 'Inactive',
-                ];
-            });
+        $query = Banner::where('status', 1); // Only active banners
+
+        // Filter by city if provided
+        if ($request->filled('city')) {
+            $query->where('city', $request->city);
+        }
+
+        $banners = $query->latest()->get()->map(function ($banner) {
+            return [
+                'id' => $banner->id,
+                'title' => $banner->title ?? null,
+                'image' => $banner->image ? $banner->image : null,
+                'status' => $banner->status == 1 ? 'Active' : 'Inactive',
+                'city' => $banner->city ?? null, // Include city in response
+            ];
+        });
 
         return response()->json([
             'status' => true,
             'message' => 'Banners fetched successfully.',
             'data' => $banners
+        ]);
+    }
+
+
+     public function getCities()
+    {
+        $cities = City::where('status', 1)
+                    ->orderBy('name')
+                    ->get(['id','name']);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Cities fetched successfully',
+            'data' => $cities
         ]);
     }
 
