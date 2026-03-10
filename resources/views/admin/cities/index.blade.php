@@ -6,28 +6,20 @@
 
     <div class="ai-training-data-wrapper d-flex align-items-baseline justify-content-between">
         <div class="heading-content-box">
-            <h2>Banners</h2>
+            <h2>Cities</h2>
 
             {{-- Search --}}
-            <form method="GET" action="{{ route('dashboard.admin.banners.index') }}" class="d-flex gap-2 mb-3">
+            <form method="GET" action="{{ route('dashboard.admin.cities.index') }}" class="d-flex gap-2 mb-3">
                 <input type="text" name="search" class="form-control" style="width:220px"
-                       placeholder="Search by title" value="{{ request('search') }}">
-                <select name="city" class="form-control" style="width:200px">
-                    <option value="">All Cities</option>
-                    @foreach($cities as $city)
-                        <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>
-                            {{ $city }}
-                        </option>
-                    @endforeach
-                </select>
+                       placeholder="Search by city name" value="{{ request('search') }}">
                 <button class="btn btn-dark">Search</button>
 
                 @if(request()->has('search'))
-                    <a href="{{ route('dashboard.admin.banners.index') }}" class="btn btn-secondary">Reset</a>
+                    <a href="{{ route('dashboard.admin.cities.index') }}" class="btn btn-secondary">Reset</a>
                 @endif
             </form>
 
-            <a href="{{ route('dashboard.admin.banners.create') }}" class="btn btn-dark mb-3">Add New Banner</a>
+            <a href="{{ route('dashboard.admin.cities.create') }}" class="btn btn-dark mb-3">Add New City</a>
 
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
@@ -39,41 +31,32 @@
         <table class="table table-striped table-bordered table-notification-list">
             <thead>
                 <tr>
-                    <th>Image</th>
-                    <th>Title</th>
-                    <th>City</th>
-                    <th>Status</th>
+                    <th>Name</th>
+                    <!-- <th>Status</th> -->
                     <th>Action</th>
                 </tr>
             </thead>
 
             <tbody>
-            @forelse($banners as $banner)
-               
+            @forelse($cities as $city)
                 <tr>
-                    <td>
-                        <img src="{{ $banner->image ? asset('assets/banner_images/'.$banner->image) : asset('assets/no-image.png') }}"
-                          style="width:50px;height:50px;object-fit:cover;">
-
-                    </td>
-                    <td>{{ $banner->title ?? '-' }}</td>
-                    <td>{{ $banner->city ?? '-' }}</td>
-                    <td>
-                        <span class="badge {{ $banner->status == 1 ? 'bg-success' : 'bg-danger' }}">
-                            {{ $banner->status == 1 ? 'Active' : 'Inactive' }}
+                    <td>{{ $city->name }}</td>
+                    <!-- <td>
+                        <span class="badge {{ $city->status == 1 ? 'bg-success' : 'bg-danger' }}">
+                            {{ $city->status == 1 ? 'Active' : 'Inactive' }}
                         </span>
-                    </td>
+                    </td> -->
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <a href="{{ route('dashboard.admin.banners.edit', $banner->id) }}" class="btn btn-info btn-sm">
+                            <a href="{{ route('dashboard.admin.cities.edit', $city->id) }}" class="btn btn-info btn-sm">
                                 <i class="fa fa-edit"></i>
                             </a>
 
                             <!-- Delete Button -->
                             <button class="btn btn-danger btn-sm delete-btn"
-                                    data-id="{{ $banner->id }}"
+                                    data-id="{{ $city->id }}"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#deleteBannerModal">
+                                    data-bs-target="#deleteCityModal">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </div>
@@ -81,17 +64,17 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="text-center">No banners found.</td>
+                    <td colspan="3" class="text-center">No cities found.</td>
                 </tr>
             @endforelse
             </tbody>
         </table>
 
-        {{ $banners->links() }}
+        {{ $cities->links() }}
     </div>
 
-    <!-- Delete Banner Modal -->
-    <div class="modal fade" id="deleteBannerModal" tabindex="-1">
+    <!-- Delete City Modal -->
+    <div class="modal fade" id="deleteCityModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header border-0">
@@ -100,13 +83,13 @@
                 </div>
 
                 <div class="modal-body">
-                    <p>Do you really want to delete this banner?</p>
+                    <p>Do you really want to delete this city?</p>
                 </div>
 
                 <div class="modal-footer border-0">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">No</button>
 
-                    <form method="POST" id="deleteBannerForm">
+                    <form method="POST" id="deleteCityForm">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">Yes, Delete</button>
@@ -122,12 +105,12 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const deleteButtons = document.querySelectorAll('.delete-btn');
-    const deleteForm = document.getElementById('deleteBannerForm');
+    const deleteForm = document.getElementById('deleteCityForm');
 
     deleteButtons.forEach(button => {
         button.addEventListener('click', function () {
-            const bannerId = this.getAttribute('data-id');
-            deleteForm.action = `/dashboard/admin/banners/${bannerId}/delete`;
+            const cityId = this.getAttribute('data-id');
+            deleteForm.action = `/dashboard/admin/cities/${cityId}`;
         });
     });
 });

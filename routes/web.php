@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BankController;
+use App\Http\Controllers\Admin\CityController;
 
 Route::fallback(function () {
     return response()->view('404', [], 404);
@@ -138,6 +139,12 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])->name('banners.edit');
     Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
     Route::delete('/banners/{banner}/delete', [BannerController::class, 'destroy'])->name('banners.destroy');
+    Route::get('cities', [CityController::class, 'index'])->name('cities.index');
+    Route::get('cities/create', [CityController::class, 'create'])->name('cities.create');
+    Route::post('cities', [CityController::class, 'store'])->name('cities.store');
+    Route::get('cities/{city}/edit', [CityController::class, 'edit'])->name('cities.edit'); // ✅ fixed
+    Route::put('cities/{city}', [CityController::class, 'update'])->name('cities.update');
+    Route::delete('cities/{city}', [CityController::class, 'destroy'])->name('cities.destroy');
 ;
 
    Route::get('/orders', [OrderController::class, 'index']) ->name('orders');

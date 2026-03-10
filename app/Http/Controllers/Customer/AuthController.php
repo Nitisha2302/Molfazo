@@ -285,8 +285,8 @@ class AuthController extends Controller
             'mobile'    => 'required|digits:10',
             'address'   => 'required|string',
             'city'      => 'required|string',
-            'state'     => 'required|string',
-            'pincode'   => 'required|digits:6',
+            'state'     => 'nullable|string',
+            'pincode'   => 'nullable|digits:6',
         ], [
             'name.required'      => 'Address type is required (Home / Office).',
             'full_name.required' => 'Full name is required.',
@@ -318,8 +318,8 @@ class AuthController extends Controller
             'mobile'     => $request->mobile,
             'address'    => $request->address,
             'city'       => $request->city,
-            'state'      => $request->state,
-            'pincode'    => $request->pincode,
+             'state'      => $request->state ?? null, // save null if not provided
+            'pincode'    => $request->pincode ?? null, // save null if not provided
             'is_default' => $request->is_default ?? 0,
         ]);
 

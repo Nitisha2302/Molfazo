@@ -24,7 +24,11 @@ class VendorController extends Controller
             $query->where('status_id', $request->status_filter);
         }
 
-        $vendors = $query->orderBy('created_at', 'desc')->paginate(15);
+        // $vendors = $query->orderBy('created_at', 'desc')->paginate(15);
+       $vendors = $query
+            ->with('vendorBanks.bank')
+            ->orderBy('created_at','desc')
+            ->paginate(15);
 
         return view('admin.vendors.allListing', compact('vendors'));
     }

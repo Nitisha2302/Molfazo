@@ -93,6 +93,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(VendorBank::class, 'user_id');
     }
+
+    public function vendorBanks()
+    {
+        return $this->hasMany(\App\Models\VendorBank::class, 'user_id');
+    }
     
 }
 

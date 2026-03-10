@@ -18,7 +18,7 @@ class ProductController extends Controller
             'subCategory',
             'images',
             'primaryImage',
-            'banks'
+            'store.vendorBanks.bank' 
         ]);
 
         if ($request->filled('search')) {

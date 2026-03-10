@@ -43,6 +43,22 @@
                         </div>
                     </div>
 
+                    <div class="col-md-6 step-field">
+                        <div class="form-group mb-4">
+                            <label for="city">City</label>
+                            <input type="text"
+                                id="city"
+                                name="city"
+                                class="form-control"
+                                placeholder="Enter city"
+                                value="{{ old('city', $banner->city) }}">
+
+                            @error('city')
+                                <div class="text-danger error-message">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
                     <!-- Status -->
                     <div class="col-md-6 step-field">
                         <div class="form-group mb-4">

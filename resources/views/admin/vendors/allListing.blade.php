@@ -176,6 +176,33 @@
                                             </td>
                                         </tr>
                                         <tr><th>Terms Accepted</th><td>{{ $vendor->terms_accepted ? 'Yes' : 'No' }}</td></tr>
+                                        <tr>
+                                            <th>Vendor Banks</th>
+                                            <td>
+                                                @if($vendor->vendorBanks->count())
+                                                    <table class="table table-sm table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Bank Name</th>
+                                                                <!-- <th>Account Holder</th> -->
+                                                                <th>Account Number</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach($vendor->vendorBanks as $bank)
+                                                                <tr>
+                                                                     <td>{{ $bank->bank->name ?? 'N/A' }}</td>
+                                                                    <!-- <td>{{ $bank->account_holder_name }}</td> -->
+                                                                    <td>{{ $bank->account_number }}</td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                @else
+                                                    <span class="text-muted">No bank added</span>
+                                                @endif
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
                             </div>
