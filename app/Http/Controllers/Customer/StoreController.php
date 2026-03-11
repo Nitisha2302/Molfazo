@@ -66,12 +66,12 @@ class StoreController extends Controller
         });
 
         // Optional: no products case
-        if ($products->isEmpty()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'No products found for this store'
-            ], 201);
-        }
+        // if ($products->isEmpty()) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'No products found for this store'
+        //     ], 201);
+        // }
 
         return response()->json([
             'status' => true,
