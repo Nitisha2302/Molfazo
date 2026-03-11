@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
      use Illuminate\Support\Facades\Validator;
+use App\Models\FavoriteProducts;
 
 class CartController extends Controller
 {
@@ -79,6 +80,12 @@ class CartController extends Controller
             ], 401);
         }
 
+           //  Get favorite product ids
+         $favIds = FavoriteProducts::where('user_id', $user->id)
+                ->pluck('product_id')
+                ->toArray();
+
+
         $cartItems = Cart::where('user_id', $user->id)
             ->with([
                 'product:id,name,price,discount_price,store_id',
@@ -90,14 +97,17 @@ class CartController extends Controller
 
         $total = 0;
 
-        $cartItems->transform(function ($item) use (&$total) {
+       $cartItems->transform(function ($item) use (&$total, $favIds) {
             $price = $item->product->discount_price ?? $item->product->price;
             $item->item_total = $price * $item->quantity;
             $total += $item->item_total;
             // 🔥 primary image as value
             $item->product->primaryimage = optional($item->product->primaryImage)->image;
             unset($item->product->primaryImage);
-            // ✅ BANK DETAILS (Same as details API)
+            //  Favorite status
+           $item->product->is_favorite = in_array($item->product->id, $favIds);
+
+            //  BANK DETAILS (Same as details API)
                 $paymentModes = $item->product->store->user->payment_modes ?? [];
 
             if (in_array('bank', $paymentModes)) {

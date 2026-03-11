@@ -43,19 +43,44 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6 step-field">
-                        <div class="form-group mb-4">
-                            <label for="city">City</label>
-                            <input type="text"
-                                id="city"
-                                name="city"
-                                class="form-control"
-                                placeholder="Enter city"
-                                value="{{ old('city', $banner->city) }}">
+                 <!-- Cities Select -->
+                  <div class="col-md-6 step-field">
+                    <div class="form-group mb-4">
 
-                            @error('city')
-                                <div class="text-danger error-message">{{ $message }}</div>
+                        <label>Select Cities</label>
+
+                        <div class="city-scroll-box d-flex flex-wrap gap-2">
+
+                            <!-- All Cities -->
+                            <label class="city-pill">
+                                <input type="checkbox" id="allCities">
+                                <span>All Cities</span>
+                            </label>
+
+                            @foreach($cities as $city)
+
+                                <label class="city-pill">
+
+                                    <input type="checkbox"
+                                    name="cities[]"
+                                    value="{{ $city->id }}"
+
+                                    {{ in_array($city->id, old('cities', $banner->cities ?? [])) ? 'checked' : '' }}
+
+                                    >
+
+                                    <span>{{ $city->name }}</span>
+
+                                </label>
+
+                            @endforeach
+
+                            </div>
+
+                            @error('cities')
+                            <div class="text-danger">{{ $message }}</div>
                             @enderror
+
                         </div>
                     </div>
 
@@ -120,6 +145,19 @@ document.getElementById('bannerImage').addEventListener('change', function(event
         preview.style.display = 'block';
     }
 });
+</script>
+<script>
+
+document.getElementById('allCities').addEventListener('change', function(){
+
+let checkboxes = document.querySelectorAll('input[name="cities[]"]');
+
+checkboxes.forEach(cb => {
+cb.checked = this.checked;
+});
+
+});
+
 </script>
 
 @endsection

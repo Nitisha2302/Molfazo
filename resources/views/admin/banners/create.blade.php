@@ -42,19 +42,33 @@
                         </div>
                     </div>
 
+                   <!-- Cities Select -->
                     <div class="col-md-6 step-field">
                         <div class="form-group mb-4">
-                            <label for="city">City</label>
-                            <input type="text"
-                                id="city"
-                                name="city"
-                                class="form-control"
-                                placeholder="Enter city"
-                                value="{{ old('city') }}">
+                            <label>Select Cities</label>
+                            <div class="city-scroll-box d-flex flex-wrap gap-2">
 
-                            @error('city')
-                                <div class="text-danger error-message">{{ $message }}</div>
+                                <!-- All Cities -->
+                                <label class="city-pill">
+                                    <input type="checkbox" id="allCities" value="all">
+                                    <span>All Cities</span>
+                                </label>
+
+                                @foreach($cities as $city)
+
+                                <label class="city-pill">
+                                    <input type="checkbox" name="cities[]" value="{{ $city->id }}">
+                                    <span>{{ $city->name }}</span>
+                                </label>
+
+                                @endforeach
+
+                            </div>
+
+                            @error('cities')
+                            <div class="text-danger">{{ $message }}</div>
                             @enderror
+
                         </div>
                     </div>
 
@@ -117,6 +131,20 @@ document.getElementById('bannerImage').addEventListener('change', function(event
         preview.style.display = 'block';
     }
 });
+</script>
+
+<script>
+
+document.getElementById('allCities').addEventListener('change', function(){
+
+    let checkboxes = document.querySelectorAll('input[name="cities[]"]');
+
+    checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+    });
+
+});
+
 </script>
 
 @endsection
