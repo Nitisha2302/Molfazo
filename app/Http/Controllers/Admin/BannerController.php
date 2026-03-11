@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Banner;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class BannerController extends Controller
 {
@@ -13,18 +14,20 @@ class BannerController extends Controller
     {
         $query = Banner::query();
 
+        // Search by title
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
         // Filter by city
         if ($request->filled('city')) {
-            $query->where('city', $request->city);
+            $query->whereJsonContains('cities', (string)$request->city);
         }
 
         $banners = $query->latest()->paginate(10)->withQueryString();
-       // Get unique cities for dropdown
-      $cities = Banner::select('city')->distinct()->pluck('city');
+
+        // Get all active cities for dropdown
+        $cities = DB::table('cities')->where('status', 1)->get();
 
         return view('admin.banners.index', compact('banners', 'cities'));
     }
@@ -32,7 +35,8 @@ class BannerController extends Controller
     // Show create form
     public function create()
     {
-        return view('admin.banners.create');
+        $cities = DB::table('cities')->where('status', 1)->get();
+        return view('admin.banners.create', compact('cities'));
     }
 
     // Store banner
@@ -40,18 +44,21 @@ class BannerController extends Controller
     {
         $request->validate([
             'title' => 'nullable|string|max:255',
-               'city' => 'required|string|max:100',
+            'cities' => 'required|array|min:1',
+            'cities.*' => 'exists:cities,id', // validate each city ID
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'status' => 'required|in:0,1',
-        ], [
-            'image.required' => 'Banner image is required!',
-            'image.image' => 'File must be an image!',
-            'image.mimes' => 'Allowed image types: jpeg, png, jpg, gif, webp',
-            'image.max' => 'Image cannot exceed 2MB',
-             'city.required' => 'City is required.', 
         ]);
 
-            // Save image in public/assets/banner_images
+        // Handle "All Cities"
+        if (in_array('all', $request->cities)) {
+            $allCityIds = DB::table('cities')->where('status', 1)->pluck('id')->toArray();
+            $citiesToStore = $allCityIds;
+        } else {
+            $citiesToStore = $request->cities;
+        }
+
+        // Upload image
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $fileName = time().'_'.$file->getClientOriginalName();
@@ -60,19 +67,20 @@ class BannerController extends Controller
 
         Banner::create([
             'title' => $request->title,
-            'city' => $request->city,
-            'image' => $fileName,
+            'cities' => $citiesToStore, // store as JSON
+            'image' => $fileName ?? null,
             'status' => $request->status ?? 1,
         ]);
 
         return redirect()->route('dashboard.admin.banners.index')
-                         ->with('success', 'Banner created successfully.');
+                        ->with('success', 'Banner created successfully.');
     }
 
     // Show edit form
     public function edit(Banner $banner)
     {
-        return view('admin.banners.edit', compact('banner'));
+        $cities = DB::table('cities')->where('status', 1)->get();
+        return view('admin.banners.edit', compact('banner', 'cities'));
     }
 
     // Update banner
@@ -80,18 +88,22 @@ class BannerController extends Controller
     {
         $request->validate([
             'title' => 'nullable|string|max:255',
-            'city' => 'required|string|max:100',
+            'cities' => 'required|array|min:1',
+            'cities.*' => 'exists:cities,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'status' => 'required|in:0,1',
-        ], [
-            'image.image' => 'File must be an image!',
-            'image.mimes' => 'Allowed image types: jpeg, png, jpg, gif, webp',
-            'image.max' => 'Image cannot exceed 2MB',
-             'city.required' => 'City is required.',
         ]);
 
+        // Handle "All Cities"
+        if (in_array('all', $request->cities)) {
+            $allCityIds = DB::table('cities')->where('status', 1)->pluck('id')->toArray();
+            $citiesToStore = $allCityIds;
+        } else {
+            $citiesToStore = $request->cities;
+        }
+
+        // Upload image if changed
         if ($request->hasFile('image')) {
-            // Delete old image if exists
             if ($banner->image && file_exists(public_path('assets/banner_images/'.$banner->image))) {
                 unlink(public_path('assets/banner_images/'.$banner->image));
             }
@@ -103,16 +115,15 @@ class BannerController extends Controller
         }
 
         $banner->title = $request->title;
-        $banner->city = $request->city;
+        $banner->cities = $citiesToStore; // store as JSON
         $banner->status = $request->status ?? 1;
         $banner->save();
 
         return redirect()->route('dashboard.admin.banners.index')
-                         ->with('success', 'Banner updated successfully.');
+                        ->with('success', 'Banner updated successfully.');
     }
 
     // Delete banner
-   // Delete banner
     public function destroy(Banner $banner)
     {
         if ($banner->image && file_exists(public_path('assets/banner_images/'.$banner->image))) {

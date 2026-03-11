@@ -261,30 +261,47 @@ class CategoryController extends Controller
 
     public function getBanners(Request $request)
     {
-        $query = Banner::where('status', 1); // Only active banners
+        $query = Banner::where('status', 1);
 
-        // Filter by city if provided
         if ($request->filled('city')) {
-            $query->where('city', $request->city);
+
+            $city = City::where('name', $request->city)->first();
+
+            // If city not found return empty
+            if (!$city) {
+                return response()->json([
+                    'status' => true,
+                    'message' => 'No banners found for this city',
+                    'data' => []
+                ]);
+            }
+
+            $query->whereJsonContains('cities', (string)$city->id);
         }
 
-        $banners = $query->latest()->get()->map(function ($banner) {
+        $cities = City::pluck('name','id');
+
+        $banners = $query->latest()->get()->map(function ($banner) use ($cities) {
+
+            $cityNames = collect($banner->cities)
+                ->map(fn($id) => $cities[$id] ?? null)
+                ->filter()
+                ->values();
+
             return [
                 'id' => $banner->id,
-                'title' => $banner->title ?? null,
+                'title' => $banner->title,
                 'image' => $banner->image ? $banner->image : null,
-                'status' => $banner->status == 1 ? 'Active' : 'Inactive',
-                'city' => $banner->city ?? null, // Include city in response
+                'cities' => $cityNames
             ];
         });
 
         return response()->json([
             'status' => true,
-            'message' => 'Banners fetched successfully.',
+            'message' => 'Banners fetched successfully',
             'data' => $banners
         ]);
     }
-
 
      public function getCities()
     {

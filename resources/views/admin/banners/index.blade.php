@@ -12,11 +12,12 @@
             <form method="GET" action="{{ route('dashboard.admin.banners.index') }}" class="d-flex gap-2 mb-3">
                 <input type="text" name="search" class="form-control" style="width:220px"
                        placeholder="Search by title" value="{{ request('search') }}">
-                <select name="city" class="form-control" style="width:200px">
+               <select name="city" class="form-control" style="width:200px">
                     <option value="">All Cities</option>
+
                     @foreach($cities as $city)
-                        <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>
-                            {{ $city }}
+                        <option value="{{ $city->id }}" {{ request('city') == $city->id ? 'selected' : '' }}>
+                            {{ $city->name }}
                         </option>
                     @endforeach
                 </select>
@@ -57,7 +58,19 @@
 
                     </td>
                     <td>{{ $banner->title ?? '-' }}</td>
-                    <td>{{ $banner->city ?? '-' }}</td>
+                    <td>
+                        @if($banner->cities)
+                            @php
+                                $cityNames = DB::table('cities')
+                                            ->whereIn('id', $banner->cities)
+                                            ->pluck('name')
+                                            ->toArray();
+                            @endphp
+                            {{ implode(', ', $cityNames) }}
+                        @else
+                            -
+                        @endif
+                    </td>
                     <td>
                         <span class="badge {{ $banner->status == 1 ? 'bg-success' : 'bg-danger' }}">
                             {{ $banner->status == 1 ? 'Active' : 'Inactive' }}
