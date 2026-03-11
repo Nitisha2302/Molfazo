@@ -130,6 +130,8 @@ Route::get('customer/subcategory/{id}/childcategories', [CustomerCategoryControl
 // PRODUCTS (CUSTOMER VIEW)
 Route::get('customer/products', [CustomerProductController::class, 'list']);
 Route::get('customer/product/{id}', [CustomerProductController::class, 'details']);
+Route::post('customer/product/favorite/toggle', [CustomerProductController::class,'toggleFavorite']);
+Route::get('customer/product/favorite/list', [CustomerProductController::class,'favoriteList']);
 
 
 

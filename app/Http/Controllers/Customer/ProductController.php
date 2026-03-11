@@ -5,6 +5,11 @@ namespace App\Http\Controllers\Customer; // <--- IMPORTANT
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\FavoriteProducts;
+use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Support\Facades\Validator;
+
 
 class ProductController extends Controller
 {
@@ -107,6 +112,16 @@ class ProductController extends Controller
 
     public function list(Request $request)
     {
+      $user = Auth::guard('api')->user();
+
+        // Get favorite product ids
+        $favIds = [];
+
+        if ($user) {
+            $favIds = FavoriteProducts::where('user_id', $user->id)
+                        ->pluck('product_id')
+                        ->toArray();
+        }
         $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage', 'reviews.images','store.user','store.vendorBanks.bank' ])->withAvg('reviews', 'rating')
         ->withCount('reviews');
 
@@ -124,11 +139,19 @@ class ProductController extends Controller
         }
 
         // ✅ Store Location Filter (NEW CODE)
-        if ($request->filled('city') && $request->filled('country')) {
+       // Store Location Filter
+        if ($request->filled('city') || $request->filled('country')) {
 
             $query->whereHas('store', function ($q) use ($request) {
-                $q->where('city', 'like', '%' . $request->city . '%')
-                ->where('country', 'like', '%' . $request->country . '%');
+
+                if ($request->filled('city')) {
+                    $q->where('city', 'like', '%' . $request->city . '%');
+                }
+
+                if ($request->filled('country')) {
+                    $q->where('country', 'like', '%' . $request->country . '%');
+                }
+
             });
         }
 
@@ -189,12 +212,15 @@ class ProductController extends Controller
             ], 201);
         }
 
-        $products = $products->map(function ($product) {
+         $products = $products->map(function ($product) use ($favIds) {
 
             $product->primaryimage = optional($product->primaryImage)->image;
 
             // remove relation object
             unset($product->primaryImage);
+
+             //  Favorite status
+            $product->is_favorite = in_array($product->id, $favIds);
              // ✅ Banks List
             $paymentModes = $product->store->user->payment_modes ?? [];
 
@@ -227,6 +253,15 @@ class ProductController extends Controller
     // Product details by ID
     public function details(Request $request, $id)
     {
+        $user = Auth::guard('api')->user();
+
+        $favIds = [];
+
+        if ($user) {
+            $favIds = FavoriteProducts::where('user_id', $user->id)
+                        ->pluck('product_id')
+                        ->toArray();
+        }
         // Get main product
        $product = Product::with([
             'store',
@@ -244,6 +279,8 @@ class ProductController extends Controller
         ->where('id', $id)
         ->where('status_id', 1)
         ->first();
+
+      
         
 
         if (!$product) {
@@ -256,7 +293,7 @@ class ProductController extends Controller
          // 🔥 Convert primaryImage object → value
         $product->primaryimage = optional($product->primaryImage)->image;
         unset($product->primaryImage);
-
+        $product->is_favorite = in_array($product->id, $favIds);
         $paymentModes = $product->store->user->payment_modes ?? [];
 
         if (in_array('bank', $paymentModes)) {
@@ -282,10 +319,13 @@ class ProductController extends Controller
         ->where('category_id', $product->category_id)
         ->get();
 
-        $relatedProducts = $relatedProducts->map(function ($item) {
+       $relatedProducts = $relatedProducts->map(function ($item) use ($favIds) {
 
             $item->primaryimage = optional($item->primaryImage)->image;
             unset($item->primaryImage);
+             // Favorite status
+           $item->is_favorite = in_array($item->id, $favIds);
+
 
             $paymentModes = $item->store->user->payment_modes ?? [];
 
@@ -317,6 +357,17 @@ class ProductController extends Controller
 
     public function search(Request $request)
     {
+
+        // 🔥 Get logged-in user (optional)
+        $user = Auth::guard('api')->user();
+
+        $favIds = [];
+
+        if ($user) {
+            $favIds = FavoriteProducts::where('user_id', $user->id)
+                        ->pluck('product_id')
+                        ->toArray();
+        }
         $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage','store.user','store.vendorBanks.bank' ])
             ->where('status_id', 1);
 
@@ -403,9 +454,10 @@ class ProductController extends Controller
         }
 
         // 🔥 Convert primaryImage object -> primaryimage key
-        $products = $products->map(function ($product) {
+       $products = $products->map(function ($product) use ($favIds) {
             $product->primaryimage = optional($product->primaryImage)->image;
             unset($product->primaryImage);
+               $product->is_favorite = in_array($product->id, $favIds);
              // ✅ Product Banks
            $paymentModes = $product->store->user->payment_modes ?? [];
 
@@ -433,6 +485,155 @@ class ProductController extends Controller
             'data' => $products
         ], 200);
     }
+
+
+    // Add / Remove Favorite
+    public function toggleFavorite(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized user'
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|exists:products,id'
+        ],[
+            'product_id.required' => 'Product ID is required',
+            'product_id.exists' => 'Product not found'
+        ]);
+
+        if ($validator->fails()) {
+
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+                'errors' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        
+
+        $favorite = FavoriteProducts::where('user_id', $user->id)
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if ($favorite) {
+
+            $favorite->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Product removed from favorites'
+            ]);
+
+        } else {
+
+            FavoriteProducts::create([
+                'user_id' => $user->id,
+                'product_id' => $request->product_id
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Product added to favorites'
+            ]);
+        }
+
+        
+    }
+
+    public function favoriteList()
+    {
+        try {
+
+            $user = Auth::guard('api')->user();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized user'
+                ], 401);
+            }
+
+            $favorites = FavoriteProducts::with([
+                'product.store',
+                'product.category',
+                'product.subCategory',
+                'product.childCategory',
+                'product.images',
+                'product.primaryImage',
+                'product.reviews.user',
+                'product.reviews.images',
+                'product.store.user',
+                'product.store.vendorBanks.bank'
+            ])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+            if ($favorites->isEmpty()) {
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'No favorite products found',
+                    'data' => []
+                ]);
+            }
+
+            // 🔥 Format response like product APIs
+            $favorites->transform(function ($item) {
+
+                $product = $item->product;
+
+                // primary image
+                $product->primaryimage = optional($product->primaryImage)->image;
+                unset($product->primaryImage);
+
+                // favorite status
+                $product->is_favorite = true;
+
+                // bank details
+                $paymentModes = $product->store->user->payment_modes ?? [];
+
+                if (in_array('bank', $paymentModes)) {
+
+                    $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
+                        return [
+                            'bank_id' => $vendorBank->bank->id ?? null,
+                            'name' => $vendorBank->bank->name ?? null,
+                            'logo' => $vendorBank->bank->logo ?? null,
+                            'account_holder_name' => $vendorBank->account_holder_name,
+                            'account_number' => $vendorBank->account_number,
+                        ];
+                    });
+
+                } else {
+                    $product->banks = [];
+                }
+
+                return $product; // return only product
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Favorite products fetched successfully',
+                'data' => $favorites
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
 
 }
