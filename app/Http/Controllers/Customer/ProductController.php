@@ -487,6 +487,7 @@ class ProductController extends Controller
     }
 
 
+    
     // Add / Remove Favorite
     public function toggleFavorite(Request $request)
     {
