@@ -174,15 +174,11 @@ Route::post('customer/chat/mark-read', [CustomerChatController::class, 'markRead
 
 Route::get('category-attributes/{child_category_id}',[ProductController::class,'getCategoryAttributes']);
 
-Route::post('attribute-request',[ProductController::class,'requestAttribute']);
+Route::post('vendor/product/combination/update/{id}',[ProductController::class,'updateCombination']);
 
-Route::put('product-combination/{id}',[ProductController::class,'updateCombination']);
+Route::delete('vendor/product/combination/delete/{id}',[ProductController::class,'deleteCombination']);
 
-Route::delete('product-combination/{id}',[ProductController::class,'deleteCombination']);
-
-Route::post('product-copy/{id}',[ProductController::class,'copyProduct']);
-
-
+Route::post('vendor/product/copy/{id}',[ProductController::class, 'copyProduct']);
 
 
 

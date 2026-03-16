@@ -91,7 +91,8 @@ class CartController extends Controller
                 'product:id,name,price,discount_price,store_id',
                 'product.primaryImage',
                 'product.store.user',
-               'product.store.vendorBanks.bank'
+               'product.store.vendorBanks.bank',
+               'product.combinations' 
             ])
             ->get();
 
@@ -106,6 +107,16 @@ class CartController extends Controller
             unset($item->product->primaryImage);
             //  Favorite status
            $item->product->is_favorite = in_array($item->product->id, $favIds);
+
+           $item->product->combinations = $item->product->combinations->map(function ($combo) {
+                return [
+                    'id' => $combo->id,
+                    'variant' => json_decode($combo->combination, true),
+                    'price' => $combo->price,
+                    'stock' => $combo->stock,
+                    'images' => $combo->images ? json_decode($combo->images, true) : []
+                ];
+            });
 
             //  BANK DETAILS (Same as details API)
                 $paymentModes = $item->product->store->user->payment_modes ?? [];

@@ -13,7 +13,10 @@ class ProductCombination extends Model
         'combination',
         'price',
         'stock',
-        'images'
+        'images',
+        'description',
+        'price_before_discount',
+        'cost_price',
     ];
 
     protected $casts = [
