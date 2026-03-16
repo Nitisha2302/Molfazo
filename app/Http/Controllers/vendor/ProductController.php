@@ -12,9 +12,11 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Bank;
 use App\Models\ProductBank;
+use App\Models\ProductCombination;
 use Auth;
 use Validator;
 use Carbon\Carbon;
+use App\Models\AttributeRequest;
 
 
 
@@ -57,6 +59,7 @@ class ProductController extends Controller
             'images' => 'required|array|min:1',
             'images.*' => 'file|mimes:jpeg,jpg,png,gif',
             'attributes_json' => 'nullable|array',
+            'variants' => 'nullable|array'
         ], [
             'store_id.required' => 'Please select a store.',
             'store_id.exists' => 'The selected store does not exist.',
@@ -132,6 +135,72 @@ class ProductController extends Controller
             'attributes_json' => $request->attributes_json ? $request->attributes_json : null, // <-- SAVE ATTRIBUTES
             'status_id' => 1, // Active
         ]);
+
+        if($request->variants){
+
+            // category attributes fetch
+            $categoryAttr = \DB::table('category_attributes')
+                ->where('child_category_id',$request->child_category_id)
+                ->first();
+
+            $existingAttributes = [];
+
+            if($categoryAttr){
+                $existingAttributes = json_decode($categoryAttr->attributes_json,true);
+            }
+
+            foreach($request->variants as $attrName=>$values){
+
+                // agar attribute category me nahi hai
+                if(!isset($existingAttributes[$attrName])){
+
+                    AttributeRequest::create([
+                        'vendor_id'=>$user->id,
+                        'child_category_id'=>$request->child_category_id,
+                        'attribute_name'=>$attrName,
+                        'attribute_value'=>json_encode($values)
+                    ]);
+
+                }
+
+            }
+
+            $combinations = $this->generateCombinations($request->variants);
+
+            foreach($combinations as $combo){
+
+                ProductCombination::create([
+                    'product_id'=>$product->id,
+                    'combination'=>json_encode($combo),
+                    'price'=>$request->price,
+                    'stock'=>$request->available_quantity,
+                    'images'=>json_encode([])
+                ]);
+
+            }
+
+        }
+        //  if($request->variants){
+
+        //             $combinations = $this->generateCombinations($request->variants);
+
+        //             foreach($combinations as $combo){
+
+        //             ProductCombination::create([
+
+        //             'product_id'=>$product->id,
+
+        //             'combination'=>$combo,
+
+        //             'price'=>$request->price,
+
+        //             'stock'=>$request->available_quantity
+
+        //             ]);
+
+        //         }
+
+        // }
 
         /* ===============================
            UPLOAD PRODUCT IMAGES
@@ -289,6 +358,17 @@ class ProductController extends Controller
                     'color' => $img->color,
                     'is_primary' => (bool)$img->is_primary,
                 ];
+            }),
+            'combinations'=>$product->combinations->map(function($combo){
+
+                return[
+                    'id'=>$combo->id,
+                 'combination'=>json_decode($combo->combination,true),
+                    'price'=>$combo->price,
+                    'stock'=>$combo->stock,
+                  'images'=>$combo->images ? json_decode($combo->images,true) : []
+                ];
+
             }),
             'created_at' => $product->created_at,
             'updated_at' => $product->updated_at,
@@ -581,6 +661,197 @@ class ProductController extends Controller
 
             'today_orders' => $todayOrders
         ]);
+    }
+
+    // new flow 
+
+    // new flow 
+
+    public function requestAttribute(Request $request)
+    {
+
+        $user = Auth::guard('api')->user();
+
+        $request->validate([
+
+        'child_category_id'=>'required',
+        'attribute_name'=>'required',
+        'attribute_value'=>'required'
+
+        ]);
+
+        AttributeRequest::create([
+
+        'vendor_id'=>$user->id,
+        'child_category_id'=>$request->child_category_id,
+        'attribute_name'=>$request->attribute_name,
+        'attribute_value'=>$request->attribute_value
+
+        ]);
+
+        return response()->json([
+
+        'status'=>true,
+        'message'=>'Attribute request sent to admin'
+
+        ]);
+
+    }
+
+
+    private function generateCombinations($arrays)
+    {
+
+        $result=[[]];
+
+        foreach($arrays as $property=>$values){
+
+        $tmp=[];
+
+        foreach($result as $resultItem){
+
+        foreach($values as $value){
+
+        $tmp[]=array_merge($resultItem,[$property=>$value]);
+
+        }
+
+        }
+
+        $result=$tmp;
+
+        }
+
+        return $result;
+
+    }
+
+
+    // Size = L,XL
+    // Color = Red,Black
+
+    //output
+
+    // L + Red
+    // L + Black
+    // XL + Red
+    // XL + Black
+
+
+
+        public function updateCombination(Request $request,$id)
+    {
+
+        $combo = ProductCombination::findOrFail($id);
+
+        $combo->price = $request->price;
+        $combo->stock = $request->stock;
+
+       if($request->images){
+            $combo->images = json_encode($request->images);
+        }
+
+        $combo->save();
+
+        return response()->json([
+            'status'=>true,
+            'message'=>'Combination updated'
+        ]);
+    }
+
+    public function deleteCombination($id)
+    {
+
+        $combo = ProductCombination::findOrFail($id);
+
+        $combo->delete();
+
+        return response()->json([
+
+        'status'=>true,
+        'message'=>'Combination deleted'
+
+        ]);
+
+    }
+
+
+    public function copyProduct($id)
+    {
+
+        $user = Auth::guard('api')->user();
+
+        $product = Product::findOrFail($id);
+
+        $newProduct = $product->replicate();
+
+        $store = $user->stores()->first();
+
+        if(!$store){
+            return response()->json([
+                'status'=>false,
+                'message'=>'Vendor has no store'
+            ]);
+        }
+
+        $newProduct->store_id = $store->id;
+
+        $newProduct->save();
+
+        foreach($product->images as $image){
+
+        ProductImage::create([
+
+        'product_id'=>$newProduct->id,
+
+        'image'=>$image->image
+
+        ]);
+
+        }
+
+        // foreach($product->combinations as $combo){
+
+        // ProductCombination::create([
+
+        // 'product_id'=>$newProduct->id,
+
+        // 'combination'=>$combo->combination,
+
+        // 'price'=>$combo->price,
+
+        // 'stock'=>$combo->stock
+
+        // ]);
+
+        // }
+
+        foreach($product->combinations as $combo){
+
+            ProductCombination::create([
+
+                'product_id'=>$newProduct->id,
+
+                'combination'=>$combo->combination,
+
+                'price'=>$combo->price,
+
+                'stock'=>$combo->stock,
+
+                'images'=>$combo->images
+
+            ]);
+
+        }
+
+        return response()->json([
+
+        'status'=>true,
+
+        'message'=>'Product copied successfully'
+
+        ]);
+
     }
 
 

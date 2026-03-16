@@ -170,6 +170,18 @@ Route::post('customer/chat/mark-read', [CustomerChatController::class, 'markRead
   Route::post('/product/review/store', [ProductReviewController::class, 'store']);
   Route::get('/product/{id}/reviews', [ProductReviewController::class, 'list']);
 
+  //new flow
+
+Route::get('category-attributes/{child_category_id}',[ProductController::class,'getCategoryAttributes']);
+
+Route::post('attribute-request',[ProductController::class,'requestAttribute']);
+
+Route::put('product-combination/{id}',[ProductController::class,'updateCombination']);
+
+Route::delete('product-combination/{id}',[ProductController::class,'deleteCombination']);
+
+Route::post('product-copy/{id}',[ProductController::class,'copyProduct']);
+
 
 
 
