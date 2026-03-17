@@ -66,35 +66,6 @@ class CategoryController extends Controller
     }
 
 
-    // Get subcategories by category ID
-    // public function subcategories($category_id)
-    // {
-    //     $subCategories = SubCategory::where('category_id', $category_id)
-    //         ->where('status_id', 1)
-    //         ->get();
-
-    //     if ($subCategories->isEmpty()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'No subcategories found for this category.',
-    //         ], 404);
-    //     }
-
-    //     $data = $subCategories->map(function ($sub) {
-    //         return [
-    //             'id'   => $sub->id,
-    //             'name' => $sub->name,
-    //             'slug' => $sub->slug,
-    //         ];
-    //     });
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Category successfully fetched.',
-    //         'data'   => $data,
-    //     ], 200);
-    // }
-
     public function subcategories($category_id)
     {
         $subCategories = SubCategory::where('category_id', $category_id)
@@ -134,41 +105,6 @@ class CategoryController extends Controller
             'data'    => $data,
         ], 200);
     }
-
-
-
-    // Get child categories by sub-category ID
-    // public function childCategories($sub_category_id)
-    // {
-    //     $subCategory = SubCategory::where('id', $sub_category_id)
-    //         ->where('status_id', 1)
-    //         ->first();
-
-    //     if (!$subCategory) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Sub category not found.'
-    //         ], 404);
-    //     }
-
-    //     $childCategories = $subCategory->childCategories()
-    //         ->where('status_id', 1)
-    //         ->get();
-
-    //     $data = $childCategories->map(function ($child) {
-    //         return [
-    //             'id'   => $child->id,
-    //             'name' => $child->name,
-    //             'slug' => $child->slug,
-    //         ];
-    //     });
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Category successfully fetched.',
-    //         'data'   => $data
-    //     ], 200);
-    // }
 
 
     public function childCategories($sub_category_id)
@@ -236,29 +172,6 @@ class CategoryController extends Controller
     }
 
 
-    // public function getBanners()
-    // {
-    //     // Fetch all active banners
-    //     $banners = Banner::where('status', 1)
-    //         ->latest()
-    //         ->get()
-    //         ->map(function ($banner) {
-    //             return [
-    //                 'id' => $banner->id,
-    //                 'title' => $banner->title ?? null,
-    //                 'image' => $banner->image ?  $banner->image : null,
-    //                 'status' => $banner->status == 1 ? 'Active' : 'Inactive',
-    //             ];
-    //         });
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Banners fetched successfully.',
-    //         'data' => $banners
-    //     ]);
-    // }
-
-
     public function getBanners(Request $request)
     {
         $query = Banner::where('status', 1);
@@ -315,5 +228,7 @@ class CategoryController extends Controller
             'data' => $cities
         ]);
     }
+
+    
 
 }

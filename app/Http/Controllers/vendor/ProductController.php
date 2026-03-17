@@ -12,9 +12,12 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Bank;
 use App\Models\ProductBank;
+use App\Models\ProductCombination;
 use Auth;
 use Validator;
 use Carbon\Carbon;
+use App\Models\AttributeRequest;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -57,6 +60,17 @@ class ProductController extends Controller
             'images' => 'required|array|min:1',
             'images.*' => 'file|mimes:jpeg,jpg,png,gif',
             'attributes_json' => 'nullable|array',
+            'variant_images' => 'nullable|array',
+           'variant_images.*.*' => 'image|mimes:jpeg,jpg,png,gif',
+
+            'cost_price' => 'nullable|numeric',
+             'price_before_discount' => 'nullable|numeric',
+            
+            'article' => 'nullable|string',
+            'weight' => 'nullable|numeric',
+            'length' => 'nullable|numeric',
+            'width' => 'nullable|numeric',
+            'height' => 'nullable|numeric',
         ], [
             'store_id.required' => 'Please select a store.',
             'store_id.exists' => 'The selected store does not exist.',
@@ -110,6 +124,7 @@ class ProductController extends Controller
             }
         }
 
+       $variantData = $request->variants ?? $request->attributes_json;
 
         /* ===============================
            CREATE PRODUCT
@@ -129,9 +144,107 @@ class ProductController extends Controller
             'delivery_time' => $request->delivery_time,
             'characteristics' => $request->characteristics ? json_encode($request->characteristics) : null,
             'tags' => $request->tags ? json_encode($request->tags) : null,
-            'attributes_json' => $request->attributes_json ? $request->attributes_json : null, // <-- SAVE ATTRIBUTES
+            'attributes_json' => $variantData ?? null,
+            // 'attributes_json' => $request->attributes_json ? $request->attributes_json : null,
             'status_id' => 1, // Active
+
+            'cost_price' => $request->cost_price,
+             'price_before_discount' => $request->price_before_discount,
+            
+            'article' => $request->article,
+            'weight' => $request->weight,
+            'length' => $request->length,
+            'width' => $request->width,
+            'height' => $request->height,
         ]);
+
+       
+
+        if($variantData){
+
+            $categoryAttr = \DB::table('category_attributes')
+                ->where('child_category_id',$request->child_category_id)
+                ->first();
+
+            $existingAttributes = [];
+
+            if($categoryAttr){
+                $existingAttributes = json_decode($categoryAttr->attributes_json ?? '{}', true);
+            }
+
+            foreach($variantData as $attrName=>$values){
+
+                if(!isset($existingAttributes[$attrName])){
+
+                    foreach($values as $val){
+
+                        AttributeRequest::firstOrCreate([
+                            'vendor_id'=>$user->id,
+                            'child_category_id'=>$request->child_category_id,
+                            'attribute_name'=>$attrName,
+                            'attribute_value'=>$val
+                        ]);
+
+                    }
+
+                }else{
+
+                    foreach($values as $val){
+
+                        if(!in_array($val,$existingAttributes[$attrName])){
+
+                            AttributeRequest::firstOrCreate([
+                                'vendor_id'=>$user->id,
+                                'child_category_id'=>$request->child_category_id,
+                                'attribute_name'=>$attrName,
+                                'attribute_value'=>$val
+                            ]);
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+             /* ===============================
+            GENERATE COMBINATIONS
+            =============================== */
+
+            $combinations = $this->generateCombinations($variantData);
+
+            $variantImages = $request->file('variant_images');
+
+            foreach ($combinations as $index => $combo) {
+
+                $images = [];
+
+                if (isset($variantImages[$index])) {
+
+                    foreach ($variantImages[$index] as $file) {
+
+                        $filename = time() . '_' . $file->getClientOriginalName();
+
+                        $file->move(public_path('assets/variant_images'), $filename);
+
+                        $images[] =  $filename;
+                    }
+                }
+
+                ProductCombination::create([
+                    'product_id' => $product->id,
+                    'combination' => json_encode($combo),
+                    'description' => $request->description ?? null,
+                    'price' => $request->price,
+                    'price_before_discount' => $request->price_before_discount,
+                    'cost_price' => $request->cost_price,
+                    'stock' => $request->available_quantity,
+                    'images' => json_encode($images)
+                ]);
+            }
+        }
+
 
         /* ===============================
            UPLOAD PRODUCT IMAGES
@@ -175,6 +288,16 @@ class ProductController extends Controller
         $products = Product::whereHas('store', function ($q) use ($user) {
             $q->where('user_id', $user->id);
         })->get();
+
+        // $products = Product::with([
+        //     'images',
+        //     'combinations',
+        //     'category',
+        //     'subCategory',
+        //     'childCategory'
+        // ])->whereHas('store', function ($q) use ($user) {
+        //     $q->where('user_id', $user->id);
+        // })->get();
 
         $products = $products->map(function ($product) {
             return $this->formatProduct($product);
@@ -288,6 +411,19 @@ class ProductController extends Controller
                     'image' =>  $img->image,
                     'color' => $img->color,
                     'is_primary' => (bool)$img->is_primary,
+                ];
+            }),
+           'combinations' => $product->combinations->map(function ($combo) {
+                return [
+                    'id' => $combo->id,
+                    'variant' => json_decode($combo->combination, true),
+                    'price' => $combo->price,
+                    'price_before_discount' => $combo->price_before_discount,
+                    'cost_price' => $combo->cost_price,
+                    'description' => $combo->description,
+                   
+                    'stock' => $combo->stock,
+                    'images' => $combo->images ? json_decode($combo->images, true) : [],
                 ];
             }),
             'created_at' => $product->created_at,
@@ -499,7 +635,7 @@ class ProductController extends Controller
 
         // $productQuery = Product::whereIn('store_id', $storeIds);
         $productQuery = Product::with('primaryImage')
-    ->whereIn('store_id', $storeIds);
+         ->whereIn('store_id', $storeIds);
 
         if ($request->stock == 'out') {
             $productQuery->where('available_quantity', 0);
@@ -581,6 +717,254 @@ class ProductController extends Controller
 
             'today_orders' => $todayOrders
         ]);
+    }
+
+    // new flow 
+
+
+    private function generateCombinations($arrays)
+    {
+        $result = [[]];
+
+        foreach ($arrays as $property => $property_values) {
+
+            $tmp = [];
+
+            foreach ($result as $result_item) {
+
+                foreach ($property_values as $property_value) {
+
+                    $tmp[] = array_merge($result_item, [$property => $property_value]);
+                }
+            }
+
+            $result = $tmp;
+        }
+
+        return $result;
+    }
+
+
+    // Size = L,XL
+    // Color = Red,Black
+
+    //output
+
+    // L + Red
+    // L + Black
+    // XL + Red
+    // XL + Black
+
+
+
+    public function updateCombination(Request $request, $id)
+    {
+        $combo = ProductCombination::findOrFail($id);
+
+        // Update price and stock
+        $combo->price = $request->price ?? $combo->price;
+        $combo->stock = $request->stock ?? $combo->stock;
+
+        $images = [];
+
+        // If new images uploaded
+        if ($request->hasFile('images')) {
+
+            foreach ($request->file('images') as $image) {
+
+                $name = time().'_'.$image->getClientOriginalName();
+
+                $image->move(public_path('assets/variant_images'), $name);
+
+                $images[] = $name;
+            }
+
+            // Save images as JSON
+            $combo->images = json_encode($images);
+        }
+
+        $combo->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Combination updated successfully',
+            'data' => $combo
+        ]);
+    }
+
+    public function deleteCombination($id)
+    {
+        $combo = ProductCombination::findOrFail($id);
+
+        // Delete images from storage
+        if ($combo->images) {
+
+            $images = json_decode($combo->images, true);
+
+            foreach ($images as $image) {
+
+                $path = public_path($image);
+
+                if (file_exists($path)) {
+                    unlink($path);
+                }
+            }
+        }
+
+        $combo->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Combination deleted successfully'
+        ]);
+    }
+
+
+    // public function copyProduct($id)
+    // {
+
+    //     $user = Auth::guard('api')->user();
+
+    //     $product = Product::findOrFail($id);
+
+    //     $newProduct = $product->replicate();
+
+    //     $store = $user->stores()->first();
+
+    //     if(!$store){
+    //         return response()->json([
+    //             'status'=>false,
+    //             'message'=>'Vendor has no store'
+    //         ]);
+    //     }
+
+    //     $newProduct->store_id = $store->id;
+
+    //     $newProduct->save();
+
+    //     foreach($product->images as $image){
+
+    //     ProductImage::create([
+
+    //     'product_id'=>$newProduct->id,
+
+    //     'image'=>$image->image
+
+    //     ]);
+
+    //     }
+
+    //     // foreach($product->combinations as $combo){
+
+    //     // ProductCombination::create([
+
+    //     // 'product_id'=>$newProduct->id,
+
+    //     // 'combination'=>$combo->combination,
+
+    //     // 'price'=>$combo->price,
+
+    //     // 'stock'=>$combo->stock
+
+    //     // ]);
+
+    //     // }
+
+    //     foreach($product->combinations as $combo){
+
+    //         ProductCombination::create([
+
+    //             'product_id'=>$newProduct->id,
+
+    //             'combination'=>$combo->combination,
+
+    //             'price'=>$combo->price,
+
+    //             'stock'=>$combo->stock,
+
+    //             'images'=>$combo->images
+
+    //         ]);
+
+    //     }
+
+    //     return response()->json([
+
+    //     'status'=>true,
+
+    //     'message'=>'Product copied successfully'
+
+    //     ]);
+
+    // }
+
+  public function copyProduct($id)
+    {
+        $user = Auth::guard('api')->user();
+
+        // Check if vendor has at least one store
+        $store = $user->stores()->first();
+        if (!$store) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Vendor has no store'
+            ]);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Load product with images and combinations
+            $product = Product::with(['images', 'combinations'])->findOrFail($id);
+
+            // Replicate main product
+            $newProduct = $product->replicate();
+            $newProduct->store_id = $store->id;
+
+            // Optional: create a new unique slug
+            $newProduct->slug = $product->slug . '-' . time();
+
+            $newProduct->save();
+
+            // Copy product images
+            foreach ($product->images as $image) {
+                ProductImage::create([
+                    'product_id' => $newProduct->id,
+                    'image' => $image->image
+                ]);
+            }
+
+            // Copy product combinations / variants
+            foreach ($product->combinations as $combo) {
+                ProductCombination::create([
+                    'product_id' => $newProduct->id,
+                    'combination' => $combo->combination,
+                    'description' => $combo->description,
+                    'price' => $combo->price,
+                    'price_before_discount' => $combo->price_before_discount,
+                    'cost_price' => $combo->cost_price,
+                    'stock' => $combo->stock,
+                    'images' => $combo->images
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Product copied successfully',
+                'data' => $newProduct
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
 

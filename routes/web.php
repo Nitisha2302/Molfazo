@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\CityController;
+use App\Http\Controllers\Admin\AttributeRequestController;
+
 
 Route::fallback(function () {
     return response()->view('404', [], 404);
@@ -147,10 +149,22 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     Route::delete('cities/{city}', [CityController::class, 'destroy'])->name('cities.destroy');
 ;
 
-   Route::get('/orders', [OrderController::class, 'index']) ->name('orders');
+    Route::get('/orders', [OrderController::class, 'index']) ->name('orders');
+
+      Route::get('attribute-requests', [AttributeRequestController::class,'index'])
+        ->name('attribute.requests');
+
+    Route::post('attribute-requests/{id}/approve', [AttributeRequestController::class,'approve'])
+        ->name('attribute.requests.approve');
+
+    Route::post('attribute-requests/{id}/reject', [AttributeRequestController::class,'reject'])
+        ->name('attribute.requests.reject');
 
 
     });  
+
+
+    
 
     
 
