@@ -496,6 +496,42 @@ class ProductController extends Controller
         ], 200);
     }
 
+    // public function list(Request $request)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user || $user->role != 2 || $user->status_id != 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Vendor account is not approved or authenticated.',
+    //         ], 403);
+    //     }
+
+    //     // ✅ Check if global products requested
+    //     if ($request->has('type') && $request->type == 'all') {
+
+    //         // 👉 Show ALL products
+    //         $products = Product::where('status_id', 1)->get();
+
+    //     } else {
+
+    //         // 👉 Show ONLY vendor products (your existing logic)
+    //         $products = Product::whereHas('store', function ($q) use ($user) {
+    //             $q->where('user_id', $user->id);
+    //         })->get();
+    //     }
+
+    //     $products = $products->map(function ($product) {
+    //         return $this->formatProduct($product);
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Products fetched successfully.',
+    //         'data' => $products,
+    //     ], 200);
+    // }
+
     /**
      * Get product details
      */
@@ -955,7 +991,7 @@ class ProductController extends Controller
 
         // If new images uploaded
         if ($request->hasFile('images')) {
-            
+
 
             foreach ($request->file('images') as $image) {
 
@@ -1009,119 +1045,157 @@ class ProductController extends Controller
 
     // public function copyProduct($id)
     // {
-
     //     $user = Auth::guard('api')->user();
 
-    //     $product = Product::findOrFail($id);
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Unauthorized'
+    //         ], 401);
+    //     }
 
-    //     $newProduct = $product->replicate();
-
+    //     // Get vendor store
     //     $store = $user->stores()->first();
 
-    //     if(!$store){
+    //     if (!$store) {
     //         return response()->json([
-    //             'status'=>false,
-    //             'message'=>'Vendor has no store'
+    //             'status' => false,
+    //             'message' => 'Vendor has no store'
     //         ]);
     //     }
 
-    //     $newProduct->store_id = $store->id;
+    //     DB::beginTransaction();
 
-    //     $newProduct->save();
+    //     try {
 
-    //     foreach($product->images as $image){
+    //         // ✅ Load product with relations
+    //         $product = Product::with(['images', 'combinations'])->findOrFail($id);
 
-    //     ProductImage::create([
+    //         /*
+    //         ===================================
+    //         COPY PRODUCT
+    //         ===================================
+    //         */
+    //         $newProduct = $product->replicate();
 
-    //     'product_id'=>$newProduct->id,
+    //         $newProduct->store_id = $store->id;
 
-    //     'image'=>$image->image
+    //         // Make unique article (important in your DB)
+    //         $newProduct->article = ($product->article ?? 'ART') . '-' . time();
 
-    //     ]);
+    //         $newProduct->status_id = 1;
 
-    //     }
+    //         $newProduct->save();
 
-    //     // foreach($product->combinations as $combo){
+    //         /*
+    //         ===================================
+    //         COPY PRODUCT IMAGES
+    //         ===================================
+    //         */
+    //         foreach ($product->images as $image) {
 
-    //     // ProductCombination::create([
+    //             ProductImage::create([
+    //                 'product_id' => $newProduct->id,
+    //                 'image' => $image->image,
+    //                 'color' => $image->color,
+    //                 'is_primary' => $image->is_primary
+    //             ]);
+    //         }
 
-    //     // 'product_id'=>$newProduct->id,
+    //         /*
+    //         ===================================
+    //         COPY VARIANTS (COMBINATIONS)
+    //         ===================================
+    //         */
+    //         foreach ($product->combinations as $combo) {
 
-    //     // 'combination'=>$combo->combination,
+    //             ProductCombination::create([
+    //                 'product_id' => $newProduct->id,
 
-    //     // 'price'=>$combo->price,
+    //                 // ✅ keep JSON same
+    //                 'combination' => $combo->combination,
 
-    //     // 'stock'=>$combo->stock
+    //                 'description' => $combo->description,
+    //                 'price' => $combo->price,
+    //                 'price_before_discount' => $combo->price_before_discount,
+    //                 'cost_price' => $combo->cost_price,
+    //                 'stock' => $combo->stock,
 
-    //     // ]);
+    //                 // ✅ images already JSON → just copy
+    //                 'images' => $combo->images
+    //             ]);
+    //         }
 
-    //     // }
+    //         DB::commit();
 
-    //     foreach($product->combinations as $combo){
-
-    //         ProductCombination::create([
-
-    //             'product_id'=>$newProduct->id,
-
-    //             'combination'=>$combo->combination,
-
-    //             'price'=>$combo->price,
-
-    //             'stock'=>$combo->stock,
-
-    //             'images'=>$combo->images
-
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Product copied successfully',
+    //             'data' => $newProduct
     //         ]);
 
+    //     } catch (\Exception $e) {
+
+    //         DB::rollback();
+
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Something went wrong',
+    //             'error' => $e->getMessage()
+    //         ]);
     //     }
-
-    //     return response()->json([
-
-    //     'status'=>true,
-
-    //     'message'=>'Product copied successfully'
-
-    //     ]);
-
     // }
 
-  public function copyProduct($id)
+    public function copyProduct(Request $request, $id)
     {
         $user = Auth::guard('api')->user();
 
-        // Check if vendor has at least one store
-        $store = $user->stores()->first();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // ✅ Validate store_id
+        $request->validate([
+            'store_id' => 'required|exists:stores,id'
+        ]);
+
+        // ✅ Check store belongs to vendor
+        $store = $user->stores()->where('id', $request->store_id)->first();
+
         if (!$store) {
             return response()->json([
                 'status' => false,
-                'message' => 'Vendor has no store'
+                'message' => 'Invalid store selected'
             ]);
         }
 
         DB::beginTransaction();
 
         try {
-            // Load product with images and combinations
+
             $product = Product::with(['images', 'combinations'])->findOrFail($id);
 
-            // Replicate main product
+            // Copy product
             $newProduct = $product->replicate();
             $newProduct->store_id = $store->id;
-
-            // Optional: create a new unique slug
-            $newProduct->slug = $product->slug . '-' . time();
-
+            $newProduct->article = ($product->article ?? 'ART') . '-' . time();
+            $newProduct->status_id = 1;
             $newProduct->save();
 
-            // Copy product images
+            // Copy images
             foreach ($product->images as $image) {
                 ProductImage::create([
                     'product_id' => $newProduct->id,
-                    'image' => $image->image
+                    'image' => $image->image,
+                    'color' => $image->color,
+                    'is_primary' => $image->is_primary
                 ]);
             }
 
-            // Copy product combinations / variants
+            // Copy combinations
             foreach ($product->combinations as $combo) {
                 ProductCombination::create([
                     'product_id' => $newProduct->id,
@@ -1144,6 +1218,7 @@ class ProductController extends Controller
             ]);
 
         } catch (\Exception $e) {
+
             DB::rollback();
 
             return response()->json([
