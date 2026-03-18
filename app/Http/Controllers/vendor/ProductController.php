@@ -966,19 +966,6 @@ class ProductController extends Controller
         return $result;
     }
 
-
-    // Size = L,XL
-    // Color = Red,Black
-
-    //output
-
-    // L + Red
-    // L + Black
-    // XL + Red
-    // XL + Black
-
-
-
     public function updateCombination(Request $request, $id)
     {
         $combo = ProductCombination::findOrFail($id);
@@ -1227,6 +1214,189 @@ class ProductController extends Controller
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+
+    public function update(Request $request, $id)
+    {
+        /* ===============================
+        AUTH USER
+        =============================== */
+        $user = Auth::guard('api')->user();
+        if (!$user || $user->role != 2 || $user->status_id != 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Vendor not authenticated.',
+            ], 403);
+        }
+
+        /* ===============================
+        FIND PRODUCT
+        =============================== */
+       $product = Product::where('id', $id)
+        ->whereIn('store_id', $user->stores()->pluck('id'))
+        ->first();
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not found.',
+            ], 404);
+        }
+
+        /* ===============================
+        VALIDATION
+        =============================== */
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|required|string',
+            'description' => 'nullable|string',
+            'price' => 'sometimes|required|numeric',
+            'discount_price' => 'nullable|numeric',
+            'available_quantity' => 'sometimes|required|integer|min:0',
+            'delivery_available' => 'nullable|boolean',
+            'delivery_price' => 'nullable|numeric',
+            'delivery_time' => 'nullable|string',
+            'characteristics' => 'nullable|array',
+            'tags' => 'nullable|array',
+
+            'images' => 'nullable|array',
+            'images.*' => 'file|mimes:jpeg,jpg,png,gif',
+
+            'attributes_json' => 'nullable|array',
+
+            'cost_price' => 'nullable|numeric',
+            'price_before_discount' => 'nullable|numeric',
+            'article' => 'nullable|string',
+            'weight' => 'nullable|numeric',
+            'length' => 'nullable|numeric',
+            'width' => 'nullable|numeric',
+            'height' => 'nullable|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        /* ===============================
+        UPDATE PRODUCT DATA
+        =============================== */
+        $product->update([
+            'name' => $request->name ?? $product->name,
+            'description' => $request->description ?? $product->description,
+            'price' => $request->price ?? $product->price,
+            'discount_price' => $request->discount_price,
+            'available_quantity' => $request->available_quantity ?? $product->available_quantity,
+            'delivery_available' => $request->delivery_available ?? $product->delivery_available,
+            'delivery_price' => $request->delivery_price,
+            'delivery_time' => $request->delivery_time,
+            'characteristics' => $request->characteristics ? json_encode($request->characteristics) : $product->characteristics,
+            'tags' => $request->tags ? json_encode($request->tags) : $product->tags,
+            'attributes_json' => $request->attributes_json ?? $product->attributes_json,
+            'cost_price' => $request->cost_price,
+            'price_before_discount' => $request->price_before_discount,
+            'article' => $request->article,
+            'weight' => $request->weight,
+            'length' => $request->length,
+            'width' => $request->width,
+            'height' => $request->height,
+        ]);
+
+        /* ===============================
+        UPDATE IMAGES
+        =============================== */
+        $productImagesFilenames = [];
+
+        if ($request->hasFile('images')) {
+
+            // delete old images
+            foreach ($product->images as $img) {
+                $path = public_path('assets/product_images/' . $img->image);
+                if (file_exists($path)) {
+                    unlink($path);
+                }
+            }
+            ProductImage::where('product_id', $product->id)->delete();
+
+            // upload new
+            foreach ($request->file('images') as $index => $file) {
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('assets/product_images'), $filename);
+
+                $productImagesFilenames[] = $filename;
+
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image' => $filename,
+                    'is_primary' => $index === 0 ? 1 : 0,
+                ]);
+            }
+
+            // ✅ UPDATE COMBINATION IMAGES ALSO
+            ProductCombination::where('product_id', $product->id)
+                ->update([
+                    'images' => json_encode($productImagesFilenames)
+                ]);
+        }
+
+        /* ===============================
+        UPDATE VARIANTS / COMBINATIONS
+        =============================== */
+        if ($request->has('attributes_json')) {
+
+            $variantData = $request->attributes_json;
+
+            // DELETE OLD COMBINATIONS
+            ProductCombination::where('product_id', $product->id)->delete();
+
+            // SAVE ATTRIBUTE REQUESTS
+            $categoryAttr = \DB::table('category_attributes')
+                ->where('child_category_id', $product->child_category_id)
+                ->first();
+
+            $existingAttributes = $categoryAttr ? json_decode($categoryAttr->attributes_json ?? '{}', true) : [];
+
+            foreach ($variantData as $attrName => $values) {
+                foreach ($values as $val) {
+                    if (!isset($existingAttributes[$attrName]) || !in_array($val, $existingAttributes[$attrName])) {
+                        AttributeRequest::firstOrCreate([
+                            'vendor_id' => $user->id,
+                            'child_category_id' => $product->child_category_id,
+                            'attribute_name' => $attrName,
+                            'attribute_value' => $val
+                        ]);
+                    }
+                }
+            }
+
+            // GENERATE NEW COMBINATIONS
+            $combinations = $this->generateCombinations($variantData);
+
+            foreach ($combinations as $combo) {
+                ProductCombination::create([
+                    'product_id' => $product->id,
+                    'combination' => json_encode($combo),
+                    'description' => $product->description,
+                    'price' => $product->price,
+                    'price_before_discount' => $product->price_before_discount,
+                    'cost_price' => $product->cost_price,
+                    'stock' => $product->available_quantity,
+                    'images' => json_encode(
+                        $productImagesFilenames ?: $product->images->pluck('image')->toArray()
+                    ),
+                ]);
+            }
+        }
+
+        $product->load('images');
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product updated successfully.',
+            'data' => $this->formatProduct($product),
+        ], 200);
     }
 
 
