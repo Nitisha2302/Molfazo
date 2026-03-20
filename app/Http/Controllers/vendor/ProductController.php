@@ -272,6 +272,194 @@ class ProductController extends Controller
     //     ], 200);
     // }
 
+    // public function create(Request $request)
+    // {
+    //     /* ===============================
+    //     AUTHENTICATED USER
+    //     =============================== */
+    //     $user = Auth::guard('api')->user();
+    //     if (!$user || $user->role != 2 || $user->status_id != 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Vendor account is not approved or authenticated.',
+    //         ], 403);
+    //     }
+
+    //     /* ===============================
+    //     VALIDATION
+    //     =============================== */
+    //     $validator = Validator::make($request->all(), [
+    //         'store_id' => 'required|exists:stores,id',
+    //         'category_id' => 'nullable|exists:categories,id',
+    //         'sub_category_id' => 'nullable|exists:sub_categories,id',
+    //         'child_category_id' => 'nullable|exists:child_categories,id',
+    //         'name' => 'required|string',
+    //         'description' => 'nullable|string',
+    //         'price' => 'required|numeric',
+    //         'discount_price' => 'nullable|numeric',
+    //         'available_quantity' => 'required|integer|min:0',
+    //         'delivery_available' => 'nullable|boolean',
+    //         'delivery_price' => 'nullable|numeric',
+    //         'delivery_time' => 'nullable|string',
+    //         'characteristics' => 'nullable|array',
+    //         'tags' => 'nullable|array',
+    //         'images' => 'required|array|min:1',
+    //         'images.*' => 'file|mimes:jpeg,jpg,png,gif',
+    //         'attributes_json' => 'nullable|array',
+
+    //         'cost_price' => 'nullable|numeric',
+    //         'price_before_discount' => 'nullable|numeric',
+    //         'article' => 'nullable|string',
+    //         'weight' => 'nullable|numeric',
+    //         'length' => 'nullable|numeric',
+    //         'width' => 'nullable|numeric',
+    //         'height' => 'nullable|numeric',
+    //     ], [
+    //         'store_id.required' => 'Please select a store.',
+    //         'store_id.exists' => 'The selected store does not exist.',
+    //         'name.required' => 'Product name is required.',
+    //         'price.required' => 'Product price is required.',
+    //         'price.numeric' => 'Price must be a valid number.',
+    //         'discount_price.numeric' => 'Discount price must be a valid number.',
+    //         'available_quantity.required' => 'Available quantity is required.',
+    //         'available_quantity.integer' => 'Available quantity must be an integer.',
+    //         'images.required' => 'At least one image is required.',
+    //         'images.array' => 'Images must be sent as an array.',
+    //         'images.*.mimes' => 'Each image must be jpeg, jpg, png, or gif.',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validator->errors()->first(),
+    //         ], 422);
+    //     }
+
+    //     /* ===============================
+    //     CHECK STORE OWNERSHIP
+    //     =============================== */
+    //     $store = $user->stores()->where('id', $request->store_id)->first();
+    //     if (!$store || $store->status_id != 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid or unapproved store.',
+    //         ], 403);
+    //     }
+
+    //     if ($request->child_category_id) {
+    //         $childCategory = ChildCategory::where('id', $request->child_category_id)
+    //             ->where('sub_category_id', $request->sub_category_id)
+    //             ->first();
+
+    //         if (!$childCategory) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Child category does not belong to selected sub-category.',
+    //             ], 422);
+    //         }
+    //     }
+
+    //     $variantData = $request->variants ?? $request->attributes_json;
+
+    //     /* ===============================
+    //     CREATE PRODUCT
+    //     =============================== */
+    //     $product = Product::create([
+    //         'store_id' => $request->store_id,
+    //         'category_id' => $request->category_id,
+    //         'sub_category_id' => $request->sub_category_id,
+    //         'child_category_id' => $request->child_category_id,
+    //         'name' => $request->name,
+    //         'description' => $request->description,
+    //         'price' => $request->price,
+    //         'discount_price' => $request->discount_price,
+    //         'available_quantity' => $request->available_quantity,
+    //         'delivery_available' => $request->delivery_available ?? 1,
+    //         'delivery_price' => $request->delivery_price,
+    //         'delivery_time' => $request->delivery_time,
+    //         'characteristics' => $request->characteristics ? json_encode($request->characteristics) : null,
+    //         'tags' => $request->tags ? json_encode($request->tags) : null,
+    //         'attributes_json' => $variantData ?? null,
+    //         'status_id' => 1,
+    //         'cost_price' => $request->cost_price,
+    //         'price_before_discount' => $request->price_before_discount,
+    //         'article' => $request->article,
+    //         'weight' => $request->weight,
+    //         'length' => $request->length,
+    //         'width' => $request->width,
+    //         'height' => $request->height,
+    //     ]);
+
+    //     /* ===============================
+    //     UPLOAD PRODUCT IMAGES
+    //     =============================== */
+    //     $productImagesFilenames = [];
+    //     if ($request->hasFile('images')) {
+    //         foreach ($request->file('images') as $index => $file) {
+    //             $filename = time() . '_' . $file->getClientOriginalName();
+    //             $file->move(public_path('assets/product_images'), $filename);
+
+    //             $productImagesFilenames[] = $filename;
+
+    //             ProductImage::create([
+    //                 'product_id' => $product->id,
+    //                 'image' => $filename,
+    //                 'is_primary' => $index === 0 ? 1 : 0,
+    //             ]);
+    //         }
+    //     }
+
+    //     /* ===============================
+    //     SAVE VARIANTS / COMBINATIONS
+    //     USING MAIN PRODUCT IMAGES
+    //     =============================== */
+    //     if ($variantData) {
+    //         $categoryAttr = \DB::table('category_attributes')
+    //             ->where('child_category_id', $request->child_category_id)
+    //             ->first();
+
+    //         $existingAttributes = $categoryAttr ? json_decode($categoryAttr->attributes_json ?? '{}', true) : [];
+
+    //         foreach ($variantData as $attrName => $values) {
+    //             foreach ($values as $val) {
+    //                 if (!isset($existingAttributes[$attrName]) || !in_array($val, $existingAttributes[$attrName])) {
+    //                     AttributeRequest::firstOrCreate([
+    //                         'vendor_id' => $user->id,
+    //                         'child_category_id' => $request->child_category_id,
+    //                         'attribute_name' => $attrName,
+    //                         'attribute_value' => $val
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+
+    //         $combinations = $this->generateCombinations($variantData);
+
+    //         foreach ($combinations as $combo) {
+    //             ProductCombination::create([
+    //                 'product_id' => $product->id,
+    //                 'combination' => json_encode($combo),
+    //                 'description' => $request->description ?? null,
+    //                 'price' => $request->price,
+    //                 'price_before_discount' => $request->price_before_discount,
+    //                 'cost_price' => $request->cost_price,
+    //                 'stock' => $request->available_quantity,
+    //                 'images' => json_encode($productImagesFilenames), // ✅ USE MAIN PRODUCT IMAGES
+    //             ]);
+    //         }
+    //     }
+
+    //     $product->load('images');
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Product added successfully.',
+    //         'data' => $this->formatProduct($product),
+    //     ], 200);
+    // }
+
+    // new upadted flow witha atribute change also and frontend combination also 
+
     public function create(Request $request)
     {
         /* ===============================
@@ -306,6 +494,14 @@ class ProductController extends Controller
             'images' => 'required|array|min:1',
             'images.*' => 'file|mimes:jpeg,jpg,png,gif',
             'attributes_json' => 'nullable|array',
+
+             'combinations' => 'nullable|array',
+
+            'combinations.*.combination' => 'required|array',
+            'combinations.*.price' => 'required|numeric',
+            'combinations.*.stock' => 'required|integer',
+            'combinations.*.images' => 'nullable|array',
+            'combinations.*.images.*' => 'image',
 
             'cost_price' => 'nullable|numeric',
             'price_before_discount' => 'nullable|numeric',
@@ -409,47 +605,75 @@ class ProductController extends Controller
             }
         }
 
-        /* ===============================
-        SAVE VARIANTS / COMBINATIONS
-        USING MAIN PRODUCT IMAGES
+       /* ===============================
+        HANDLE ATTRIBUTES + REQUEST TO ADMIN
         =============================== */
-        if ($variantData) {
-            $categoryAttr = \DB::table('category_attributes')
+        if ($request->attributes_json) {
+
+            $categoryAttr = DB::table('category_attributes')
                 ->where('child_category_id', $request->child_category_id)
                 ->first();
 
-            $existingAttributes = $categoryAttr ? json_decode($categoryAttr->attributes_json ?? '{}', true) : [];
+            $existing = $categoryAttr
+                ? json_decode($categoryAttr->attributes_json, true)
+                : [];
 
-            foreach ($variantData as $attrName => $values) {
-                foreach ($values as $val) {
-                    if (!isset($existingAttributes[$attrName]) || !in_array($val, $existingAttributes[$attrName])) {
+            foreach ($request->attributes_json as $attr => $values) {
+
+                // NEW ATTRIBUTE
+                if (!isset($existing[$attr])) {
+                    foreach ($values as $val) {
                         AttributeRequest::firstOrCreate([
                             'vendor_id' => $user->id,
                             'child_category_id' => $request->child_category_id,
-                            'attribute_name' => $attrName,
+                            'attribute_name' => $attr,
                             'attribute_value' => $val
                         ]);
                     }
                 }
-            }
 
-            $combinations = $this->generateCombinations($variantData);
-
-            foreach ($combinations as $combo) {
-                ProductCombination::create([
-                    'product_id' => $product->id,
-                    'combination' => json_encode($combo),
-                    'description' => $request->description ?? null,
-                    'price' => $request->price,
-                    'price_before_discount' => $request->price_before_discount,
-                    'cost_price' => $request->cost_price,
-                    'stock' => $request->available_quantity,
-                    'images' => json_encode($productImagesFilenames), // ✅ USE MAIN PRODUCT IMAGES
-                ]);
+                // EXISTING ATTRIBUTE → CHECK VALUES
+                else {
+                    foreach ($values as $val) {
+                        if (!in_array($val, $existing[$attr])) {
+                            AttributeRequest::firstOrCreate([
+                                'vendor_id' => $user->id,
+                                'child_category_id' => $request->child_category_id,
+                                'attribute_name' => $attr,
+                                'attribute_value' => $val
+                            ]);
+                        }
+                    }
+                }
             }
         }
 
-        $product->load('images');
+        /* ===============================
+        SAVE COMBINATIONS (FROM FRONTEND)
+        =============================== */
+        if ($request->combinations) {
+
+            foreach ($request->combinations as $index => $combo) {
+
+                $comboImages = [];
+
+                if ($request->hasFile("combinations.$index.images")) {
+                    foreach ($request->file("combinations.$index.images") as $img) {
+                        $imgName = time().'_'.$img->getClientOriginalName();
+                        $img->move(public_path('assets/product_images'), $imgName);
+                        $comboImages[] = $imgName;
+                    }
+                }
+
+                ProductCombination::create([
+                    'product_id' => $product->id,
+                    'combination' => json_encode($combo['combination']),
+                    'price' => $combo['price'],
+                    'stock' => $combo['stock'],
+                    'images' => json_encode($comboImages ?: $productImagesFilenames),
+                ]);
+            }
+        }
 
         return response()->json([
             'status' => true,
@@ -495,6 +719,42 @@ class ProductController extends Controller
             'data' => $products,
         ], 200);
     }
+
+    // public function list(Request $request)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user || $user->role != 2 || $user->status_id != 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Vendor account is not approved or authenticated.',
+    //         ], 403);
+    //     }
+
+    //     // ✅ Check if global products requested
+    //     if ($request->has('type') && $request->type == 'all') {
+
+    //         // 👉 Show ALL products
+    //         $products = Product::where('status_id', 1)->get();
+
+    //     } else {
+
+    //         // 👉 Show ONLY vendor products (your existing logic)
+    //         $products = Product::whereHas('store', function ($q) use ($user) {
+    //             $q->where('user_id', $user->id);
+    //         })->get();
+    //     }
+
+    //     $products = $products->map(function ($product) {
+    //         return $this->formatProduct($product);
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Products fetched successfully.',
+    //         'data' => $products,
+    //     ], 200);
+    // }
 
     /**
      * Get product details
@@ -930,19 +1190,6 @@ class ProductController extends Controller
         return $result;
     }
 
-
-    // Size = L,XL
-    // Color = Red,Black
-
-    //output
-
-    // L + Red
-    // L + Black
-    // XL + Red
-    // XL + Black
-
-
-
     public function updateCombination(Request $request, $id)
     {
         $combo = ProductCombination::findOrFail($id);
@@ -955,7 +1202,7 @@ class ProductController extends Controller
 
         // If new images uploaded
         if ($request->hasFile('images')) {
-            
+
 
             foreach ($request->file('images') as $image) {
 
@@ -1009,119 +1256,157 @@ class ProductController extends Controller
 
     // public function copyProduct($id)
     // {
-
     //     $user = Auth::guard('api')->user();
 
-    //     $product = Product::findOrFail($id);
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Unauthorized'
+    //         ], 401);
+    //     }
 
-    //     $newProduct = $product->replicate();
-
+    //     // Get vendor store
     //     $store = $user->stores()->first();
 
-    //     if(!$store){
+    //     if (!$store) {
     //         return response()->json([
-    //             'status'=>false,
-    //             'message'=>'Vendor has no store'
+    //             'status' => false,
+    //             'message' => 'Vendor has no store'
     //         ]);
     //     }
 
-    //     $newProduct->store_id = $store->id;
+    //     DB::beginTransaction();
 
-    //     $newProduct->save();
+    //     try {
 
-    //     foreach($product->images as $image){
+    //         // ✅ Load product with relations
+    //         $product = Product::with(['images', 'combinations'])->findOrFail($id);
 
-    //     ProductImage::create([
+    //         /*
+    //         ===================================
+    //         COPY PRODUCT
+    //         ===================================
+    //         */
+    //         $newProduct = $product->replicate();
 
-    //     'product_id'=>$newProduct->id,
+    //         $newProduct->store_id = $store->id;
 
-    //     'image'=>$image->image
+    //         // Make unique article (important in your DB)
+    //         $newProduct->article = ($product->article ?? 'ART') . '-' . time();
 
-    //     ]);
+    //         $newProduct->status_id = 1;
 
-    //     }
+    //         $newProduct->save();
 
-    //     // foreach($product->combinations as $combo){
+    //         /*
+    //         ===================================
+    //         COPY PRODUCT IMAGES
+    //         ===================================
+    //         */
+    //         foreach ($product->images as $image) {
 
-    //     // ProductCombination::create([
+    //             ProductImage::create([
+    //                 'product_id' => $newProduct->id,
+    //                 'image' => $image->image,
+    //                 'color' => $image->color,
+    //                 'is_primary' => $image->is_primary
+    //             ]);
+    //         }
 
-    //     // 'product_id'=>$newProduct->id,
+    //         /*
+    //         ===================================
+    //         COPY VARIANTS (COMBINATIONS)
+    //         ===================================
+    //         */
+    //         foreach ($product->combinations as $combo) {
 
-    //     // 'combination'=>$combo->combination,
+    //             ProductCombination::create([
+    //                 'product_id' => $newProduct->id,
 
-    //     // 'price'=>$combo->price,
+    //                 // ✅ keep JSON same
+    //                 'combination' => $combo->combination,
 
-    //     // 'stock'=>$combo->stock
+    //                 'description' => $combo->description,
+    //                 'price' => $combo->price,
+    //                 'price_before_discount' => $combo->price_before_discount,
+    //                 'cost_price' => $combo->cost_price,
+    //                 'stock' => $combo->stock,
 
-    //     // ]);
+    //                 // ✅ images already JSON → just copy
+    //                 'images' => $combo->images
+    //             ]);
+    //         }
 
-    //     // }
+    //         DB::commit();
 
-    //     foreach($product->combinations as $combo){
-
-    //         ProductCombination::create([
-
-    //             'product_id'=>$newProduct->id,
-
-    //             'combination'=>$combo->combination,
-
-    //             'price'=>$combo->price,
-
-    //             'stock'=>$combo->stock,
-
-    //             'images'=>$combo->images
-
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Product copied successfully',
+    //             'data' => $newProduct
     //         ]);
 
+    //     } catch (\Exception $e) {
+
+    //         DB::rollback();
+
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Something went wrong',
+    //             'error' => $e->getMessage()
+    //         ]);
     //     }
-
-    //     return response()->json([
-
-    //     'status'=>true,
-
-    //     'message'=>'Product copied successfully'
-
-    //     ]);
-
     // }
 
-  public function copyProduct($id)
+    public function copyProduct(Request $request, $id)
     {
         $user = Auth::guard('api')->user();
 
-        // Check if vendor has at least one store
-        $store = $user->stores()->first();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // ✅ Validate store_id
+        $request->validate([
+            'store_id' => 'required|exists:stores,id'
+        ]);
+
+        // ✅ Check store belongs to vendor
+        $store = $user->stores()->where('id', $request->store_id)->first();
+
         if (!$store) {
             return response()->json([
                 'status' => false,
-                'message' => 'Vendor has no store'
+                'message' => 'Invalid store selected'
             ]);
         }
 
         DB::beginTransaction();
 
         try {
-            // Load product with images and combinations
+
             $product = Product::with(['images', 'combinations'])->findOrFail($id);
 
-            // Replicate main product
+            // Copy product
             $newProduct = $product->replicate();
             $newProduct->store_id = $store->id;
-
-            // Optional: create a new unique slug
-            $newProduct->slug = $product->slug . '-' . time();
-
+            $newProduct->article = ($product->article ?? 'ART') . '-' . time();
+            $newProduct->status_id = 1;
             $newProduct->save();
 
-            // Copy product images
+            // Copy images
             foreach ($product->images as $image) {
                 ProductImage::create([
                     'product_id' => $newProduct->id,
-                    'image' => $image->image
+                    'image' => $image->image,
+                    'color' => $image->color,
+                    'is_primary' => $image->is_primary
                 ]);
             }
 
-            // Copy product combinations / variants
+            // Copy combinations
             foreach ($product->combinations as $combo) {
                 ProductCombination::create([
                     'product_id' => $newProduct->id,
@@ -1144,6 +1429,7 @@ class ProductController extends Controller
             ]);
 
         } catch (\Exception $e) {
+
             DB::rollback();
 
             return response()->json([
@@ -1154,5 +1440,397 @@ class ProductController extends Controller
         }
     }
 
+
+    // public function update(Request $request, $id)
+    // {
+    //     /* ===============================
+    //     AUTH USER
+    //     =============================== */
+    //     $user = Auth::guard('api')->user();
+    //     if (!$user || $user->role != 2 || $user->status_id != 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Vendor not authenticated.',
+    //         ], 403);
+    //     }
+
+    //     /* ===============================
+    //     FIND PRODUCT
+    //     =============================== */
+    //    $product = Product::where('id', $id)
+    //     ->whereIn('store_id', $user->stores()->pluck('id'))
+    //     ->first();
+
+    //     if (!$product) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Product not found.',
+    //         ], 404);
+    //     }
+
+    //     /* ===============================
+    //     VALIDATION
+    //     =============================== */
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'sometimes|required|string',
+    //         'description' => 'nullable|string',
+    //         'price' => 'sometimes|required|numeric',
+    //         'discount_price' => 'nullable|numeric',
+    //         'available_quantity' => 'sometimes|required|integer|min:0',
+    //         'delivery_available' => 'nullable|boolean',
+    //         'delivery_price' => 'nullable|numeric',
+    //         'delivery_time' => 'nullable|string',
+    //         'characteristics' => 'nullable|array',
+    //         'tags' => 'nullable|array',
+
+    //         'images' => 'nullable|array',
+    //         'images.*' => 'file|mimes:jpeg,jpg,png,gif',
+
+    //         'attributes_json' => 'nullable|array',
+
+    //         'cost_price' => 'nullable|numeric',
+    //         'price_before_discount' => 'nullable|numeric',
+    //         'article' => 'nullable|string',
+    //         'weight' => 'nullable|numeric',
+    //         'length' => 'nullable|numeric',
+    //         'width' => 'nullable|numeric',
+    //         'height' => 'nullable|numeric',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validator->errors()->first(),
+    //         ], 422);
+    //     }
+
+    //     /* ===============================
+    //     UPDATE PRODUCT DATA
+    //     =============================== */
+    //     $product->update([
+    //         'name' => $request->name ?? $product->name,
+    //         'description' => $request->description ?? $product->description,
+    //         'price' => $request->price ?? $product->price,
+    //         'discount_price' => $request->discount_price,
+    //         'available_quantity' => $request->available_quantity ?? $product->available_quantity,
+    //         'delivery_available' => $request->delivery_available ?? $product->delivery_available,
+    //         'delivery_price' => $request->delivery_price,
+    //         'delivery_time' => $request->delivery_time,
+    //         'characteristics' => $request->characteristics ? json_encode($request->characteristics) : $product->characteristics,
+    //         'tags' => $request->tags ? json_encode($request->tags) : $product->tags,
+    //         'attributes_json' => $request->attributes_json ?? $product->attributes_json,
+    //         'cost_price' => $request->cost_price,
+    //         'price_before_discount' => $request->price_before_discount,
+    //         'article' => $request->article,
+    //         'weight' => $request->weight,
+    //         'length' => $request->length,
+    //         'width' => $request->width,
+    //         'height' => $request->height,
+    //     ]);
+
+    //     /* ===============================
+    //     UPDATE IMAGES
+    //     =============================== */
+    //     $productImagesFilenames = [];
+
+    //     if ($request->hasFile('images')) {
+
+    //         // delete old images
+    //         foreach ($product->images as $img) {
+    //             $path = public_path('assets/product_images/' . $img->image);
+    //             if (file_exists($path)) {
+    //                 unlink($path);
+    //             }
+    //         }
+    //         ProductImage::where('product_id', $product->id)->delete();
+
+    //         // upload new
+    //         foreach ($request->file('images') as $index => $file) {
+    //             $filename = time() . '_' . $file->getClientOriginalName();
+    //             $file->move(public_path('assets/product_images'), $filename);
+
+    //             $productImagesFilenames[] = $filename;
+
+    //             ProductImage::create([
+    //                 'product_id' => $product->id,
+    //                 'image' => $filename,
+    //                 'is_primary' => $index === 0 ? 1 : 0,
+    //             ]);
+    //         }
+
+    //         // ✅ UPDATE COMBINATION IMAGES ALSO
+    //         ProductCombination::where('product_id', $product->id)
+    //             ->update([
+    //                 'images' => json_encode($productImagesFilenames)
+    //             ]);
+    //     }
+
+    //     /* ===============================
+    //     UPDATE VARIANTS / COMBINATIONS
+    //     =============================== */
+    //     if ($request->has('attributes_json')) {
+
+    //         $variantData = $request->attributes_json;
+
+    //         // DELETE OLD COMBINATIONS
+    //         ProductCombination::where('product_id', $product->id)->delete();
+
+    //         // SAVE ATTRIBUTE REQUESTS
+    //         $categoryAttr = \DB::table('category_attributes')
+    //             ->where('child_category_id', $product->child_category_id)
+    //             ->first();
+
+    //         $existingAttributes = $categoryAttr ? json_decode($categoryAttr->attributes_json ?? '{}', true) : [];
+
+    //         foreach ($variantData as $attrName => $values) {
+    //             foreach ($values as $val) {
+    //                 if (!isset($existingAttributes[$attrName]) || !in_array($val, $existingAttributes[$attrName])) {
+    //                     AttributeRequest::firstOrCreate([
+    //                         'vendor_id' => $user->id,
+    //                         'child_category_id' => $product->child_category_id,
+    //                         'attribute_name' => $attrName,
+    //                         'attribute_value' => $val
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+
+    //         // GENERATE NEW COMBINATIONS
+    //         $combinations = $this->generateCombinations($variantData);
+
+    //         foreach ($combinations as $combo) {
+    //             ProductCombination::create([
+    //                 'product_id' => $product->id,
+    //                 'combination' => json_encode($combo),
+    //                 'description' => $product->description,
+    //                 'price' => $product->price,
+    //                 'price_before_discount' => $product->price_before_discount,
+    //                 'cost_price' => $product->cost_price,
+    //                 'stock' => $product->available_quantity,
+    //                 'images' => json_encode(
+    //                     $productImagesFilenames ?: $product->images->pluck('image')->toArray()
+    //                 ),
+    //             ]);
+    //         }
+    //     }
+
+    //     $product->load('images');
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Product updated successfully.',
+    //         'data' => $this->formatProduct($product),
+    //     ], 200);
+    // }
+
+    // with frontend combination 
+
+    public function update(Request $request, $id)
+    {
+        /* ===============================
+        AUTH USER
+        =============================== */
+        $user = Auth::guard('api')->user();
+        if (!$user || $user->role != 2 || $user->status_id != 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Vendor not authenticated.',
+            ], 403);
+        }
+
+        /* ===============================
+        FIND PRODUCT
+        =============================== */
+       $product = Product::where('id', $id)
+        ->whereIn('store_id', $user->stores()->pluck('id'))
+        ->first();
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not found.',
+            ], 404);
+        }
+
+        /* ===============================
+        VALIDATION
+        =============================== */
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|required|string',
+            'description' => 'nullable|string',
+            'price' => 'sometimes|required|numeric',
+            'discount_price' => 'nullable|numeric',
+            'available_quantity' => 'sometimes|required|integer|min:0',
+            'delivery_available' => 'nullable|boolean',
+            'delivery_price' => 'nullable|numeric',
+            'delivery_time' => 'nullable|string',
+            'characteristics' => 'nullable|array',
+            'tags' => 'nullable|array',
+
+            'images' => 'nullable|array',
+            'images.*' => 'file|mimes:jpeg,jpg,png,gif',
+
+            'attributes_json' => 'nullable|array',
+            
+            'combinations' => 'nullable|array',
+            'combinations.*.combination' => 'required|array',
+            'combinations.*.price' => 'required|numeric',
+            'combinations.*.stock' => 'required|integer',
+            'combinations.*.images' => 'nullable|array',
+            'combinations.*.images.*' => 'image',
+
+            'cost_price' => 'nullable|numeric',
+            'price_before_discount' => 'nullable|numeric',
+            'article' => 'nullable|string',
+            'weight' => 'nullable|numeric',
+            'length' => 'nullable|numeric',
+            'width' => 'nullable|numeric',
+            'height' => 'nullable|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        /* ===============================
+        UPDATE PRODUCT DATA
+        =============================== */
+        $product->update([
+            'name' => $request->name ?? $product->name,
+            'description' => $request->description ?? $product->description,
+            'price' => $request->price ?? $product->price,
+            'discount_price' => $request->discount_price,
+            'available_quantity' => $request->available_quantity ?? $product->available_quantity,
+            'delivery_available' => $request->delivery_available ?? $product->delivery_available,
+            'delivery_price' => $request->delivery_price,
+            'delivery_time' => $request->delivery_time,
+            'characteristics' => $request->characteristics ? json_encode($request->characteristics) : $product->characteristics,
+            'tags' => $request->tags ? json_encode($request->tags) : $product->tags,
+            'attributes_json' => $request->attributes_json ?? $product->attributes_json,
+            'cost_price' => $request->cost_price,
+            'price_before_discount' => $request->price_before_discount,
+            'article' => $request->article,
+            'weight' => $request->weight,
+            'length' => $request->length,
+            'width' => $request->width,
+            'height' => $request->height,
+        ]);
+
+        /* ===============================
+        UPDATE IMAGES
+        =============================== */
+        $productImagesFilenames = [];
+
+        if ($request->hasFile('images')) {
+
+            // delete old images
+            foreach ($product->images as $img) {
+                $path = public_path('assets/product_images/' . $img->image);
+                if (file_exists($path)) {
+                    unlink($path);
+                }
+            }
+            ProductImage::where('product_id', $product->id)->delete();
+
+            // upload new
+            foreach ($request->file('images') as $index => $file) {
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('assets/product_images'), $filename);
+
+                $productImagesFilenames[] = $filename;
+
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image' => $filename,
+                    'is_primary' => $index === 0 ? 1 : 0,
+                ]);
+            }
+
+        }
+
+          /* ===============================
+            UPDATE ATTRIBUTES + REQUEST TO ADMIN
+            =============================== */
+            if ($request->attributes_json) {
+
+                $categoryAttr = \DB::table('category_attributes')
+                    ->where('child_category_id', $product->child_category_id)
+                    ->first();
+
+                $existing = $categoryAttr
+                    ? json_decode($categoryAttr->attributes_json, true)
+                    : [];
+
+                foreach ($request->attributes_json as $attr => $values) {
+
+                    if (!isset($existing[$attr])) {
+                        foreach ($values as $val) {
+                            AttributeRequest::firstOrCreate([
+                                'vendor_id' => $user->id,
+                                'child_category_id' => $product->child_category_id,
+                                'attribute_name' => $attr,
+                                'attribute_value' => $val
+                            ]);
+                        }
+                    } else {
+                        foreach ($values as $val) {
+                            if (!in_array($val, $existing[$attr])) {
+                                AttributeRequest::firstOrCreate([
+                                    'vendor_id' => $user->id,
+                                    'child_category_id' => $product->child_category_id,
+                                    'attribute_name' => $attr,
+                                    'attribute_value' => $val
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            /* ===============================
+            UPDATE COMBINATIONS (FROM FRONTEND)
+            =============================== */
+            if ($request->combinations) {
+
+                // delete old
+                ProductCombination::where('product_id', $product->id)->delete();
+
+                foreach ($request->combinations as $index => $combo) {
+
+                    $comboImages = [];
+
+                    if ($request->hasFile("combinations.$index.images")) {
+                        foreach ($request->file("combinations.$index.images") as $img) {
+                            $imgName = time().'_'.$img->getClientOriginalName();
+                            $img->move(public_path('assets/product_images'), $imgName);
+                            $comboImages[] = $imgName;
+                        }
+                    }
+
+                    ProductCombination::create([
+                        'product_id' => $product->id,
+                        'combination' => json_encode($combo['combination']),
+                        'price' => $combo['price'],
+                        'stock' => $combo['stock'],
+                        'images' => json_encode(
+                            $comboImages ?: $productImagesFilenames ?: $product->images->pluck('image')->toArray()
+                        ),
+                    ]);
+                }
+            }
+
+            $product->load('images');
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product updated successfully.',
+            'data' => $this->formatProduct($product),
+        ], 200);
+    }
+
+    
 
 }

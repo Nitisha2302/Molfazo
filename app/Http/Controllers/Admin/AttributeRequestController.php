@@ -31,6 +31,75 @@ class AttributeRequestController extends Controller
         return view('admin.attribute_requests.index', compact('requests'));
     }
 
+    // public function approve($id)
+    // {
+    //     $requestAttr = AttributeRequest::findOrFail($id);
+
+    //     $categoryAttr = CategoryAttribute::where(
+    //         'child_category_id',
+    //         $requestAttr->child_category_id
+    //     )->first();
+
+    //     $attributes = $categoryAttr->attributes_json ?? [];
+
+    //     if(!isset($attributes[$requestAttr->attribute_name])){
+    //         $attributes[$requestAttr->attribute_name] = [];
+    //     }
+
+    //     if(!in_array($requestAttr->attribute_value,$attributes[$requestAttr->attribute_name])){
+    //         $attributes[$requestAttr->attribute_name][] = $requestAttr->attribute_value;
+    //     }
+
+    //     $categoryAttr->update([
+    //         'attributes_json' => $attributes
+    //     ]);
+
+    //     $requestAttr->update([
+    //         'status' => 'approved'
+    //     ]);
+
+    //     return back()->with('success','Attribute approved successfully.');
+    // }
+
+  
+
+    // public function reject($id)
+    // {
+    //     $requestAttr = AttributeRequest::findOrFail($id);
+
+    //     $categoryAttr = CategoryAttribute::where(
+    //         'child_category_id',
+    //         $requestAttr->child_category_id
+    //     )->first();
+
+    //     if ($categoryAttr) {
+
+    //         $attributes = $categoryAttr->attributes_json ?? [];
+
+    //         if(isset($attributes[$requestAttr->attribute_name])){
+
+    //             $attributes[$requestAttr->attribute_name] = array_filter(
+    //                 $attributes[$requestAttr->attribute_name],
+    //                 function($val) use ($requestAttr){
+    //                     return $val != $requestAttr->attribute_value;
+    //                 }
+    //             );
+
+    //             $attributes[$requestAttr->attribute_name] = array_values($attributes[$requestAttr->attribute_name]);
+
+    //             $categoryAttr->update([
+    //                 'attributes_json' => $attributes
+    //             ]);
+    //         }
+    //     }
+
+    //     $requestAttr->update([
+    //         'status' => 'rejected'
+    //     ]);
+
+    //     return back()->with('success','Attribute rejected and removed.');
+    // }
+
     public function approve($id)
     {
         $requestAttr = AttributeRequest::findOrFail($id);
@@ -40,28 +109,42 @@ class AttributeRequestController extends Controller
             $requestAttr->child_category_id
         )->first();
 
+        // ✅ handle null
         $attributes = $categoryAttr->attributes_json ?? [];
 
-        if(!isset($attributes[$requestAttr->attribute_name])){
-            $attributes[$requestAttr->attribute_name] = [];
+        $attrName = $requestAttr->attribute_name;
+        $attrValue = $requestAttr->attribute_value;
+
+        // ✅ create attribute if not exist
+        if (!isset($attributes[$attrName])) {
+            $attributes[$attrName] = [];
         }
 
-        if(!in_array($requestAttr->attribute_value,$attributes[$requestAttr->attribute_name])){
-            $attributes[$requestAttr->attribute_name][] = $requestAttr->attribute_value;
+        // ✅ avoid duplicate (case-insensitive)
+        $existingValues = array_map('strtolower', $attributes[$attrName]);
+
+        if (!in_array(strtolower($attrValue), $existingValues)) {
+            $attributes[$attrName][] = $attrValue;
         }
 
-        $categoryAttr->update([
-            'attributes_json' => $attributes
-        ]);
+        // ✅ create if not exist
+        if (!$categoryAttr) {
+            CategoryAttribute::create([
+                'child_category_id' => $requestAttr->child_category_id,
+                'attributes_json' => $attributes
+            ]);
+        } else {
+            $categoryAttr->update([
+                'attributes_json' => $attributes
+            ]);
+        }
 
-        $requestAttr->update([
-            'status' => 'approved'
-        ]);
+        $requestAttr->update(['status' => 'approved']);
 
-        return back()->with('success','Attribute approved successfully.');
+        return back()->with('success', 'Attribute approved successfully.');
     }
 
-   public function reject($id)
+    public function reject($id)
     {
         $requestAttr = AttributeRequest::findOrFail($id);
 
@@ -74,16 +157,25 @@ class AttributeRequestController extends Controller
 
             $attributes = $categoryAttr->attributes_json ?? [];
 
-            if(isset($attributes[$requestAttr->attribute_name])){
+            $attrName = $requestAttr->attribute_name;
+            $attrValue = $requestAttr->attribute_value;
 
-                $attributes[$requestAttr->attribute_name] = array_filter(
-                    $attributes[$requestAttr->attribute_name],
-                    function($val) use ($requestAttr){
-                        return $val != $requestAttr->attribute_value;
+            if (isset($attributes[$attrName])) {
+
+                // ✅ remove value
+                $attributes[$attrName] = array_filter(
+                    $attributes[$attrName],
+                    function ($val) use ($attrValue) {
+                        return strtolower($val) != strtolower($attrValue);
                     }
                 );
 
-                $attributes[$requestAttr->attribute_name] = array_values($attributes[$requestAttr->attribute_name]);
+                $attributes[$attrName] = array_values($attributes[$attrName]);
+
+                // 🔥 remove attribute if empty
+                if (empty($attributes[$attrName])) {
+                    unset($attributes[$attrName]);
+                }
 
                 $categoryAttr->update([
                     'attributes_json' => $attributes
@@ -91,11 +183,9 @@ class AttributeRequestController extends Controller
             }
         }
 
-        $requestAttr->update([
-            'status' => 'rejected'
-        ]);
+        $requestAttr->update(['status' => 'rejected']);
 
-        return back()->with('success','Attribute rejected and removed.');
+        return back()->with('success', 'Attribute rejected and removed.');
     }
 
 }
