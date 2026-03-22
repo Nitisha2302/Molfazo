@@ -28,7 +28,7 @@ class ProductController extends Controller
                         ->toArray();
         }
         $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage', 'reviews.images','store.user','store.vendorBanks.bank','combinations',  ])->withAvg('reviews', 'rating')
-        ->withCount('reviews');
+        ->withCount('reviews')->where('approval_status', 'approved');
 
         // Filters
         if ($request->has('category_id')) {
@@ -195,6 +195,7 @@ class ProductController extends Controller
         ->withCount('reviews')
         ->where('id', $id)
         ->where('status_id', 1)
+        ->where('approval_status', 'approved')
         ->first();
 
       
@@ -245,6 +246,7 @@ class ProductController extends Controller
         ->where('status_id', 1)
         ->where('id', '!=', $product->id)
         ->where('category_id', $product->category_id)
+        ->where('approval_status', 'approved')
         ->get();
 
        $relatedProducts = $relatedProducts->map(function ($item) use ($favIds) {
@@ -305,7 +307,7 @@ class ProductController extends Controller
                         ->toArray();
         }
         $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage','store.user','store.vendorBanks.bank','combinations', ])
-            ->where('status_id', 1);
+            ->where('status_id', 1)->where('approval_status', 'approved');
 
         //  Search Keyword
         if ($request->has('search') && $request->search != '') {

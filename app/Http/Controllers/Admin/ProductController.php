@@ -49,4 +49,36 @@ class ProductController extends Controller
             ->with('success', 'Product deleted successfully.');
     }
 
+
+    public function approve($id)
+    {
+        $product = Product::findOrFail($id);
+
+        if ($product->approval_status == 'approved') {
+            return back()->with('success', 'Already approved');
+        }
+
+        // 🔥 GENERATE UNIQUE ARTICLE NUMBER
+        $articleNumber = 'ART-' . strtoupper(uniqid());
+
+        $product->update([
+            'approval_status' => 'approved',
+            'article_number' => $articleNumber,
+            'is_original' => 1
+        ]);
+
+        return back()->with('success', 'Product approved successfully.');
+    }
+
+    public function reject($id)
+    {
+        $product = Product::findOrFail($id);
+
+        $product->update([
+            'approval_status' => 'rejected'
+        ]);
+
+        return back()->with('success', 'Product rejected successfully.');
+    }
+
 }

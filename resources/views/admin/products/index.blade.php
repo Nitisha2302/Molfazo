@@ -50,7 +50,7 @@
                     <th>Store</th>
                     <th>Category</th>
                     <th>Price</th>
-                    <!-- <th>Status</th> -->
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -114,16 +114,15 @@
                         @endif
                     </td>
 
-                    <!-- <td>
+                    <td>
                         <span class="badge
-                            @if($product->status_id == 1) bg-success
-                            @elseif($product->status_id == 2) bg-warning
+                            @if($product->approval_status == 'approved') bg-success
+                            @elseif($product->approval_status == 'pending') bg-warning
                             @else bg-danger @endif">
-                            @if($product->status_id == 1) Active
-                            @elseif($product->status_id == 2) Blocked
-                            @else Deleted @endif
+
+                            {{ ucfirst($product->approval_status) }}
                         </span>
-                    </td> -->
+                    </td>
 
                     <td>
                         <div class="d-flex align-items-center gap-2">
@@ -141,6 +140,50 @@
                                     data-bs-target="#deleteProductModal">
                                 <i class="fa fa-trash"></i>
                             </button>
+
+                            @if($product->approval_status == 'pending')
+
+                            <!-- APPROVE -->
+                            <form method="POST"
+                                action="{{ route('dashboard.admin.products.approve', $product->id) }}">
+                                @csrf
+                                <button class="btn btn-success btn-sm">
+                                    Approve
+                                </button>
+                            </form>
+
+                            <!-- REJECT -->
+                            <form method="POST"
+                                action="{{ route('dashboard.admin.products.reject', $product->id) }}">
+                                @csrf
+                                <button class="btn btn-danger btn-sm">
+                                    Reject
+                                </button>
+                            </form>
+
+                        @elseif($product->approval_status == 'approved')
+
+                            <!-- ONLY REJECT -->
+                            <form method="POST"
+                                action="{{ route('dashboard.admin.products.reject', $product->id) }}">
+                                @csrf
+                                <button class="btn btn-danger btn-sm">
+                                    Reject
+                                </button>
+                            </form>
+
+                        @else
+
+                            <!-- ONLY APPROVE -->
+                            <form method="POST"
+                                action="{{ route('dashboard.admin.products.approve', $product->id) }}">
+                                @csrf
+                                <button class="btn btn-success btn-sm">
+                                    Approve
+                                </button>
+                            </form>
+
+                        @endif
                         </div>
                     </td>
 

@@ -132,6 +132,9 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
 
     Route::get('/products', [ProductController::class, 'index'])->name('products');
     Route::delete('/products/{id}/delete', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::post('/products/{id}/approve', [ProductController::class, 'approve'])->name('products.approve');
+
+    Route::post('/products/{id}/reject', [ProductController::class, 'reject'])->name('products.reject');
 
 
     // Banner Routes
