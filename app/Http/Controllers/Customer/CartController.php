@@ -146,7 +146,94 @@ class CartController extends Controller
     /**
      * CART LIST
      */
-    public function list()
+    // public function list()
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Unauthorized'
+    //         ], 401);
+    //     }
+
+    //        //  Get favorite product ids
+    //      $favIds = FavoriteProducts::where('user_id', $user->id)
+    //             ->pluck('product_id')
+    //             ->toArray();
+
+
+    //     $cartItems = Cart::where('user_id', $user->id)
+    //         ->with([
+    //             'product:id,name,price,discount_price,store_id',
+    //             'product.primaryImage',
+    //             'product.store.user',
+    //            'product.store.vendorBanks.bank',
+    //            'product.combinations' 
+    //         ])
+    //         ->get();
+
+    //     $total = 0;
+
+    //    $cartItems->transform(function ($item) use (&$total, $favIds) {
+    //         $price = $item->product->discount_price ?? $item->product->price;
+    //         $item->item_total = $price * $item->quantity;
+    //         $total += $item->item_total;
+    //         // 🔥 primary image as value
+    //         $item->product->primaryimage = optional($item->product->primaryImage)->image;
+    //         unset($item->product->primaryImage);
+    //         //  Favorite status
+    //        $item->product->is_favorite = in_array($item->product->id, $favIds);
+
+    //        $item->product->combinations = $item->product->combinations->map(function ($combo) {
+    //             return [
+    //                 'id' => $combo->id,
+    //                 'variant' => json_decode($combo->combination, true),
+    //                 'price' => $combo->price,
+    //                 'stock' => $combo->stock,
+    //                 'images' => $combo->images ? json_decode($combo->images, true) : []
+    //             ];
+    //         });
+
+    //         //  BANK DETAILS (Same as details API)
+    //             $paymentModes = $item->product->store->user->payment_modes ?? [];
+
+    //         if (in_array('bank', $paymentModes)) {
+
+    //             $item->product->banks = $item->product->store->vendorBanks->map(function ($vendorBank) {
+    //                 return [
+    //                     'bank_id' => $vendorBank->bank->id ?? null,
+    //                     'name' => $vendorBank->bank->name ?? null,
+    //                     'logo' => $vendorBank->bank->logo ?? null,
+    //                 ];
+    //             });
+
+    //         } else {
+    //             $item->product->banks = [];
+    //         }
+
+    //         return $item;
+    //     });
+
+    //      // Optional: empty cart case
+    //     if ($cartItems->isEmpty()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Cart is empty'
+    //         ], 201);
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Cart fetched successfully',
+    //         'data' => [
+    //             'items' => $cartItems,
+    //             'cart_total_amount' => $total
+    //         ]
+    //     ]);
+    // }
+
+     public function list()
     {
         $user = Auth::guard('api')->user();
 
@@ -176,7 +263,9 @@ class CartController extends Controller
         $total = 0;
 
        $cartItems->transform(function ($item) use (&$total, $favIds) {
-            $price = $item->product->discount_price ?? $item->product->price;
+            $price = $item->combination->price 
+                ?? $item->product->discount_price 
+                ?? $item->product->price;
             $item->item_total = $price * $item->quantity;
             $total += $item->item_total;
             // 🔥 primary image as value
@@ -185,15 +274,15 @@ class CartController extends Controller
             //  Favorite status
            $item->product->is_favorite = in_array($item->product->id, $favIds);
 
-           $item->product->combinations = $item->product->combinations->map(function ($combo) {
-                return [
-                    'id' => $combo->id,
-                    'variant' => json_decode($combo->combination, true),
-                    'price' => $combo->price,
-                    'stock' => $combo->stock,
-                    'images' => $combo->images ? json_decode($combo->images, true) : []
-                ];
-            });
+           $item->selected_combination = $item->combination ? [
+            'id' => $item->combination->id,
+            'variant' => json_decode($item->combination->combination, true),
+            'price' => $item->combination->price,
+            'stock' => $item->combination->stock,
+            'images' => $item->combination->images 
+                ? json_decode($item->combination->images, true) 
+                : []
+               ] : null;
 
             //  BANK DETAILS (Same as details API)
                 $paymentModes = $item->product->store->user->payment_modes ?? [];
