@@ -83,9 +83,15 @@ class Product extends Model
     }
 
     public function combinations()
-{
-    return $this->hasMany(ProductCombination::class);
-}
+    {
+        return $this->hasMany(ProductCombination::class);
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Product::class, 'parent_product_id')
+            ->where('approval_status', 'approved');
+    }
 
     
 }
