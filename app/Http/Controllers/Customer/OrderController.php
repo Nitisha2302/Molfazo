@@ -693,15 +693,18 @@ class OrderController extends Controller
                 ] : null,
                 'items' => $order->items->map(function ($item) {
                       $product = $item->product; 
+                       $variant = null;
+                       // If combination exists, decode its JSON
+                    if ($item->combination) {
+                        $variant = json_decode($item->combination->combination, true);
+                    }
                     return [
                         'product_id' => $item->product_id,
                         'product_name' => $item->product->name ?? '',
                         'quantity' => $item->quantity,
                         'price' => $item->price,
                            // ✅ ADD THIS
-                        'variant' => $item->combination
-                            ? json_decode($item->combination->combination, true)
-                            : null,
+                        'variant' =>$variant,
                         'image' => $product && $product->primaryImage
                             ? $product->primaryImage->image
                             : null,
