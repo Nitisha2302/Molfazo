@@ -9,13 +9,66 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
      use Illuminate\Support\Facades\Validator;
 use App\Models\FavoriteProducts;
+use App\Models\ProductCombination;
 
 class CartController extends Controller
 {
     /**
      * ADD TO CART
      */
-    public function add(Request $request)
+    // public function add(Request $request)
+    // {
+
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Unauthorized'
+    //         ], 401);
+    //     }
+        
+    //     $request->validate([
+    //         'product_id' => 'required|exists:products,id',
+    //         'quantity'   => 'required|integer|min:1'
+    //     ]);
+
+       
+
+    //     $product = Product::where('id', $request->product_id)
+    //                 ->where('status_id', 1)
+    //                 ->first();
+
+    //     if (!$product) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Product not available'
+    //         ], 201);
+    //     }
+
+    //     $cartItem = Cart::where('user_id', $user->id)
+    //                 ->where('product_id', $request->product_id)
+    //                 ->first();
+
+    //     if ($cartItem) {
+    //         $cartItem->quantity += $request->quantity;
+    //         $cartItem->save();
+    //     } else {
+    //         Cart::create([
+    //             'user_id'    => $user->id,
+    //             'product_id' => $request->product_id,
+    //             'quantity'   => $request->quantity
+    //         ]);
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Product added to cart'
+    //     ]);
+    // }
+
+
+     public function add(Request $request)
     {
 
         $user = Auth::guard('api')->user();
@@ -29,6 +82,7 @@ class CartController extends Controller
         
         $request->validate([
             'product_id' => 'required|exists:products,id',
+              'combination_id' => 'required|exists:product_combinations,id',
             'quantity'   => 'required|integer|min:1'
         ]);
 
@@ -45,20 +99,43 @@ class CartController extends Controller
             ], 201);
         }
 
-        $cartItem = Cart::where('user_id', $user->id)
-                    ->where('product_id', $request->product_id)
-                    ->first();
+        // ✅ GET COMBINATION
+        $combination = ProductCombination::where('id', $request->combination_id)
+                        ->where('product_id', $product->id)
+                        ->first();
 
-        if ($cartItem) {
-            $cartItem->quantity += $request->quantity;
-            $cartItem->save();
-        } else {
-            Cart::create([
-                'user_id'    => $user->id,
-                'product_id' => $request->product_id,
-                'quantity'   => $request->quantity
-            ]);
+        if (!$combination) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid combination'
+            ], 201);
         }
+
+        // ✅ CHECK STOCK
+        if ($combination->stock < $request->quantity) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Insufficient stock'
+            ], 201);
+        }
+
+          // ✅ CHECK EXISTING CART (IMPORTANT)
+            $cartItem = Cart::where('user_id', $user->id)
+                        ->where('product_id', $product->id)
+                        ->where('combination_id', $combination->id)
+                        ->first();
+
+            if ($cartItem) {
+                $cartItem->quantity += $request->quantity;
+                $cartItem->save();
+            } else {
+                Cart::create([
+                    'user_id'        => $user->id,
+                    'product_id'     => $product->id,
+                    'combination_id' => $combination->id,
+                    'quantity'       => $request->quantity
+                ]);
+            }
 
         return response()->json([
             'status' => true,
