@@ -31,7 +31,7 @@ class OrderController extends Controller
         })
         ->with([
             'user:id,name,email,mobile,profile_photo',
-            'items.product.primaryImage'
+            'items.product.primaryImage','items.combination'
         ]);
 
         // ✅ Filter by status_id (Optional)
@@ -75,17 +75,24 @@ class OrderController extends Controller
                 // ✅ Products / Items
                 'items' => $order->items->map(function ($item) {
 
+                $variant = null;
+                // If combination exists, decode its JSON
+                if ($item->combination) {
+                    $variant = json_decode($item->combination->combination, true);
+                }
+
                     return [
                         'id' => $item->id,
                         'product_id' => $item->product_id,
                         'quantity' => $item->quantity,
                         'price' => $item->price,
                         'total' => $item->price * $item->quantity,
-
+                        'variant' =>$variant,
                         'product' => $item->product ? [
                             'id' => $item->product->id,
                             'name' => $item->product->name,
                             'price' => $item->product->price,
+                            
                             'discount_price' => $item->product->discount_price,
                             'primary_image' => $item->product->primaryImage
                                 ? $item->product->primaryImage->image
