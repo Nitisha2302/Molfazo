@@ -338,7 +338,135 @@ class ProductController extends Controller
     }
 
     // Product details by ID
-    public function details(Request $request, $id)
+    // public function details(Request $request, $id)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     $favIds = [];
+
+    //     if ($user) {
+    //         $favIds = FavoriteProducts::where('user_id', $user->id)
+    //                     ->pluck('product_id')
+    //                     ->toArray();
+    //     }
+    //     // Get main product
+    //    $product = Product::with([
+    //         'store',
+    //         'category',
+    //         'subCategory',
+    //         'childCategory',
+    //         'images',
+    //         'primaryImage',
+    //         'reviews.user',
+    //         'reviews.images',
+    //         'store.user','store.vendorBanks.bank'
+    //         ,'combinations',
+    //     ])
+    //     ->withAvg('reviews', 'rating')
+    //     ->withCount('reviews')
+    //     ->where('id', $id)
+    //     ->where('status_id', 1)
+    //     ->where('approval_status', 'approved')
+    //     ->first();
+
+      
+        
+
+    //     if (!$product) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Product not found'
+    //         ], 201);
+    //     }
+
+    //      // 🔥 Convert primaryImage object → value
+    //     $product->primaryimage = optional($product->primaryImage)->image;
+    //     unset($product->primaryImage);
+    //     // $product->attributes = $product->attributes_json ?? [];
+
+    //     $product->combinations = $product->combinations->map(function ($combo) {
+    //         return [
+    //             'id' => $combo->id,
+    //             'variant' => json_decode($combo->combination, true),
+    //             'price' => $combo->price,
+    //             'stock' => $combo->stock,
+    //             'images' => $combo->images ? json_decode($combo->images, true) : []
+    //         ];
+    //     });
+    //     $product->is_favorite = in_array($product->id, $favIds);
+    //     $paymentModes = $product->store->user->payment_modes ?? [];
+
+    //     if (in_array('bank', $paymentModes)) {
+
+    //         $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
+    //             return [
+    //                 'bank_id' => $vendorBank->bank->id ?? null,
+    //                 'name' => $vendorBank->bank->name ?? null,
+    //                 'logo' => $vendorBank->bank->logo ?? null,
+    //                 'account_holder_name' => $vendorBank->account_holder_name,
+    //                 'account_number' => $vendorBank->account_number,
+    //             ];
+    //         });
+
+    //     } else {
+    //         $product->banks = [];
+    //     }
+
+    //     // 🔥 Related products (NO PAGINATION)
+    //     $relatedProducts = Product::with(['primaryImage','store.user','store.vendorBanks.bank', 'combinations'])
+    //     ->where('status_id', 1)
+    //     ->where('id', '!=', $product->id)
+    //     ->where('category_id', $product->category_id)
+    //     ->where('approval_status', 'approved')
+    //     ->get();
+
+    //    $relatedProducts = $relatedProducts->map(function ($item) use ($favIds) {
+
+    //         $item->primaryimage = optional($item->primaryImage)->image;
+    //         unset($item->primaryImage);
+    //          // Favorite status
+    //        $item->is_favorite = in_array($item->id, $favIds);
+    //         $item->combinations = $item->combinations->map(function ($combo) {
+    //                 return [
+    //                     'id' => $combo->id,
+    //                     'variant' => json_decode($combo->combination, true),
+    //                     'price' => $combo->price,
+    //                     'stock' => $combo->stock,
+    //                     'images' => $combo->images ? json_decode($combo->images, true) : []
+    //                 ];
+    //             });
+
+    //         $paymentModes = $item->store->user->payment_modes ?? [];
+
+    //             if (in_array('bank', $paymentModes)) {
+
+    //                 $item->banks = $item->store->vendorBanks->map(function ($vendorBank) {
+    //                     return [
+    //                         'bank_id' => $vendorBank->bank->id ?? null,
+    //                         'name' => $vendorBank->bank->name ?? null,
+    //                         'logo' => $vendorBank->bank->logo ?? null,
+    //                     ];
+    //                 });
+
+    //             } else {
+    //                 $item->banks = [];
+    //             }
+
+    //         return $item;
+    //     });
+
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Product details fetched successfully',
+    //         'data' => $product,
+    //         'related_products' => $relatedProducts
+    //     ]);
+    // }
+
+    // with artical no 
+
+     public function details(Request $request, $id)
     {
         $user = Auth::guard('api')->user();
 
@@ -349,6 +477,7 @@ class ProductController extends Controller
                         ->pluck('product_id')
                         ->toArray();
         }
+       
         // Get main product
        $product = Product::with([
             'store',
@@ -361,6 +490,8 @@ class ProductController extends Controller
             'reviews.images',
             'store.user','store.vendorBanks.bank'
             ,'combinations',
+            'children.store',
+            'children.primaryImage'
         ])
         ->withAvg('reviews', 'rating')
         ->withCount('reviews')
@@ -394,6 +525,29 @@ class ProductController extends Controller
             ];
         });
         $product->is_favorite = in_array($product->id, $favIds);
+        $baseProductId = $product->parent_product_id ?? $product->id;
+        $otherSellers = Product::with(['store', 'primaryImage'])
+            ->where(function ($q) use ($baseProductId) {
+                $q->where('parent_product_id', $baseProductId)
+                ->orWhere('id', $baseProductId);
+            })
+            ->where('id', '!=', $product->id)
+            ->where('approval_status', 'approved')
+            ->get();
+        // 🔥 STEP 3: OTHER SELLERS
+       $product->other_sellers = $otherSellers->map(function ($item) {
+            return [
+                'product_id' => $item->id,
+                'store_id' => $item->store->id ?? null,
+                'store_name' => $item->store->name ?? null,
+                'store_logo' => $item->store->logo ?? null, // ✅ LOGO ADDED
+                'price' => $item->price,
+                'primary_image' => optional($item->primaryImage)->image,
+                'available_quantity' => $item->available_quantity,
+            ];
+        });
+
+        unset($product->children);
         $paymentModes = $product->store->user->payment_modes ?? [];
 
         if (in_array('bank', $paymentModes)) {
@@ -415,6 +569,7 @@ class ProductController extends Controller
         // 🔥 Related products (NO PAGINATION)
         $relatedProducts = Product::with(['primaryImage','store.user','store.vendorBanks.bank', 'combinations'])
         ->where('status_id', 1)
+        ->whereNull('parent_product_id')
         ->where('id', '!=', $product->id)
         ->where('category_id', $product->category_id)
         ->where('approval_status', 'approved')
@@ -633,7 +788,7 @@ class ProductController extends Controller
                 $q->where('name', 'like', '%' . $search . '%')
 
                  // 🔥 ARTICLE NUMBER SEARCH
-              ->orWhere('article_number', 'like', '%' . $search . '%')
+                ->orWhere('article_number', 'like', '%' . $search . '%')
 
                     // Store Name
                     ->orWhereHas('store', function ($q2) use ($search) {
