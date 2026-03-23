@@ -32,6 +32,11 @@ class Order extends Model
         return $this->belongsTo(Bank::class);
     }
 
+      public function combination()
+    {
+        return $this->belongsTo(ProductCombination::class, 'combination_id');
+    }
+
 
 }
 

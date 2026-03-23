@@ -29,5 +29,10 @@ class OrderItem extends Model
         return $this->belongsTo(Order::class, 'order_id');
     }
 
+      public function combination()
+    {
+        return $this->belongsTo(ProductCombination::class, 'combination_id');
+    }
+
     
 }
