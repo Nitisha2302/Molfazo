@@ -13,7 +13,7 @@ class Product extends Model
         'store_id','category_id','sub_category_id','child_category_id','name','description',
         'price','discount_price','available_quantity','delivery_available',
         'delivery_price','delivery_time','characteristics','tags','status_id','attributes_json','article','price_before_discount',
-        'cost_price','weight','length','width','height','article_number','approval_status','is_original'
+        'cost_price','weight','length','width','height','article_number','approval_status','is_original','parent_product_id'
     ];
 
     protected $casts = [

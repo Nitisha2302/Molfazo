@@ -386,6 +386,15 @@ class ProductController extends Controller
             $isOriginal = 1;
         }
 
+        $parentProductId = null;
+
+        if ($existingProduct) {
+            // copy case
+            $parentProductId = $existingProduct->is_original == 1
+                ? $existingProduct->id
+                : $existingProduct->parent_product_id;
+        }
+
         /* ===============================
         CREATE PRODUCT
         =============================== */
@@ -416,6 +425,7 @@ class ProductController extends Controller
             'article_number' => $articleNumber,
             'approval_status' => $approvalStatus,
             'is_original' => $isOriginal,
+            'parent_product_id' => $parentProductId,
         ]);
 
         /* ===============================
@@ -664,6 +674,13 @@ class ProductController extends Controller
             'article_number' => $product->article_number,
             'approval_status' => $product->approval_status,
             'is_original' => (bool)$product->is_original,
+
+            'parent_product_id' => $product->parent_product_id,
+
+            // 🔥 OPTIONAL BUT VERY USEFUL (frontend friendly)
+            // 'is_child' => $product->parent_product_id ? true : false,
+            // 'parent_id' => $product->parent_product_id,
+
              'category' => $product->category ? [
             'id' => $product->category->id,
                 'name' => $product->category->name,
@@ -1101,29 +1118,160 @@ class ProductController extends Controller
     }
 
 
+    // public function copyProduct(Request $request, $id)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Unauthorized'
+    //         ], 401);
+    //     }
+
+    //     // ✅ Validate store_id
+    //     $request->validate([
+    //         'store_id' => 'required|exists:stores,id'
+    //     ]);
+
+    //     // ✅ Check store belongs to vendor
+    //     $store = $user->stores()->where('id', $request->store_id)->first();
+
+    //     if (!$store) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid store selected'
+    //         ]);
+    //     }
+
+    //     DB::beginTransaction();
+
+    //     try {
+
+    //         $product = Product::with(['images', 'combinations'])->findOrFail($id);
+
+    //         // ❌ prevent copying unapproved product
+    //         if ($product->approval_status != 'approved') {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Only approved products can be copied'
+    //             ], 403);
+    //         }
+
+    //         // Copy product
+    //         $newProduct = $product->replicate();
+    //         $newProduct->store_id = $store->id;
+    //         // 🔥 KEEP SAME ARTICLE NUMBER (IMPORTANT)
+    //         $newProduct->article_number = $product->article_number;
+
+    //         // 🔥 COPY SHOULD ALWAYS BE APPROVED
+    //         $newProduct->approval_status = 'approved';
+
+    //         // 🔥 THIS IS NOT ORIGINAL
+    //         $newProduct->is_original = 0;
+    //         // $newProduct->article = ($product->article ?? 'ART') . '-' . time();
+    //          $newProduct->article = $product->article; 
+    //         $newProduct->status_id = 1;
+    //         $newProduct->save();
+
+    //         // Copy images
+    //         foreach ($product->images as $image) {
+    //             ProductImage::create([
+    //                 'product_id' => $newProduct->id,
+    //                 'image' => $image->image,
+    //                 'color' => $image->color,
+    //                 'is_primary' => $image->is_primary
+    //             ]);
+    //         }
+
+    //         // Copy combinations
+    //         foreach ($product->combinations as $combo) {
+    //             ProductCombination::create([
+    //                 'product_id' => $newProduct->id,
+    //                 'combination' => $combo->combination,
+    //                 'description' => $combo->description,
+    //                 'price' => $combo->price,
+    //                 'price_before_discount' => $combo->price_before_discount,
+    //                 'cost_price' => $combo->cost_price,
+    //                 'stock' => $combo->stock,
+    //                 'images' => $combo->images
+    //             ]);
+    //         }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Product copied successfully',
+    //             'data' => $newProduct
+    //         ]);
+
+    //     } catch (\Exception $e) {
+
+    //         DB::rollback();
+
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Something went wrong',
+    //             'error' => $e->getMessage()
+    //         ]);
+    //     }
+    // }
+
+    // with requested new request flow
+
     public function copyProduct(Request $request, $id)
     {
         $user = Auth::guard('api')->user();
 
-        if (!$user) {
+        if (!$user || $user->role != 2) {
             return response()->json([
                 'status' => false,
                 'message' => 'Unauthorized'
             ], 401);
         }
 
-        // ✅ Validate store_id
-        $request->validate([
-            'store_id' => 'required|exists:stores,id'
+        /* ===============================
+        VALIDATION (SAME AS CREATE)
+        =============================== */
+        $validator = Validator::make($request->all(), [
+            'store_id' => 'required|exists:stores,id',
+            'name' => 'nullable|string',
+            'description' => 'nullable|string',
+            'price' => 'nullable|numeric',
+            'discount_price' => 'nullable|numeric',
+            'available_quantity' => 'nullable|integer|min:0',
+
+            'images' => 'nullable|array',
+            'images.*' => 'file|mimes:jpeg,jpg,png,gif|max:2048',
+
+            'images_meta' => 'nullable|array',
+
+            'attributes_json' => 'nullable|array',
+
+            'combinations' => 'nullable|array',
+            'combinations.*.combination' => 'required|array',
+            'combinations.*.price' => 'required|numeric',
+            'combinations.*.stock' => 'required|integer',
+            'combinations.*.image_ids' => 'nullable|array',
+
         ]);
 
-        // ✅ Check store belongs to vendor
-        $store = $user->stores()->where('id', $request->store_id)->first();
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
 
+        /* ===============================
+        CHECK STORE
+        =============================== */
+        $store = $user->stores()->where('id', $request->store_id)->first();
         if (!$store) {
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid store selected'
+                'message' => 'Invalid store'
             ]);
         }
 
@@ -1133,7 +1281,6 @@ class ProductController extends Controller
 
             $product = Product::with(['images', 'combinations'])->findOrFail($id);
 
-            // ❌ prevent copying unapproved product
             if ($product->approval_status != 'approved') {
                 return response()->json([
                     'status' => false,
@@ -1141,51 +1288,137 @@ class ProductController extends Controller
                 ], 403);
             }
 
-            // Copy product
-            $newProduct = $product->replicate();
-            $newProduct->store_id = $store->id;
-            // 🔥 KEEP SAME ARTICLE NUMBER (IMPORTANT)
-            $newProduct->article_number = $product->article_number;
+            $parentProductId = $product->is_original == 1
+            ? $product->id
+            : $product->parent_product_id;
 
-            // 🔥 COPY SHOULD ALWAYS BE APPROVED
-            $newProduct->approval_status = 'approved';
+            /* ===============================
+            CREATE NEW PRODUCT (MERGE LOGIC)
+            =============================== */
+            $newProduct = Product::create([
 
-            // 🔥 THIS IS NOT ORIGINAL
-            $newProduct->is_original = 0;
-            // $newProduct->article = ($product->article ?? 'ART') . '-' . time();
-             $newProduct->article = $product->article; 
-            $newProduct->status_id = 1;
-            $newProduct->save();
+                'store_id' => $store->id,
 
-            // Copy images
-            foreach ($product->images as $image) {
-                ProductImage::create([
-                    'product_id' => $newProduct->id,
-                    'image' => $image->image,
-                    'color' => $image->color,
-                    'is_primary' => $image->is_primary
-                ]);
+                // 🔥 override OR fallback
+                'name' => $request->name ?? $product->name,
+                'description' => $request->description ?? $product->description,
+                'price' => $request->price ?? $product->price,
+                'discount_price' => $request->discount_price ?? $product->discount_price,
+                'available_quantity' => $request->available_quantity ?? $product->available_quantity,
+
+                'category_id' => $request->category_id ?? $product->category_id,
+                'sub_category_id' => $request->sub_category_id ?? $product->sub_category_id,
+                'child_category_id' => $request->child_category_id ?? $product->child_category_id,
+
+                'attributes_json' => $request->attributes_json ?? $product->attributes_json,
+
+                'delivery_available' => $request->delivery_available ?? $product->delivery_available,
+                'delivery_price' => $request->delivery_price ?? $product->delivery_price,
+                'delivery_time' => $request->delivery_time ?? $product->delivery_time,
+
+                'cost_price' => $request->cost_price ?? $product->cost_price,
+                'price_before_discount' => $request->price_before_discount ?? $product->price_before_discount,
+
+                'weight' => $request->weight ?? $product->weight,
+                'length' => $request->length ?? $product->length,
+                'width' => $request->width ?? $product->width,
+                'height' => $request->height ?? $product->height,
+
+                // 🔥 IMPORTANT FLAGS
+                'article_number' => $product->article_number,
+                'article' => $request->article ?? $product->article,
+                'approval_status' => 'approved',
+                'is_original' => 0,
+                'status_id' => 1,
+                'parent_product_id' => $parentProductId,
+            ]);
+
+            /* ===============================
+            HANDLE IMAGES
+            =============================== */
+            $imageMap = [];
+            $allImages = [];
+
+            // ✅ If new images uploaded
+            if ($request->hasFile('images')) {
+
+                foreach ($request->file('images') as $index => $file) {
+
+                    $filename = time().'_'.$file->getClientOriginalName();
+                    $file->move(public_path('assets/product_images'), $filename);
+
+                    $imageId = $request->images_meta[$index]['id'] ?? null;
+
+                    if ($imageId) {
+                        $imageMap[$imageId] = $filename;
+                    }
+
+                    $allImages[] = $filename;
+
+                    ProductImage::create([
+                        'product_id' => $newProduct->id,
+                        'image' => $filename,
+                        'is_primary' => $index === 0 ? 1 : 0,
+                    ]);
+                }
+
+            } else {
+                // ✅ fallback old images
+                foreach ($product->images as $img) {
+                    $allImages[] = $img->image;
+
+                    ProductImage::create([
+                        'product_id' => $newProduct->id,
+                        'image' => $img->image,
+                        'is_primary' => $img->is_primary,
+                    ]);
+                }
             }
 
-            // Copy combinations
-            foreach ($product->combinations as $combo) {
-                ProductCombination::create([
-                    'product_id' => $newProduct->id,
-                    'combination' => $combo->combination,
-                    'description' => $combo->description,
-                    'price' => $combo->price,
-                    'price_before_discount' => $combo->price_before_discount,
-                    'cost_price' => $combo->cost_price,
-                    'stock' => $combo->stock,
-                    'images' => $combo->images
-                ]);
+            /* ===============================
+            HANDLE COMBINATIONS
+            =============================== */
+            if ($request->combinations) {
+
+                foreach ($request->combinations as $combo) {
+
+                    $comboImages = [];
+
+                    if (!empty($combo['image_ids'])) {
+                        foreach ($combo['image_ids'] as $imgId) {
+                            if (isset($imageMap[$imgId])) {
+                                $comboImages[] = $imageMap[$imgId];
+                            }
+                        }
+                    }
+
+                    ProductCombination::create([
+                        'product_id' => $newProduct->id,
+                        'combination' => json_encode($combo['combination']),
+                        'price' => $combo['price'],
+                        'stock' => $combo['stock'],
+                        'images' => json_encode(!empty($comboImages) ? $comboImages : $allImages),
+                    ]);
+                }
+
+            } else {
+                // ✅ fallback old combinations
+                foreach ($product->combinations as $combo) {
+                    ProductCombination::create([
+                        'product_id' => $newProduct->id,
+                        'combination' => $combo->combination,
+                        'price' => $combo->price,
+                        'stock' => $combo->stock,
+                        'images' => $combo->images
+                    ]);
+                }
             }
 
             DB::commit();
 
             return response()->json([
                 'status' => true,
-                'message' => 'Product copied successfully',
+                'message' => 'Product copied & updated successfully',
                 'data' => $newProduct
             ]);
 
@@ -1200,235 +1433,6 @@ class ProductController extends Controller
             ]);
         }
     }
-
-    
-
-
-    // public function update(Request $request, $id)
-    // {
-    //     /* ===============================
-    //     AUTH USER
-    //     =============================== */
-    //     $user = Auth::guard('api')->user();
-    //     if (!$user || $user->role != 2 || $user->status_id != 1) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Vendor not authenticated.',
-    //         ], 403);
-    //     }
-
-    //     /* ===============================
-    //     FIND PRODUCT
-    //     =============================== */
-    //    $product = Product::where('id', $id)
-    //     ->whereIn('store_id', $user->stores()->pluck('id'))
-    //     ->first();
-
-    //     if (!$product) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Product not found.',
-    //         ], 404);
-    //     }
-
-    //     /* ===============================
-    //     VALIDATION
-    //     =============================== */
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'sometimes|required|string',
-    //         'description' => 'nullable|string',
-    //         'price' => 'sometimes|required|numeric',
-    //         'discount_price' => 'nullable|numeric',
-    //         'available_quantity' => 'sometimes|required|integer|min:0',
-    //         'delivery_available' => 'nullable|boolean',
-    //         'delivery_price' => 'nullable|numeric',
-    //         'delivery_time' => 'nullable|string',
-    //         'characteristics' => 'nullable|array',
-    //         'tags' => 'nullable|array',
-
-    //         'images' => 'nullable|array',
-    //         'images.*' => 'file|mimes:jpeg,jpg,png,gif|max:2048',
-
-    //         // image meta (IDs)
-    //         'images_meta' => 'nullable|array',
-    //         'images_meta.*.id' => 'required_with:images|string',
-
-    //         'attributes_json' => 'nullable|array',
-            
-    //         'combinations' => 'nullable|array',
-    //         'combinations.*.combination' => 'required|array',
-    //         'combinations.*.price' => 'required|numeric',
-    //         'combinations.*.stock' => 'required|integer',
-    //          'combinations.*.image_ids' => 'nullable|array',
-    //          'combinations.*.image_ids.*' => 'string',
-    //         'cost_price' => 'nullable|numeric',
-    //         'price_before_discount' => 'nullable|numeric',
-    //         'article' => 'nullable|string',
-    //         'weight' => 'nullable|numeric',
-    //         'length' => 'nullable|numeric',
-    //         'width' => 'nullable|numeric',
-    //         'height' => 'nullable|numeric',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $validator->errors()->first(),
-    //         ], 422);
-    //     }
-
-    //     /* ===============================
-    //     UPDATE PRODUCT DATA
-    //     =============================== */
-    //     $product->update([
-    //         'name' => $request->name ?? $product->name,
-    //         'description' => $request->description ?? $product->description,
-    //         'price' => $request->price ?? $product->price,
-    //         'discount_price' => $request->discount_price,
-    //         'available_quantity' => $request->available_quantity ?? $product->available_quantity,
-    //         'delivery_available' => $request->delivery_available ?? $product->delivery_available,
-    //         'delivery_price' => $request->delivery_price,
-    //         'delivery_time' => $request->delivery_time,
-    //         'characteristics' => $request->characteristics ? json_encode($request->characteristics) : $product->characteristics,
-    //         'tags' => $request->tags ? json_encode($request->tags) : $product->tags,
-    //         'attributes_json' => $request->attributes_json ?? $product->attributes_json,
-    //         'cost_price' => $request->cost_price,
-    //         'price_before_discount' => $request->price_before_discount,
-    //         'article' => $request->article,
-    //         'weight' => $request->weight,
-    //         'length' => $request->length,
-    //         'width' => $request->width,
-    //         'height' => $request->height,
-    //     ]);
-
-    //      /* ===============================
-    //     UPDATE IMAGES + MAP
-    //     =============================== */
-    //     $imageMap = [];
-    //     $allImages = [];
-
-    //     if ($request->hasFile('images')) {
-
-    //         // delete old
-    //         foreach ($product->images as $img) {
-    //             $path = public_path('assets/product_images/' . $img->image);
-    //             if (file_exists($path)) {
-    //                 unlink($path);
-    //             }
-    //         }
-    //         ProductImage::where('product_id', $product->id)->delete();
-
-    //         // upload new
-    //         foreach ($request->file('images') as $index => $file) {
-
-    //             $filename = time().'_'.$file->getClientOriginalName();
-    //             $file->move(public_path('assets/product_images'), $filename);
-
-    //             $imageId = $request->images_meta[$index]['id'] ?? null;
-
-    //             if ($imageId) {
-    //                 $imageMap[$imageId] = $filename;
-    //             }
-
-    //             $allImages[] = $filename;
-
-    //             ProductImage::create([
-    //                 'product_id' => $product->id,
-    //                 'image' => $filename,
-    //                 'is_primary' => $index === 0 ? 1 : 0,
-    //             ]);
-    //         }
-
-    //     } else {
-    //         $allImages = $product->images->pluck('image')->toArray();
-    //     }
-
-    //     /* ===============================
-    //     UPDATE ATTRIBUTES
-    //     =============================== */
-    //     if ($request->attributes_json) {
-
-    //         $categoryAttr = DB::table('category_attributes')
-    //             ->where('child_category_id', $product->child_category_id)
-    //             ->first();
-
-    //         $existing = $categoryAttr
-    //             ? json_decode($categoryAttr->attributes_json, true)
-    //             : [];
-
-    //         foreach ($request->attributes_json as $attr => $values) {
-
-    //             foreach ($values as $val) {
-
-    //                 if (!isset($existing[$attr]) || !in_array($val, $existing[$attr])) {
-
-    //                     AttributeRequest::firstOrCreate([
-    //                         'vendor_id' => $user->id,
-    //                         'child_category_id' => $product->child_category_id,
-    //                         'attribute_name' => $attr,
-    //                         'attribute_value' => $val
-    //                     ]);
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     /* ===============================
-    //     UPDATE COMBINATIONS (FINAL FIX)
-    //     =============================== */
-
-    //     // 🔥 Case 1: Only attributes changed → reset combinations
-    //     if ($request->attributes_json && !$request->combinations) {
-
-    //         ProductCombination::where('product_id', $product->id)->delete();
-
-    //     }
-
-    //     // 🔥 Case 2: combinations sent
-    //     elseif ($request->combinations) {
-
-    //         ProductCombination::where('product_id', $product->id)->delete();
-
-    //         foreach ($request->combinations as $combo) {
-
-    //             $comboImages = [];
-
-    //             if (!empty($combo['image_ids'])) {
-    //                 foreach ($combo['image_ids'] as $imgId) {
-
-    //                     if (isset($imageMap[$imgId])) {
-    //                         $comboImages[] = $imageMap[$imgId];
-    //                     } else {
-    //                         // fallback from DB
-    //                         $existing = ProductImage::where('product_id', $product->id)
-    //                             ->skip((int) str_replace('img_', '', $imgId) - 1)
-    //                             ->first();
-
-    //                         if ($existing) {
-    //                             $comboImages[] = $existing->image;
-    //                         }
-    //                     }
-    //                 }
-    //             }
-
-    //             ProductCombination::create([
-    //                 'product_id' => $product->id,
-    //                 'combination' => json_encode($combo['combination']),
-    //                 'price' => $combo['price'],
-    //                 'stock' => $combo['stock'],
-    //                 'images' => json_encode(!empty($comboImages) ? $comboImages : $allImages),
-    //             ]);
-    //         }
-    //     }
-
-    //     $product->load('images');
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Product updated successfully.',
-    //         'data' => $this->formatProduct($product),
-    //     ], 200);
-    // }
 
 
     // witha rtical aaprove 
@@ -1513,6 +1517,7 @@ class ProductController extends Controller
         $articleNumber = $product->article_number;
         $approvalStatus = $product->approval_status;
         $isOriginal = $product->is_original;
+        $parentProductId = $product->parent_product_id; // default (no change)
 
         if ($request->has('name') && strtolower($request->name) != strtolower($product->name)) {
 
@@ -1521,16 +1526,39 @@ class ProductController extends Controller
                 ->where('id', '!=', $product->id)
                 ->first();
 
+            // if ($existingProduct) {
+            //     // ✅ MATCH FOUND → LINK WITH EXISTING ARTICLE
+            //     $articleNumber = $existingProduct->article_number;
+            //     $approvalStatus = 'approved';
+            //     $isOriginal = 0;
+            // } else {
+            //     // ❗ NEW NAME → NEED ADMIN APPROVAL AGAIN
+            //     $articleNumber = null;
+            //     $approvalStatus = 'pending';
+            //     $isOriginal = 1;
+            // }
+
             if ($existingProduct) {
+
                 // ✅ MATCH FOUND → LINK WITH EXISTING ARTICLE
                 $articleNumber = $existingProduct->article_number;
                 $approvalStatus = 'approved';
                 $isOriginal = 0;
+
+                // 🔥 ADD THIS (MOST IMPORTANT)
+                $parentProductId = $existingProduct->is_original == 1
+                    ? $existingProduct->id
+                    : $existingProduct->parent_product_id;
+
             } else {
+
                 // ❗ NEW NAME → NEED ADMIN APPROVAL AGAIN
                 $articleNumber = null;
                 $approvalStatus = 'pending';
                 $isOriginal = 1;
+
+                // 🔥 ADD THIS
+                $parentProductId = null;
             }
         }
 
@@ -1559,6 +1587,7 @@ class ProductController extends Controller
             'article_number' => $articleNumber,
             'approval_status' => $approvalStatus,
             'is_original' => $isOriginal,
+            'parent_product_id' => $parentProductId,
         ]);
 
          /* ===============================
