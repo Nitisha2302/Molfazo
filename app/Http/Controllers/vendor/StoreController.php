@@ -34,7 +34,7 @@ class StoreController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
             'mobile' => 'required|string',
-            'email' => 'required|email',
+            'email' => 'nullable|email',
             'country' => 'required|string',
             'city' => 'required|string',
             'address' => 'required|string',

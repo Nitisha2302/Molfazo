@@ -288,6 +288,7 @@ class ProductController extends Controller
                     'store_name' => $child->store->name ?? null,
                     'store_logo' => $child->store->logo ?? null,
                     'price' => $child->price,
+                    'discount_price' => $child->discount_price?? null,
                     'primary_image' => optional($child->primaryImage)->image,
                     'available_quantity' => $child->available_quantity,
                 ];
@@ -542,6 +543,7 @@ class ProductController extends Controller
                 'store_name' => $item->store->name ?? null,
                 'store_logo' => $item->store->logo ?? null, // ✅ LOGO ADDED
                 'price' => $item->price,
+                 'discount_price' => $item->discount_price?? null,
                 'primary_image' => optional($item->primaryImage)->image,
                 'available_quantity' => $item->available_quantity,
             ];
@@ -887,6 +889,7 @@ class ProductController extends Controller
                     'store_name' => $child->store->name ?? null,
                      'store_logo' => $child->store->logo ?? null,
                     'price' => $child->price,
+                    'discount_price' => $child->discount_price?? null,
                     'primary_image' => optional($child->primaryImage)->image,
                     'available_quantity' => $child->available_quantity,
                 ];

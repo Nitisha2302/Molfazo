@@ -82,7 +82,7 @@ class ProductController extends Controller
     //     return back()->with('success', 'Product rejected successfully.');
     // }
 
-   public function approve($id)
+    public function approve($id)
     {
         $product = Product::findOrFail($id);
 
@@ -96,9 +96,9 @@ class ProductController extends Controller
                 : $product;
 
             // 🔥 STEP 2: GENERATE ARTICLE NUMBER (ONLY IF NOT EXISTS)
-            $articleNumber = $original->article_number 
-                ? $original->article_number 
-                : 'ART-' . strtoupper(uniqid());
+          $articleNumber = $original->article_number 
+            ? $original->article_number 
+            : strtoupper(uniqid());
 
             // 🔥 STEP 3: UPDATE ORIGINAL
             $original->update([
@@ -128,29 +128,78 @@ class ProductController extends Controller
         }
     }
 
-    public function reject($id)
+    // public function reject($id)
+    // {
+    //     $product = Product::findOrFail($id);
+
+    //     DB::beginTransaction();
+
+    //     try {
+
+    //         // 🔥 CASE 1: IF ORIGINAL → REJECT ALL
+    //         if ($product->parent_product_id == null) {
+
+    //             Product::where('parent_product_id', $product->id)
+    //                 ->orWhere('id', $product->id)
+    //                 ->update([
+    //                     'approval_status' => 'rejected'
+    //                 ]);
+    //         }
+
+    //         // 🔥 CASE 2: IF CHILD → ONLY REJECT THAT PRODUCT
+    //         else {
+
+    //             $product->update([
+    //                 'approval_status' => 'rejected'
+    //             ]);
+    //         }
+
+    //         DB::commit();
+
+    //         return back()->with('success', 'Product rejected successfully.');
+
+    //     } catch (\Exception $e) {
+
+    //         DB::rollback();
+
+    //         return back()->with('error', 'Something went wrong');
+    //     }
+    // }
+
+
+    // with reject reason
+
+    public function reject(Request $request, $id)
     {
+        $request->validate([
+            'reject_reason' => 'required|string|max:500'
+        ], [
+            'reject_reason.required' => 'Please provide a reason for rejecting this product.',
+        ]);
+
         $product = Product::findOrFail($id);
 
         DB::beginTransaction();
 
         try {
 
-            // 🔥 CASE 1: IF ORIGINAL → REJECT ALL
+            // 🔥 CASE 1: ORIGINAL PRODUCT → REJECT ALL
             if ($product->parent_product_id == null) {
 
                 Product::where('parent_product_id', $product->id)
                     ->orWhere('id', $product->id)
                     ->update([
-                        'approval_status' => 'rejected'
+                        'approval_status' => 'rejected',
+                        'reject_reason'   => $request->reject_reason
                     ]);
             }
 
-            // 🔥 CASE 2: IF CHILD → ONLY REJECT THAT PRODUCT
+            // 🔥 CASE 2: CHILD PRODUCT → ONLY THAT ONE
             else {
 
                 $product->update([
-                    'approval_status' => 'rejected'
+                    'approval_status' => 'rejected',
+                    'reject_reason'   => $request->reject_reason
                 ]);
             }
 

@@ -256,14 +256,16 @@ class OrderController extends Controller
         $validator = Validator::make(
             $request->all(),
             [
-                'address_id'      => 'required|exists:user_addresses,id',
+                // 'address_id'      => 'required|exists:user_addresses,id',
+                'address_id' => 'required_if:delivery_method,home_delivery|exists:user_addresses,id',
                 'payment_type'    => 'required|in:cod,online',
                 'delivery_method' => 'nullable|string',
                  'bank_id'      => 'required_if:payment_type,online|exists:banks,id'
             ],
             [
-                'address_id.required'   => 'Delivery address is required',
-                'address_id.exists'     => 'Selected address is invalid',
+                // ✅ ADDRESS
+                'address_id.required_if' => 'Delivery address is required for home delivery.',
+                'address_id.exists'      => 'Selected delivery address is invalid.',
                 'payment_type.required' => 'Payment type is required',
                 'payment_type.in'       => 'Payment type must be COD or Online',
                  'bank_id.required_if' => 'Please select a bank for online payment.',
@@ -313,15 +315,42 @@ class OrderController extends Controller
             ], 400);
         }
 
-        $address = UserAddress::where('id', $request->address_id)
-            ->where('user_id', $user->id)
-            ->first();
+        // $address = UserAddress::where('id', $request->address_id)
+        //     ->where('user_id', $user->id)
+        //     ->first();
 
-        if (!$address) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid address selected.'
-            ], 400);
+        // if (!$address) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'Invalid address selected.'
+        //     ], 400);
+        // }
+
+
+        $deliveryAddress = null;
+
+        if ($request->delivery_method === 'home_delivery') {
+
+            $address = UserAddress::where('id', $request->address_id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$address) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid address selected.'
+                ], 400);
+            }
+
+            $deliveryAddress = $address->full_name.', '.$address->address.', '.$address->city.' - '.$address->pincode;
+
+        } else {
+
+            // ✅ SELF PICKUP → use store address
+            $store = Store::find($storeId);
+
+            $deliveryAddress = $store->name . ', ' . $store->address. ', ' . $store->city. ', ' . $store->country ?? 'Store Pickup';
+
         }
 
         // Check stock availability
@@ -394,7 +423,8 @@ class OrderController extends Controller
                 'total_amount'     => $total,
                 'status_id'        => 1, // New
                 'delivery_method'  => $request->delivery_method ?? 'home_delivery',
-                'delivery_address' => $address->full_name.', '.$address->address.', '.$address->city.' - '.$address->pincode,
+                // 'delivery_address' => $address->full_name.', '.$address->address.', '.$address->city.' - '.$address->pincode,
+                 'delivery_address' => $deliveryAddress,
                 'payment_type'     => $request->payment_type,
                 'bank_id' => $request->payment_type == 'online'
                 ? $request->bank_id

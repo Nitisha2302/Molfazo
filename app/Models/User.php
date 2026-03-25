@@ -45,6 +45,7 @@ class User extends Authenticatable
         'api_token',
         'fcm_token',
         'payment_modes',
+        'reject_reason',
     ];
 
     protected $casts = [
