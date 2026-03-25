@@ -96,9 +96,9 @@ class ProductController extends Controller
                 : $product;
 
             // 🔥 STEP 2: GENERATE ARTICLE NUMBER (ONLY IF NOT EXISTS)
-            $articleNumber = $original->article_number 
-                ? $original->article_number 
-                : 'ART-' . strtoupper(uniqid());
+          $articleNumber = $original->article_number 
+            ? $original->article_number 
+            : strtoupper(uniqid());
 
             // 🔥 STEP 3: UPDATE ORIGINAL
             $original->update([

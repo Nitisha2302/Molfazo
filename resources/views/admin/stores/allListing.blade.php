@@ -130,6 +130,9 @@
                         <div class="modal-body">
                             <div class="row">
                                 {{-- Logo --}}
+                                @php
+                                    $logo = $store->logo ? asset('assets/store_logo/' . $store->logo) : asset('assets/profile_image/default.png');
+                                @endphp
                                 <div class="col-md-4 text-center mb-3">
                                     <a href="{{ $logo }}" target="_blank">
                                         <img src="{{ $logo }}" class="img-fluid rounded" alt="Logo">
