@@ -42,6 +42,7 @@
                         <th>Email</th>
                         <th>Mobile</th>
                         <th>Status</th>
+                        <th>Reject Reason</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -71,6 +72,9 @@
                                 </span>
                             </td>
                             <td>
+                                {{ $store->reject_reason ?? '-' }}
+                            </td>   
+                            <td>
                                 <div class="d-flex align-items-center gap-2">
                                     {{-- View Details --}}
                                     <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#storeDetailsModal{{ $store->id }}">
@@ -87,10 +91,9 @@
 
                                     {{-- Reject --}}
                                     @if($store->status_id == 1 || $store->status_id == 2)
-                                        <form method="POST" action="{{ route('dashboard.admin.stores.reject', $store->id) }}">
-                                            @csrf
-                                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                                        </form>
+                                       <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $store->id }}">
+                                            Reject
+                                        </button>
                                     @endif
                                 </div>
                             </td>
@@ -110,6 +113,36 @@
                 </nav>
             @endif
         </div>
+
+        @foreach($stores as $store)
+            <div class="modal fade" id="rejectModal{{ $store->id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="POST" action="{{ route('dashboard.admin.stores.reject', $store->id) }}">
+                            @csrf
+
+                            <div class="modal-header">
+                                <h5 class="modal-title">Reject Store</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Reason for Rejection</label>
+                                    <textarea name="reject_reason" class="form-control" rows="4" placeholder="Enter reason..." required></textarea>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger">Submit & Reject</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endforeach
 
         {{-- Store Details Modals --}}
         @foreach($stores as $store)

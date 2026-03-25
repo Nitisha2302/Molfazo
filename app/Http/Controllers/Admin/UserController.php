@@ -122,13 +122,33 @@ class UserController extends Controller
         return response()->json(['success' => true, 'message' => 'User verified successfully.']);
     }
 
-    public function rejectUser(Request $request)
-    {
-        $user = User::findOrFail($request->user_id);
-        $user->id_verified = 2; // Rejected
-        $user->save();
+    // public function rejectUser(Request $request)
+    // {
+    //     $user = User::findOrFail($request->user_id);
+    //     $user->id_verified = 2; // Rejected
+    //     $user->save();
 
-        return response()->json(['success' => true, 'message' => 'User rejected successfully.']);
+    //     return response()->json(['success' => true, 'message' => 'User rejected successfully.']);
+    // }
+
+
+    // with reason of rejection 
+
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'reject_reason' => 'required|string|max:500'
+        ], [
+            'reject_reason.required' => 'Please provide a reason for rejecting this vendor.',
+        ]);
+
+        $vendor = User::findOrFail($id);
+
+        $vendor->status_id = 3; // Rejected
+        $vendor->reject_reason = $request->reject_reason;
+        $vendor->save();
+
+        return back()->with('success', 'Vendor rejected successfully.');
     }
 
 

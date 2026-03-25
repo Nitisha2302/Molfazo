@@ -47,6 +47,7 @@
                         <th>Email</th>
                         <th>Mobile</th>
                         <th>Status</th>
+                        <th>Reject Reason</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -77,6 +78,7 @@
                                     @else Blocked @endif
                                 </span>
                             </td>
+                            <td>{{ $vendor->reject_reason ?? '-' }}</td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     {{-- View Details (Eye Icon) --}}
@@ -99,10 +101,11 @@
 
                                     {{-- Reject --}}
                                     @if(in_array($vendor->status_id, [1,2]))
-                                        <form method="POST" action="{{ route('dashboard.admin.vendors.reject', $vendor->id) }}">
-                                            @csrf
-                                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                                        </form>
+                                       <button class="btn btn-danger btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#rejectVendorModal{{ $vendor->id }}">
+                                            Reject
+                                        </button>
                                     @endif
 
                                     {{-- Block --}}
@@ -130,6 +133,53 @@
                 </nav>
             @endif
         </div>
+
+        <!-- vendor reject model -->
+
+        @foreach($vendors as $vendor)
+            <div class="modal fade" id="rejectVendorModal{{ $vendor->id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+
+                        <form method="POST"
+                            action="{{ route('dashboard.admin.vendors.reject', $vendor->id) }}">
+                            @csrf
+
+                            <div class="modal-header">
+                                <h5 class="modal-title">Reject Vendor</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Reason for Rejection</label>
+
+                                    <textarea name="reject_reason"
+                                            class="form-control @error('reject_reason') is-invalid @enderror"
+                                            rows="4"
+                                            placeholder="Enter reason..."
+                                            required>{{ old('reject_reason') }}</textarea>
+
+                                    @error('reject_reason')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger">Submit & Reject</button>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        @endforeach
 
         {{-- Vendor Details Modals --}}
         @foreach($vendors as $vendor)
