@@ -241,6 +241,7 @@ class StoreController extends Controller
 
         // ✅ Role check
         if ($user->role != 2) {
+            
             return response()->json([
                 'status' => false,
                 'message' => 'You are not a vendor.',
