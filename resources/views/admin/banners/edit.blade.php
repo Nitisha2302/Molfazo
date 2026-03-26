@@ -84,6 +84,71 @@
                         </div>
                     </div>
 
+                    <!-- Link Type -->
+                    <div class="col-md-6 step-field">
+                        <div class="form-group mb-4">
+                            <label>Select Type (Optional)</label>
+
+                            <select id="linkType" name="link_type" class="form-control">
+                                <option value="">None</option>
+                                <option value="store" {{ $banner->link_type == 'store' ? 'selected' : '' }}>Store</option>
+                                <option value="product" {{ $banner->link_type == 'product' ? 'selected' : '' }}>Product</option>
+                            </select>
+                        </div>
+                    </div>
+
+                     <!-- Store Selection -->
+                    <div class="col-md-6 step-field d-none" id="storeDropdown">
+                        <div class="form-group mb-4">
+                            <label>Select Stores</label>
+
+                            <div class="city-scroll-box d-flex flex-wrap gap-2">
+                                <label class="city-pill">
+                                    <input type="checkbox" id="allStores">
+                                    <span>All Stores</span>
+                                </label>
+
+                                @foreach($stores as $store)
+
+                                    <label class="city-pill">
+                                      <input type="checkbox" 
+                                        name="link_ids[]" 
+                                        value="{{ $store->id }}"
+                                        {{ in_array($store->id, old('link_ids', $banner->link_ids ?? [])) ? 'checked' : '' }}>
+                                        <span>{{ $store->name }}</span>
+                                    </label>
+
+                                @endforeach
+
+                            </div>
+                        </div>
+                    </div>
+                     
+                    <div class="col-md-6 step-field d-none" id="productDropdown">
+                        <div class="form-group mb-4">
+                            <label>Select Products</label>
+
+                            <div class="city-scroll-box d-flex flex-wrap gap-2">
+                                <label class="city-pill">
+                                    <input type="checkbox" id="allProducts">
+                                    <span>All Products</span>
+                                </label>
+                                @foreach($products as $product)
+
+                                    <label class="city-pill">
+                                      <input type="checkbox" 
+                                        name="link_ids[]" 
+                                        value="{{ $product->id }}"
+                                        {{ in_array($product->id, old('link_ids', $banner->link_ids ?? [])) ? 'checked' : '' }}>
+                                        <span>{{ $product->name }}</span>
+                                    </label>
+
+                                @endforeach
+
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Status -->
                     <div class="col-md-6 step-field">
                         <div class="form-group mb-4">
@@ -159,5 +224,69 @@ cb.checked = this.checked;
 });
 
 </script>
+
+<script>
+let isInitialLoad = true;
+
+document.getElementById('linkType').addEventListener('change', function () {
+
+    let type = this.value;
+
+    let storeBox = document.getElementById('storeDropdown');
+    let productBox = document.getElementById('productDropdown');
+
+    let storeInputs = storeBox.querySelectorAll('input[type="checkbox"]');
+    let productInputs = productBox.querySelectorAll('input[type="checkbox"]');
+
+    // 🔥 ONLY clear when user changes (not on first load)
+    if (!isInitialLoad) {
+        storeInputs.forEach(i => i.checked = false);
+        productInputs.forEach(i => i.checked = false);
+    }
+
+    // hide both
+    storeBox.classList.add('d-none');
+    productBox.classList.add('d-none');
+
+    // show selected
+    if (type === 'store') {
+        storeBox.classList.remove('d-none');
+    }
+
+    if (type === 'product') {
+        productBox.classList.remove('d-none');
+    }
+
+    isInitialLoad = false;
+});
+
+// AUTO SHOW ON EDIT PAGE
+window.onload = function () {
+    document.getElementById('linkType').dispatchEvent(new Event('change'));
+};
+// ✅ ALL STORES
+document.getElementById('allStores').addEventListener('change', function(){
+
+    let checkboxes = document.querySelectorAll('#storeDropdown input[name="link_ids[]"]');
+
+    checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+    });
+
+});
+
+// ✅ ALL PRODUCTS
+document.getElementById('allProducts').addEventListener('change', function(){
+
+    let checkboxes = document.querySelectorAll('#productDropdown input[name="link_ids[]"]');
+
+    checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+    });
+
+});
+</script>
+
+
 
 @endsection

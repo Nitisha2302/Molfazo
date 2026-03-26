@@ -21,6 +21,32 @@
                         </option>
                     @endforeach
                 </select>
+
+                <select name="type" class="form-control" style="width:150px">
+                    <option value="">All Types</option>
+                    <option value="store" {{ request('type') == 'store' ? 'selected' : '' }}>Store</option>
+                    <option value="product" {{ request('type') == 'product' ? 'selected' : '' }}>Product</option>
+                </select>
+
+                <select name="link_id" class="form-control" style="width:200px">
+                    <option value="">All Stores / Products</option>
+
+                    {{-- Stores --}}
+                    @foreach($stores as $store)
+                        <option value="store_{{ $store->id }}" 
+                            {{ request('link_id') == 'store_'.$store->id ? 'selected' : '' }}>
+                            Store: {{ $store->name }}
+                        </option>
+                    @endforeach
+
+                    {{-- Products --}}
+                    @foreach($products as $product)
+                        <option value="product_{{ $product->id }}" 
+                            {{ request('link_id') == 'product_'.$product->id ? 'selected' : '' }}>
+                            Product: {{ $product->name }}
+                        </option>
+                    @endforeach
+                </select>
                 <button class="btn btn-dark">Search</button>
 
                 @if(request()->has('search'))
@@ -43,6 +69,8 @@
                     <th>Image</th>
                     <th>Title</th>
                     <th>City</th>
+                    <th>Type</th> 
+                    <th>Linked Data</th> 
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -71,6 +99,38 @@
                             -
                         @endif
                     </td>
+                   <td>
+                        {{ ucfirst($banner->link_type ?? '-') }}
+                    </td>
+
+                    <td>
+                        @if($banner->link_type == 'store' && !empty($banner->link_ids))
+
+                            @php
+                                $stores = DB::table('stores')
+                                            ->whereIn('id', $banner->link_ids)
+                                            ->pluck('name')
+                                            ->toArray();
+                            @endphp
+
+                            {{ implode(', ', $stores) }}
+
+                        @elseif($banner->link_type == 'product' && !empty($banner->link_ids))
+
+                            @php
+                                $products = DB::table('products')
+                                            ->whereIn('id', $banner->link_ids)
+                                            ->pluck('name')
+                                            ->toArray();
+                            @endphp
+
+                            {{ implode(', ', $products) }}
+
+                        @else
+                            -
+                        @endif
+                    </td>
+                    
                     <td>
                         <span class="badge {{ $banner->status == 1 ? 'bg-success' : 'bg-danger' }}">
                             {{ $banner->status == 1 ? 'Active' : 'Inactive' }}

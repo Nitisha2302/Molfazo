@@ -11,10 +11,11 @@ class Banner extends Model
 {
 use HasFactory;
 
-protected $fillable = ['title','image','status','cities'];
+protected $fillable = ['title','image','status','cities','link_ids','link_type'];
 
 protected $casts = [
-'cities' => 'array'
+ 'cities' => 'array',
+   'link_ids' => 'array',
 ];
 
 }
