@@ -79,8 +79,10 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
 
     // STORES
     Route::post('vendor/store/create', [StoreController::class, 'create']);
+     Route::post('vendor/store/edit/{id}', [StoreController::class, 'update']);
     Route::get('vendor/store/list', [StoreController::class, 'list']);
     Route::get('vendor/store/details/{id}', [StoreController::class, 'details']);
+    
 
     Route::get('banners', [CategoryController::class, 'getBanners']);
     Route::get('cities', [CategoryController::class, 'getCities']);

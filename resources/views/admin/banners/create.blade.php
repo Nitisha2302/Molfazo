@@ -72,6 +72,68 @@
                         </div>
                     </div>
 
+                    <!-- Link Type -->
+                    <div class="col-md-6 step-field">
+                        <div class="form-group mb-4">
+                            <label>Select Type (Optional)</label>
+                            <select id="linkType" name="link_type" class="form-control">
+                                <option value="">None</option>
+                                <option value="store">Store</option>
+                                <option value="product">Product</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Store Dropdown -->
+                    <!-- Store Selection -->
+                    <div class="col-md-6 step-field d-none" id="storeDropdown">
+                        <div class="form-group mb-4">
+                            <label>Select Stores</label>
+
+                            <div class="city-scroll-box d-flex flex-wrap gap-2">
+                                <label class="city-pill">
+                                    <input type="checkbox" id="allStores">
+                                    <span>All Stores</span>
+                                </label>
+
+                                @foreach($stores as $store)
+
+                                    <label class="city-pill">
+                                        <input type="checkbox" name="link_ids[]" value="{{ $store->id }}">
+                                        <span>{{ $store->name }}</span>
+                                    </label>
+
+                                @endforeach
+
+                            </div>
+                        </div>
+                    </div>
+
+                                        <!-- Product Dropdown -->
+                                    <!-- Product Selection -->
+                    <div class="col-md-6 step-field d-none" id="productDropdown">
+                        <div class="form-group mb-4">
+                            <label>Select Products</label>
+
+                            <div class="city-scroll-box d-flex flex-wrap gap-2">
+                                <label class="city-pill">
+                                    <input type="checkbox" id="allProducts">
+                                    <span>All Products</span>
+                                </label>
+
+                                @foreach($products as $product)
+
+                                    <label class="city-pill">
+                                        <input type="checkbox" name="link_ids[]" value="{{ $product->id }}">
+                                        <span>{{ $product->name }}</span>
+                                    </label>
+
+                                @endforeach
+
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Status -->
                     <div class="col-md-6 step-field">
                         <div class="form-group mb-4">
@@ -145,6 +207,46 @@ document.getElementById('allCities').addEventListener('change', function(){
 
 });
 
+</script>
+
+<script>
+document.getElementById('linkType').addEventListener('change', function () {
+
+    let type = this.value;
+
+    document.getElementById('storeDropdown').classList.add('d-none');
+    document.getElementById('productDropdown').classList.add('d-none');
+
+    if (type === 'store') {
+        document.getElementById('storeDropdown').classList.remove('d-none');
+    }
+
+    if (type === 'product') {
+        document.getElementById('productDropdown').classList.remove('d-none');
+    }
+});
+
+// ALL STORES
+document.getElementById('allStores').addEventListener('change', function(){
+
+    let checkboxes = document.querySelectorAll('#storeDropdown input[name="link_ids[]"]');
+
+    checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+    });
+
+});
+
+// ALL PRODUCTS
+document.getElementById('allProducts').addEventListener('change', function(){
+
+    let checkboxes = document.querySelectorAll('#productDropdown input[name="link_ids[]"]');
+
+    checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+    });
+
+});
 </script>
 
 @endsection
