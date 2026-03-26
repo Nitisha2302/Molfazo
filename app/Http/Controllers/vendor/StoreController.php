@@ -233,4 +233,154 @@ class StoreController extends Controller
             'updated_at' => $store->updated_at,
         ];
     }
+
+
+    public function update(Request $request, $id)
+    {
+        $user = Auth::guard('api')->user();
+
+        // ✅ Role check
+        if ($user->role != 2) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You are not a vendor.',
+            ], 403);
+        }
+
+        // ✅ Store ownership check
+        $store = Store::where('id', $id)->where('user_id', $user->id)->first();
+
+        if (!$store) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Store not found.',
+            ], 404);
+        }
+
+        // ✅ Validation
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'mobile' => 'required|string',
+            'email' => 'nullable|email',
+            'country' => 'required|string',
+            'city' => 'required|string',
+            'address' => 'required|string',
+            'type' => 'required|in:1,2,3',
+            'delivery_by_seller' => 'nullable|boolean',
+            'self_pickup' => 'nullable|boolean',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'description' => 'nullable|string',
+            'working_hours' => 'nullable|string',
+            'government_id'     => 'nullable|array',
+            'government_id.*'   => 'file|mimes:jpg,jpeg,png,pdf|max:4096',
+            'store_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+        ], [
+
+            // 🔴 VALIDATION MESSAGES
+
+            'name.required' => 'Store name is required.',
+            'name.string' => 'Store name must be text.',
+
+            'mobile.required' => 'Mobile number is required.',
+            'mobile.string' => 'Mobile must be valid text.',
+
+            'email.email' => 'Please enter a valid email address.',
+
+            'country.required' => 'Country is required.',
+            'city.required' => 'City is required.',
+            'address.required' => 'Address is required.',
+
+            'type.required' => 'Store type is required.',
+            'type.in' => 'Store type must be Retail, Online or Wholesale.',
+
+            'logo.image' => 'Logo must be an image.',
+            'logo.mimes' => 'Logo must be jpeg, png, jpg, gif or webp.',
+            'logo.max' => 'Logo size must not exceed 2MB.',
+
+            'government_id.array' => 'Documents must be an array.',
+            'government_id.*.mimes' => 'Documents must be jpg, png or pdf.',
+            'government_id.*.max' => 'Each document must not exceed 4MB.',
+
+            'store_background_image.image' => 'Background must be an image.',
+            'store_background_image.mimes' => 'Background must be jpeg, png, jpg, gif or webp.',
+            'store_background_image.max' => 'Background image must not exceed 4MB.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        // ✅ LOGO UPDATE
+        if ($request->hasFile('logo')) {
+            if ($store->logo && file_exists(public_path('assets/store_logo/' . $store->logo))) {
+                @unlink(public_path('assets/store_logo/' . $store->logo));
+            }
+
+            $file = $request->file('logo');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('assets/store_logo'), $filename);
+            $store->logo = $filename;
+        }
+
+        // ✅ BACKGROUND IMAGE UPDATE
+        if ($request->hasFile('store_background_image')) {
+            if ($store->store_background_image && file_exists(public_path('assets/store_background/' . $store->store_background_image))) {
+                @unlink(public_path('assets/store_background/' . $store->store_background_image));
+            }
+
+            $file = $request->file('store_background_image');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('assets/store_background'), $filename);
+            $store->store_background_image = $filename;
+        }
+
+        // ✅ GOVERNMENT DOCUMENTS (append)
+        if ($request->hasFile('government_id')) {
+
+            $existingDocs = $store->government_id ? json_decode($store->government_id, true) : [];
+
+            foreach ($request->file('government_id') as $file) {
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('assets/store_documents'), $filename);
+                $existingDocs[] = $filename;
+            }
+
+            $store->government_id = json_encode($existingDocs);
+        }
+
+        // ✅ UPDATE DATA
+        $store->name = $request->name;
+        $store->mobile = $request->mobile;
+        $store->email = $request->email;
+        $store->country = $request->country;
+        $store->city = $request->city;
+        $store->address = $request->address;
+        $store->type = $request->type;
+        $store->delivery_by_seller = $request->delivery_by_seller ?? false;
+        $store->self_pickup = $request->self_pickup ?? false;
+        $store->description = $request->description;
+        $store->working_hours = $request->working_hours;
+
+        // 🔥 IMPORTANT LOGIC
+        $store->status_id = 2; // Pending again
+        $store->reject_reason = null; // clear old reject reason
+
+        $store->save();
+
+        // 🔔 NOTIFY ADMIN
+        // $admins = User::where('role', 1)->get();
+
+        // foreach ($admins as $admin) {
+        //     $admin->notify(new \App\Notifications\StoreUpdatedNotification($store));
+        // }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Store updated successfully. Waiting for admin approval.',
+            'data' => $this->formatStore($store),
+        ], 200);
+    }
 }
