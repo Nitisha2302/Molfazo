@@ -105,7 +105,8 @@ class ProductController extends Controller
                 'approval_status' => 'approved',
                 'article_number' => $articleNumber,
                 'is_original' => 1,
-                'parent_product_id' => null
+                'parent_product_id' => null,
+                'reject_reason'   => null,
             ]);
 
             // 🔥 STEP 4: UPDATE ALL CHILD PRODUCTS
@@ -113,7 +114,8 @@ class ProductController extends Controller
                 ->update([
                     'approval_status' => 'approved',
                     'article_number' => $articleNumber,
-                    'is_original' => 0
+                    'is_original' => 0,
+                    'reject_reason'   => null,
                 ]);
 
             DB::commit();

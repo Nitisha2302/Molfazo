@@ -36,6 +36,7 @@ class StoreController extends Controller
     {
         $store->status_id = 1; // Active
         $store->approved_at = now();
+         $store->reject_reason = null;
         $store->save();
 
         return back()->with('success', 'Store approved successfully.');
