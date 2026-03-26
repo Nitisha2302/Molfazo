@@ -257,7 +257,8 @@ class OrderController extends Controller
             $request->all(),
             [
                 // 'address_id'      => 'required|exists:user_addresses,id',
-                'address_id' => 'required_if:delivery_method,home_delivery|exists:user_addresses,id',
+                // 'address_id' => 'required_if:delivery_method,home_delivery|exists:user_addresses,id',
+                'address_id' => 'nullable|required_if:delivery_method,home_delivery|exists:user_addresses,id',
                 'payment_type'    => 'required|in:cod,online',
                 'delivery_method' => 'nullable|string',
                  'bank_id'      => 'required_if:payment_type,online|exists:banks,id'
@@ -265,7 +266,7 @@ class OrderController extends Controller
             [
                 // ✅ ADDRESS
                 'address_id.required_if' => 'Delivery address is required for home delivery.',
-                'address_id.exists'      => 'Selected delivery address is invalid.',
+               'address_id.exists' => 'Selected delivery address is invalid.',
                 'payment_type.required' => 'Payment type is required',
                 'payment_type.in'       => 'Payment type must be COD or Online',
                  'bank_id.required_if' => 'Please select a bank for online payment.',

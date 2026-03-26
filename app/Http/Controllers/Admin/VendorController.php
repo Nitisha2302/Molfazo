@@ -39,17 +39,19 @@ class VendorController extends Controller
         if ($vendor->role != 2) return back()->with('error', 'Invalid vendor');
 
         $vendor->status_id = 1; // Active
+         $vendor->reject_reason = null;
         $vendor->save();
 
         return back()->with('success', 'Vendor approved successfully.');
     }
 
     // Reject vendor (Pending / Active -> Rejected)
-    public function reject(User $vendor)
+    public function reject(Request $request,User $vendor)
     {
         if ($vendor->role != 2) return back()->with('error', 'Invalid vendor');
 
         $vendor->status_id = 3; // Rejected
+        $vendor->reject_reason = $request->reject_reason;
         $vendor->save();
 
         return back()->with('success', 'Vendor rejected successfully.');

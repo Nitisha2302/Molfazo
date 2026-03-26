@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\CityController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\AttributeRequestController;
 
 
@@ -125,6 +126,11 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     Route::post('/vendors/{vendor}/block', [VendorController::class, 'block'])->name('vendors.block');
     Route::post('/vendors/{vendor}/unblock', [VendorController::class, 'unblock'])->name('vendors.unblock');
 
+    Route::get('customers', [CustomerController::class, 'index'])->name('customers');
+    Route::post('customers/block/{customer}', [CustomerController::class, 'block'])->name('customers.block');
+    Route::post('customers/unblock/{customer}', [CustomerController::class, 'unblock'])->name('customers.unblock');
+    Route::post('/customers/delete/{customer}', [CustomerController::class, 'delete'])
+    ->name('customers.delete');
 
     Route::get('/stores', [StoreController::class, 'index'])->name('stores');
     Route::post('/stores/{store}/approve', [StoreController::class, 'approve'])->name('stores.approve');

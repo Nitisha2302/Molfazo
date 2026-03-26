@@ -69,7 +69,7 @@ class ChatController extends Controller
 
         $conversations = Conversation::where('user_one_id', $meId)
             ->orWhere('user_two_id', $meId)
-            ->with(['userOne', 'userTwo', 'product.primaryImage'])
+            ->with(['userOne', 'userTwo', 'product.primaryImage','product.store'])
             ->orderByDesc('last_message_at')
             ->get();
 
@@ -112,6 +112,11 @@ class ChatController extends Controller
                  'product_id' => $c->product_id,
                 'product_name' => $c->product->name ?? null,
                 'product_image' => $c->product->primaryImage->image ?? null,
+
+                'store_name' => $c->product->store->name ?? null,
+                'store_logo' => $c->product->store->logo ?? null,
+                'store_background_image' => $c->product->store->store_background_image ?? null,
+                'store_id' => $c->product->store->id ?? null,
 
                 'other_user_id' => $otherUser->id ?? null,
                 'other_user_name' => $otherUser->name ?? null,
@@ -317,6 +322,7 @@ class ChatController extends Controller
             'last_message_at'      => now()
         ]);
 
+       
          // ✅ Receiver ID detect
         $receiverId = $conversation->user_one_id == $user->id
             ? $conversation->user_two_id
@@ -354,7 +360,8 @@ class ChatController extends Controller
             $productName = $product->name ?? null;
             $productImage = $product->primaryImage->image ?? null;
             $storeName = $store->name ?? null;
-            $storeImage = $store->image ?? null;
+            $storeLogoImage = $store->logo ?? null;
+            $storeBackImage = $store->store_background_image ?? null;
 
             $notificationData = [
                 'notification_type' => 2,
@@ -369,7 +376,8 @@ class ChatController extends Controller
                 'product_name'    => $productName,
                 'product_image'   => $productImage,
                 'store_name'      => $storeName,
-                'store_image'     => $storeImage,
+                'store_logo_image'     => $storeLogoImage,
+                'store_background_image'     => $storeBackImage,
             ];
 
             $fcmService = new \App\Services\FCMService();
