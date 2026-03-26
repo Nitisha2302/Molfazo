@@ -88,6 +88,15 @@
                 </a>
             </li>
 
+            <li class="@if (Route::currentRouteName() == 'dashboard.admin.customers') active @endif">
+                <a href="{{ route('dashboard.admin.customers') }}">
+                    <span class="d-flex gap-3 align-items-end">
+                        <i class="fas fa-store-alt icon-font-size"></i>
+                        <span class="nav-content-menu">All Customers</span>
+                    </span>
+                </a>
+            </li>
+
             <!-- Stores -->
             <li class="@if (Route::currentRouteName() == 'dashboard.admin.stores') active @endif">
                 <a href="{{ route('dashboard.admin.stores') }}">
