@@ -192,6 +192,16 @@ class CategoryController extends Controller
             $query->whereJsonContains('cities', (string)$city->id);
         }
 
+        // Filter by link_type
+        if ($request->filled('link_type')) {
+            $query->where('link_type', $request->link_type);
+        }
+
+        // Filter by link_id (JSON column)
+        if ($request->filled('link_id')) {
+            $query->whereJsonContains('link_ids', (string)$request->link_id);
+        }
+
         $cities = City::pluck('name','id');
 
         $banners = $query->latest()->get()->map(function ($banner) use ($cities) {
@@ -205,7 +215,9 @@ class CategoryController extends Controller
                 'id' => $banner->id,
                 'title' => $banner->title,
                 'image' => $banner->image ? $banner->image : null,
-                'cities' => $cityNames
+                'cities' => $cityNames,
+                 'type' => $banner->link_type,
+            'linked_data' => $banner->link_ids,
             ];
         });
 
