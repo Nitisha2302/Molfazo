@@ -10,6 +10,7 @@ use App\Models\ChildCategory;
 use App\Models\ProductImage;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\User;
 use App\Models\Bank;
 use App\Models\ProductBank;
 use App\Models\ProductCombination;
@@ -18,6 +19,7 @@ use Validator;
 use Carbon\Carbon;
 use App\Models\AttributeRequest;
 use Illuminate\Support\Facades\DB;
+use App\Services\FCMService;
 
 
 
@@ -1437,7 +1439,291 @@ class ProductController extends Controller
 
     // witha rtical aaprove 
 
-     public function update(Request $request, $id)
+    //  public function update(Request $request, $id)
+    // {
+    //     /* ===============================
+    //     AUTH USER
+    //     =============================== */
+    //     $user = Auth::guard('api')->user();
+    //     if (!$user || $user->role != 2 || $user->status_id != 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Vendor not authenticated.',
+    //         ], 403);
+    //     }
+
+    //     /* ===============================
+    //     FIND PRODUCT
+    //     =============================== */
+    //    $product = Product::where('id', $id)
+    //     ->whereIn('store_id', $user->stores()->pluck('id'))
+    //     ->first();
+
+    //     if (!$product) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Product not found.',
+    //         ], 404);
+    //     }
+
+    //     /* ===============================
+    //     VALIDATION
+    //     =============================== */
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'sometimes|required|string',
+    //         'description' => 'nullable|string',
+    //         'price' => 'sometimes|required|numeric',
+    //         'discount_price' => 'nullable|numeric',
+    //         'available_quantity' => 'sometimes|required|integer|min:0',
+    //         'delivery_available' => 'nullable|boolean',
+    //         'delivery_price' => 'nullable|numeric',
+    //         'delivery_time' => 'nullable|string',
+    //         'characteristics' => 'nullable|array',
+    //         'tags' => 'nullable|array',
+
+    //         'images' => 'nullable|array',
+    //         'images.*' => 'file|mimes:jpeg,jpg,png,gif|max:2048',
+
+    //         // image meta (IDs)
+    //         'images_meta' => 'nullable|array',
+    //         'images_meta.*.id' => 'required_with:images|string',
+
+    //         'attributes_json' => 'nullable|array',
+            
+    //         'combinations' => 'nullable|array',
+    //         'combinations.*.combination' => 'required|array',
+    //         'combinations.*.price' => 'required|numeric',
+    //         'combinations.*.stock' => 'required|integer',
+    //          'combinations.*.image_ids' => 'nullable|array',
+    //          'combinations.*.image_ids.*' => 'string',
+    //         'cost_price' => 'nullable|numeric',
+    //         'price_before_discount' => 'nullable|numeric',
+    //         'article' => 'nullable|string',
+    //         'weight' => 'nullable|numeric',
+    //         'length' => 'nullable|numeric',
+    //         'width' => 'nullable|numeric',
+    //         'height' => 'nullable|numeric',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validator->errors()->first(),
+    //         ], 422);
+    //     }
+
+
+    //     /* ===============================
+    //     CHECK NAME CHANGE + ARTICLE LOGIC
+    //     =============================== */
+    //     $articleNumber = $product->article_number;
+    //     $approvalStatus = $product->approval_status;
+    //     $isOriginal = $product->is_original;
+    //     $parentProductId = $product->parent_product_id; // default (no change)
+
+    //     if ($request->has('name') && strtolower($request->name) != strtolower($product->name)) {
+
+    //         $existingProduct = Product::whereRaw('LOWER(name) = ?', [strtolower($request->name)])
+    //             ->where('approval_status', 'approved')
+    //             ->where('id', '!=', $product->id)
+    //             ->first();
+
+    //         // if ($existingProduct) {
+    //         //     // ✅ MATCH FOUND → LINK WITH EXISTING ARTICLE
+    //         //     $articleNumber = $existingProduct->article_number;
+    //         //     $approvalStatus = 'approved';
+    //         //     $isOriginal = 0;
+    //         // } else {
+    //         //     // ❗ NEW NAME → NEED ADMIN APPROVAL AGAIN
+    //         //     $articleNumber = null;
+    //         //     $approvalStatus = 'pending';
+    //         //     $isOriginal = 1;
+    //         // }
+
+    //         if ($existingProduct) {
+
+    //             // ✅ MATCH FOUND → LINK WITH EXISTING ARTICLE
+    //             $articleNumber = $existingProduct->article_number;
+    //             $approvalStatus = 'approved';
+    //             $isOriginal = 0;
+
+    //             // 🔥 ADD THIS (MOST IMPORTANT)
+    //             $parentProductId = $existingProduct->is_original == 1
+    //                 ? $existingProduct->id
+    //                 : $existingProduct->parent_product_id;
+
+    //         } else {
+
+    //             // ❗ NEW NAME → NEED ADMIN APPROVAL AGAIN
+    //             $articleNumber = null;
+    //             $approvalStatus = 'pending';
+    //             $isOriginal = 1;
+
+    //             // 🔥 ADD THIS
+    //             $parentProductId = null;
+    //         }
+    //     }
+
+    //     /* ===============================
+    //     UPDATE PRODUCT DATA
+    //     =============================== */
+    //     $product->update([
+    //         'name' => $request->name ?? $product->name,
+    //         'description' => $request->description ?? $product->description,
+    //         'price' => $request->price ?? $product->price,
+    //         'discount_price' => $request->discount_price,
+    //         'available_quantity' => $request->available_quantity ?? $product->available_quantity,
+    //         'delivery_available' => $request->delivery_available ?? $product->delivery_available,
+    //         'delivery_price' => $request->delivery_price,
+    //         'delivery_time' => $request->delivery_time,
+    //         'characteristics' => $request->characteristics ? json_encode($request->characteristics) : $product->characteristics,
+    //         'tags' => $request->tags ? json_encode($request->tags) : $product->tags,
+    //         'attributes_json' => $request->attributes_json ?? $product->attributes_json,
+    //         'cost_price' => $request->cost_price,
+    //         'price_before_discount' => $request->price_before_discount,
+    //         'article' => $request->article,
+    //         'weight' => $request->weight,
+    //         'length' => $request->length,
+    //         'width' => $request->width,
+    //         'height' => $request->height,
+    //         'article_number' => $articleNumber,
+    //         'approval_status' => $approvalStatus,
+    //         'is_original' => $isOriginal,
+    //         'parent_product_id' => $parentProductId,
+    //     ]);
+
+    //      /* ===============================
+    //     UPDATE IMAGES + MAP
+    //     =============================== */
+    //     $imageMap = [];
+    //     $allImages = [];
+
+    //     if ($request->hasFile('images')) {
+
+    //         // delete old
+    //         foreach ($product->images as $img) {
+    //             $path = public_path('assets/product_images/' . $img->image);
+    //             if (file_exists($path)) {
+    //                 unlink($path);
+    //             }
+    //         }
+    //         ProductImage::where('product_id', $product->id)->delete();
+
+    //         // upload new
+    //         foreach ($request->file('images') as $index => $file) {
+
+    //             $filename = time().'_'.$file->getClientOriginalName();
+    //             $file->move(public_path('assets/product_images'), $filename);
+
+    //             $imageId = $request->images_meta[$index]['id'] ?? null;
+
+    //             if ($imageId) {
+    //                 $imageMap[$imageId] = $filename;
+    //             }
+
+    //             $allImages[] = $filename;
+
+    //             ProductImage::create([
+    //                 'product_id' => $product->id,
+    //                 'image' => $filename,
+    //                 'is_primary' => $index === 0 ? 1 : 0,
+    //             ]);
+    //         }
+
+    //     } else {
+    //         $allImages = $product->images->pluck('image')->toArray();
+    //     }
+
+    //     /* ===============================
+    //     UPDATE ATTRIBUTES
+    //     =============================== */
+    //     if ($request->attributes_json) {
+
+    //         $categoryAttr = DB::table('category_attributes')
+    //             ->where('child_category_id', $product->child_category_id)
+    //             ->first();
+
+    //         $existing = $categoryAttr
+    //             ? json_decode($categoryAttr->attributes_json, true)
+    //             : [];
+
+    //         foreach ($request->attributes_json as $attr => $values) {
+
+    //             foreach ($values as $val) {
+
+    //                 if (!isset($existing[$attr]) || !in_array($val, $existing[$attr])) {
+
+    //                     AttributeRequest::firstOrCreate([
+    //                         'vendor_id' => $user->id,
+    //                         'child_category_id' => $product->child_category_id,
+    //                         'attribute_name' => $attr,
+    //                         'attribute_value' => $val
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     /* ===============================
+    //     UPDATE COMBINATIONS (FINAL FIX)
+    //     =============================== */
+
+    //     // 🔥 Case 1: Only attributes changed → reset combinations
+    //     if ($request->attributes_json && !$request->combinations) {
+
+    //         ProductCombination::where('product_id', $product->id)->delete();
+
+    //     }
+
+    //     // 🔥 Case 2: combinations sent
+    //     elseif ($request->combinations) {
+
+    //         ProductCombination::where('product_id', $product->id)->delete();
+
+    //         foreach ($request->combinations as $combo) {
+
+    //             $comboImages = [];
+
+    //             if (!empty($combo['image_ids'])) {
+    //                 foreach ($combo['image_ids'] as $imgId) {
+
+    //                     if (isset($imageMap[$imgId])) {
+    //                         $comboImages[] = $imageMap[$imgId];
+    //                     } else {
+    //                         // fallback from DB
+    //                         $existing = ProductImage::where('product_id', $product->id)
+    //                             ->skip((int) str_replace('img_', '', $imgId) - 1)
+    //                             ->first();
+
+    //                         if ($existing) {
+    //                             $comboImages[] = $existing->image;
+    //                         }
+    //                     }
+    //                 }
+    //             }
+
+    //             ProductCombination::create([
+    //                 'product_id' => $product->id,
+    //                 'combination' => json_encode($combo['combination']),
+    //                 'price' => $combo['price'],
+    //                 'stock' => $combo['stock'],
+    //                 'images' => json_encode(!empty($comboImages) ? $comboImages : $allImages),
+    //             ]);
+    //         }
+    //     }
+
+    //     $product->load('images');
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Product updated successfully.',
+    //         'data' => $this->formatProduct($product),
+    //     ], 200);
+    // }
+
+    // with notification reject 
+
+    public function update(Request $request, $id)
     {
         /* ===============================
         AUTH USER
@@ -1562,6 +1848,32 @@ class ProductController extends Controller
             }
         }
 
+
+        /* ===============================
+        🔥 DETECT IMPORTANT CHANGES
+        =============================== */
+        $needsApproval = false;
+
+        if ($request->has('name') && strtolower($request->name) != strtolower($product->name)) {
+            $needsApproval = true;
+        }
+
+        if ($request->has('description') && trim($request->description ?? '') !== trim($product->description ?? '')) {
+            $needsApproval = true;
+        }
+
+        if ($request->hasFile('images')) {
+            $needsApproval = true;
+        }
+
+        /* ===============================
+        APPROVAL STATUS
+        =============================== */
+        // $approvalStatus = $product->approval_status;
+
+        if ($needsApproval) {
+            $approvalStatus = 'pending';
+        }
         /* ===============================
         UPDATE PRODUCT DATA
         =============================== */
@@ -1712,12 +2024,51 @@ class ProductController extends Controller
 
         $product->load('images');
 
+         /* ===============================
+        🔔 NOTIFICATIONS
+        =============================== */
+        if ($needsApproval) {
+
+            $admins = User::where('role', 1)->where('status_id', 1)->get();
+
+            foreach ($admins as $admin) {
+                // Save notification in DB
+                // Notification::create([
+                //     'user_id' => $admin->id,
+                //     'title' => '⏳ Product Pending Approval',
+                //     'body' => 'Product "' . $product->name . '" requires your review.',
+                //     'notification_type' => 21,
+                //     'is_read' => 0
+                // ]);
+
+                // FCM
+                if ($admin->fcm_token) {
+                    $tokens = [[
+                        'fcm_token' => $admin->fcm_token,
+                        'user_id' => $admin->id,
+                    ]];
+
+                    $notificationData = [
+                        'notification_type' => 21,
+                        'title' => '⏳ Product Pending Approval',
+                        'body' => 'Product "' . $product->name . '" requires your review.',
+                        'product_id' => $product->id,
+                    ];
+
+                    (new \App\Services\FCMService())
+                        ->sendNotification($tokens, $notificationData, true);
+                }
+            }
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Product updated successfully.',
             'data' => $this->formatProduct($product),
         ], 200);
     }
+
+
     
 
 

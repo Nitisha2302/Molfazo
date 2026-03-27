@@ -5,8 +5,11 @@ namespace App\Http\Controllers\vendor;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Store;
+use App\Models\Product;
 use Auth;
 use Validator;
+use App\Services\FCMService;
+use App\Models\User;
 
 class StoreController extends Controller
 {
@@ -247,6 +250,7 @@ class StoreController extends Controller
                 'message' => 'You are not a vendor.',
             ], 403);
         }
+        
 
         // ✅ Store ownership check
         $store = Store::where('id', $id)->where('user_id', $user->id)->first();
@@ -372,11 +376,31 @@ class StoreController extends Controller
         $store->save();
 
         // 🔔 NOTIFY ADMIN
-        // $admins = User::where('role', 1)->get();
+        $admins = User::where('role', 1)->get();
+        Product::where('store_id', $store->id)
+        ->update(['approval_status' => "pending"]); // Pending
 
-        // foreach ($admins as $admin) {
-        //     $admin->notify(new \App\Notifications\StoreUpdatedNotification($store));
-        // }
+        foreach ($admins as $admin) {
+
+            if (!$admin->fcm_token) continue;
+
+            $tokens = [
+                [
+                    'fcm_token' => $admin->fcm_token,
+                    'user_id'   => $admin->id,
+                ]
+            ];
+
+            $notificationData = [
+                'notification_type' => 12,
+                'title' => '🏪 Store Updated',
+                'body'  => $store->name . ' updated and needs approval',
+                'store_id' => $store->id,
+            ];
+
+            $fcmService = new \App\Services\FCMService();
+            $fcmService->sendNotification($tokens, $notificationData, true);
+        }
 
         return response()->json([
             'status' => true,

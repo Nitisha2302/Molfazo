@@ -13,6 +13,7 @@ class StoreController extends Controller
     public function list(Request $request)
     {
         $query = Store::query();
+        
 
         // Optional filters
         if ($request->has('city')) {
@@ -24,7 +25,10 @@ class StoreController extends Controller
         }
 
          // 🔥 NO PAGINATION
-        $stores = $query->get();
+        // $stores = $query->get();
+         $stores = $query->with(['products' => function ($q) {
+            $q->latest()->limit(6);
+        }])->get();
 
         // Optional: handle no data case
         if ($stores->isEmpty()) {

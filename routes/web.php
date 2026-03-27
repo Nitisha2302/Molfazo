@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\AttributeRequestController;
 
 
@@ -43,6 +44,13 @@ Route::post('/delete-account-confirm', [AdminAuthController::class, 'confirmDele
 Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     // Admin Dashboard
     Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'role:1']], function () {
+
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('notifications/{id}', [NotificationController::class, 'show'])->name('notifications.show');
+        Route::get('products/{id}', [ProductController::class, 'show'])->name('products.show');
+        Route::get('stores/{id}', [StoreController::class, 'show'])->name('stores.show');
+
+
     Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
         // Categories
     Route::get('categories', [CategoryController::class,'categoryListing'])->name('categories');
@@ -118,7 +126,6 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
 
 
 
-
     Route::get('/vendors', [VendorController::class, 'index'])->name('vendors');
 
     Route::post('/vendors/{vendor}/approve', [VendorController::class, 'approve'])->name('vendors.approve');
@@ -175,6 +182,7 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
 
     
 
+     
     
 
 });
