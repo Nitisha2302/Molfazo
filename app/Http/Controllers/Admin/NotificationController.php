@@ -24,7 +24,7 @@ class NotificationController extends Controller
                 // ✅ Store notifications (status_id = 2 only)
                 ->orWhere(function ($q) {
                     $q->where('notification_type', 12)
-                    ->whereHas('store', function ($s) {
+                    ->whereHas('storeN', function ($s) {
                         $s->where('status_id', 2);
                     });
                 });
@@ -32,6 +32,8 @@ class NotificationController extends Controller
             })
             ->latest()
             ->paginate(20);
+            // dd($notifications);
+            
 
         return view('admin.notifications.index', compact('notifications'));
     }
