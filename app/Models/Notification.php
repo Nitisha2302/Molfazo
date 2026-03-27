@@ -34,4 +34,9 @@ class Notification extends Model
     {
         return $this->belongsTo(Product::class, 'store_id');
     }
+
+    public function storeN()
+    {
+        return $this->belongsTo(\App\Models\Store::class, 'store_id');
+    }
 }

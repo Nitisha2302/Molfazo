@@ -8,28 +8,22 @@
                 <h2>Notifications</h2>
 
                 <!-- Search & Filter -->
-                <form method="GET" action="{{ route('dashboard.admin.notifications.index') }}" class="d-flex gap-2 mb-3">
+                <!-- <form method="GET" action="{{ route('dashboard.admin.notifications.index') }}" class="d-flex gap-2 mb-3">
                     <input type="text" name="search" class="form-control" placeholder="Search by title or vendor" value="{{ request('search') }}">
 
                     <select name="type_filter" class="form-control">
                         <option value="">All Types</option>
                         <option value="Store" {{ request('type_filter') == 'Store' ? 'selected' : '' }}>Store</option>
                         <option value="Product" {{ request('type_filter') == 'Product' ? 'selected' : '' }}>Product</option>
-                        <!-- <option value="Other" {{ request('type_filter') == 'Other' ? 'selected' : '' }}>Other</option> -->
+                      
                     </select>
-
-                    <!-- <select name="status_filter" class="form-control">
-                        <option value="">All Status</option>
-                        <option value="0" {{ request('status_filter') == '0' ? 'selected' : '' }}>Unread</option>
-                        <option value="1" {{ request('status_filter') == '1' ? 'selected' : '' }}>Read</option>
-                    </select> -->
 
                     <button type="submit" class="btn btn-dark">Filter</button>
 
                     @if(request()->has('search') || request()->has('type_filter') || request()->has('status_filter'))
                         <a href="{{ route('dashboard.admin.notifications.index') }}" class="btn btn-secondary">Reset</a>
                     @endif
-                </form>
+                </form> -->
 
                 @if (session('success'))
                     <div class="alert alert-success" role="alert">
