@@ -466,38 +466,38 @@ class OrderController extends Controller
 
                 $vendor = User::find($store->user_id);
 
-                // if ($vendor && $vendor->fcm_token) {
+                if ($vendor && $vendor->fcm_token) {
 
-                //     // product name message
-                //     $firstProduct = $cartItems->first()->product->name ?? 'Product';
-                //     $productCount = $cartItems->count();
+                    // product name message
+                    $firstProduct = $cartItems->first()->product->name ?? 'Product';
+                    $productCount = $cartItems->count();
 
-                //     $productText = $productCount > 1
-                //         ? $firstProduct . " + " . ($productCount - 1) . " more"
-                //         : $firstProduct;
+                    $productText = $productCount > 1
+                        ? $firstProduct . " + " . ($productCount - 1) . " more"
+                        : $firstProduct;
 
-                //     $title = "🛒 New Order";
-                //     $body  = $user->name . " placed a new order for " . $productText;
+                    $title = "🛒 New Order";
+                    $body  = $user->name . " placed a new order for " . $productText;
 
-                //     $tokens = [
-                //         [
-                //             'fcm_token' => $vendor->fcm_token,
-                //             'device_type'  => $vendor->device_type ?? 'android',
-                //             'user_id'      => $vendor->id,
-                //         ]
-                //     ];
+                    $tokens = [
+                        [
+                            'fcm_token' => $vendor->fcm_token,
+                            'device_type'  => $vendor->device_type ?? 'android',
+                            'user_id'      => $vendor->id,
+                        ]
+                    ];
 
-                //     $notificationData = [
-                //         'notification_type' => 3,
-                //         'title' => $title,
-                //         'body'  => $body,
-                //           'order_id' => $order->id, 
-                //     ];
+                    $notificationData = [
+                        'notification_type' => 3,
+                        'title' => $title,
+                        'body'  => $body,
+                          'order_id' => $order->id, 
+                    ];
 
-                //     $fcmService = new FCMService();
-                //    $fcmService->sendNotification($tokens, $notificationData, true);
+                    $fcmService = new FCMService();
+                   $fcmService->sendNotification($tokens, $notificationData, true);
 
-                // }
+                }
             }
 
             DB::commit();
@@ -705,6 +705,7 @@ class OrderController extends Controller
                 'total_amount' => $order->total_amount,
                 'status' => $order->status_id,
                 'payment_type' => $order->payment_type,
+                 'delivery_method' => $order->delivery_method,
                 'bank' => $order->bank ? [
                     'bank_id' => $order->bank->id,
                     'bank_name' => $order->bank->name,

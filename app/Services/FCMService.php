@@ -50,6 +50,7 @@ class FCMService
 
                             // ✅ Chat extra fields (only sent if exist)
                             'product_id'    => $data['product_id'] ?? null,
+                             'store_id'      => $data['store_id'] ?? null,
                             'product_name'  => $data['product_name'] ?? null,
                             'product_image' => $data['product_image'] ?? null,
                             'store_name'    => $data['store_name'] ?? null,
@@ -93,8 +94,11 @@ class FCMService
                             'title' => $data['title'],
                             'description' => $data['body'],
                             'notification_type' => $data['notification_type'],
+                            'product_id' => $data['product_id'] ?? null,
+                            'store_id' => $data['store_id'] ?? null,
                             'notification_created_at' => now(),
                         ]);
+
 
                         Log::info("💾 Notification saved in database", [
                             'notification_id' => $notification->id

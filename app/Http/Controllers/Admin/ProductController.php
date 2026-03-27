@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Services\FCMService;
 
 // App\Http\Controllers\Admin\ProductController.php
 
@@ -37,6 +39,17 @@ class ProductController extends Controller
         $products = $query->latest()->paginate(10)->withQueryString();
 
         return view('admin.products.index', compact('products'));
+    }
+
+    public function show($id)
+    {
+        $product = Product::with(['store',
+            'category',
+            'subCategory',
+            'images',
+            'primaryImage',
+            'store.vendorBanks.bank' ])->findOrFail($id);
+        return view('admin.notifications.show_product', compact('product'));
     }
 
 
@@ -171,6 +184,130 @@ class ProductController extends Controller
 
     // with reject reason
 
+    // public function reject(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'reject_reason' => 'required|string|max:500'
+    //     ], [
+    //         'reject_reason.required' => 'Please provide a reason for rejecting this product.',
+    //     ]);
+
+    //     $product = Product::findOrFail($id);
+
+    //     DB::beginTransaction();
+
+    //     try {
+
+    //         // 🔥 CASE 1: ORIGINAL PRODUCT → REJECT ALL
+    //         if ($product->parent_product_id == null) {
+
+    //             Product::where('parent_product_id', $product->id)
+    //                 ->orWhere('id', $product->id)
+    //                 ->update([
+    //                     'approval_status' => 'rejected',
+    //                     'reject_reason'   => $request->reject_reason
+    //                 ]);
+    //         }
+
+    //         // 🔥 CASE 2: CHILD PRODUCT → ONLY THAT ONE
+    //         else {
+
+    //             $product->update([
+    //                 'approval_status' => 'rejected',
+    //                 'reject_reason'   => $request->reject_reason
+    //             ]);
+    //         }
+
+    //         DB::commit();
+
+    //         return back()->with('success', 'Product rejected successfully.');
+
+    //     } catch (\Exception $e) {
+
+    //         DB::rollback();
+
+    //         return back()->with('error', 'Something went wrong');
+    //     }
+    // }
+
+    // with reject notification 
+
+    // public function reject(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'reject_reason' => 'required|string|max:500'
+    //     ], [
+    //         'reject_reason.required' => 'Please provide a reason for rejecting this product.',
+    //     ]);
+
+    //     $product = Product::findOrFail($id);
+
+    //     DB::beginTransaction();
+
+    //     try {
+
+    //         // 🔥 CASE 1: ORIGINAL PRODUCT → REJECT ALL
+    //         if ($product->parent_product_id == null) {
+
+    //             Product::where('parent_product_id', $product->id)
+    //                 ->orWhere('id', $product->id)
+    //                 ->update([
+    //                     'approval_status' => 'rejected',
+    //                     'reject_reason'   => $request->reject_reason
+    //                 ]);
+    //         }
+
+    //         // 🔥 CASE 2: CHILD PRODUCT → ONLY THAT ONE
+    //         else {
+
+    //             $product->update([
+    //                 'approval_status' => 'rejected',
+    //                 'reject_reason'   => $request->reject_reason
+    //             ]);
+    //         }
+
+    //         /* ===============================
+    //         🔔 SEND NOTIFICATION TO VENDOR
+    //         =============================== */
+
+    //         $vendor = \App\Models\User::find($product->store->user_id);
+
+    //         if ($vendor) {
+
+    //             // 🔔 FCM push
+    //             if ($vendor->fcm_token) {
+
+    //                 $tokens = [[
+    //                     'fcm_token' => $vendor->fcm_token,
+    //                     'user_id' => $vendor->id,
+    //                 ]];
+
+    //                 $notificationData = [
+    //                     'notification_type' => 22,
+    //                     'title' => '❌ Product Rejected',
+    //                     'body' => 'Your product "' . $product->name . '" was rejected.',
+    //                     'product_id' => $product->id,
+    //                 ];
+
+    //                 (new \App\Services\FCMService())
+    //                     ->sendNotification($tokens, $notificationData, true);
+    //             }
+    //         }
+
+       
+
+    //         DB::commit();
+
+    //         return back()->with('success', 'Product rejected successfully.');
+
+    //     } catch (\Exception $e) {
+
+    //         DB::rollback();
+
+    //         return back()->with('error', 'Something went wrong');
+    //     }
+    // }
+
     public function reject(Request $request, $id)
     {
         $request->validate([
@@ -179,14 +316,22 @@ class ProductController extends Controller
             'reject_reason.required' => 'Please provide a reason for rejecting this product.',
         ]);
 
-        $product = Product::findOrFail($id);
+        $product = Product::with('store')->findOrFail($id);
 
         DB::beginTransaction();
 
         try {
 
-            // 🔥 CASE 1: ORIGINAL PRODUCT → REJECT ALL
+            $affectedProducts = collect();
+
+            /* ===============================
+            🔥 CASE 1: ORIGINAL PRODUCT → REJECT ALL
+            =============================== */
             if ($product->parent_product_id == null) {
+
+                $affectedProducts = Product::where('parent_product_id', $product->id)
+                    ->orWhere('id', $product->id)
+                    ->get();
 
                 Product::where('parent_product_id', $product->id)
                     ->orWhere('id', $product->id)
@@ -196,13 +341,61 @@ class ProductController extends Controller
                     ]);
             }
 
-            // 🔥 CASE 2: CHILD PRODUCT → ONLY THAT ONE
+            /* ===============================
+            🔥 CASE 2: CHILD PRODUCT → ONLY THAT ONE
+            =============================== */
             else {
 
                 $product->update([
                     'approval_status' => 'rejected',
                     'reject_reason'   => $request->reject_reason
                 ]);
+
+                $affectedProducts = collect([$product]);
+            }
+
+            /* ===============================
+            🔔 SEND NOTIFICATIONS
+            =============================== */
+            foreach ($affectedProducts as $p) {
+
+                $vendor = User::find($p->store->user_id);
+
+                if (!$vendor) continue;
+
+                // 🔔 Save in DB (bell)
+                // Notification::create([
+                //     'user_id' => $vendor->id,
+                //     'title' => '❌ Product Rejected',
+                //     'body' => 'Your product "' . $p->name . '" was rejected. Reason: ' . $request->reject_reason,
+                //     'notification_type' => 22,
+                //     'is_read' => 0
+                // ]);
+
+                // 🔔 FCM Push
+                if (!empty($vendor->fcm_token)) {
+
+                    $tokens = [[
+                        'fcm_token' => $vendor->fcm_token,
+                        'user_id' => $vendor->id,
+                    ]];
+
+                    $notificationData = [
+                        'notification_type' => 22,
+                        'title' => '❌ Product Rejected',
+                        'body' => 'Your product "' . $p->name . '" was rejected.',
+                        'product_id' => $p->id,
+                        // ✅ Full product details
+                        'product' => json_encode($p->toArray()),
+
+                        // ✅ Include store id and store name
+                        'store_id' => $p->store->id,
+                        'store_name' => $p->store->name,
+                    ];
+
+                    (new \App\Services\FCMService())
+                        ->sendNotification($tokens, $notificationData, true);
+                }
             }
 
             DB::commit();
@@ -212,6 +405,8 @@ class ProductController extends Controller
         } catch (\Exception $e) {
 
             DB::rollback();
+
+            \Log::error('Product Reject Error: ' . $e->getMessage());
 
             return back()->with('error', 'Something went wrong');
         }

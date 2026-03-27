@@ -143,6 +143,17 @@
                 </a>
             </li>
 
+            <li class="@if (Route::currentRouteName() == 'dashboard.admin.notifications.index') active @endif">
+                <a href="{{ route('dashboard.admin.notifications.index') }}">
+                    <span class="d-flex gap-3 align-items-end">
+                      <i class="fas fa-box-open icon-font-size"></i>
+                        <span class="nav-content-menu">All Notifications</span>
+                    </span>
+                </a>
+            </li>
+
+            
+
         @endif
     </ul>
 
