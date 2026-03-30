@@ -26,8 +26,9 @@ class StoreController extends Controller
 
          // 🔥 NO PAGINATION
         // $stores = $query->get();
+        
          $stores = $query->with(['products' => function ($q) {
-            $q->latest()->limit(6);
+            $q->latest()->limit(6)->with('primaryImage'); 
         }])->get();
 
         // Optional: handle no data case
