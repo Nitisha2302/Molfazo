@@ -72,7 +72,7 @@
 
                     <td>{{ $order->store?->name ?? 'N/A' }}</td>
 
-                    <td>₹{{ $order->total_amount }}</td>
+                    <td>c. {{ $order->total_amount }}</td>
 
                     <td>
                         <span class="badge
@@ -175,7 +175,7 @@
 
                     <tr>
                         <th>Total Amount</th>
-                        <td><strong>₹{{ $order->total_amount }}</strong></td>
+                        <td><strong>c.{{ $order->total_amount }}</strong></td>
                     </tr>
 
                     <tr>
@@ -200,15 +200,15 @@
                         <tr>
                             <td>{{ $item->product?->name ?? 'N/A' }}</td>
                             <td>{{ $item->quantity }}</td>
-                            <td>₹{{ $item->price }}</td>
-                            <td>₹{{ $item->price * $item->quantity }}</td>
+                            <td>c. {{ $item->price }}</td>
+                            <td>c. {{ $item->price * $item->quantity }}</td>
                         </tr>
                     @endforeach
                     </tbody>
                 </table>
 
                 <h6 class="text-end">
-                    Grand Total: ₹{{ $order->total_amount }}
+                    Grand Total: c. {{ $order->total_amount }}
                 </h6>
 
             </div>
