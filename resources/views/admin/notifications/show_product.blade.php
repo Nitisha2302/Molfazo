@@ -36,7 +36,7 @@
             <tr><th>Store</th><td>{{ $product->store?->name }}</td></tr>
             <tr><th>Category</th><td>{{ $product->category?->name }}</td></tr>
             <tr><th>Subcategory</th><td>{{ $product->subCategory?->name ?? '-' }}</td></tr>
-            <tr><th>Price</th><td>₹{{ $product->price }}</td></tr>
+            <tr><th>Price</th><td>c. {{ $product->price }}</td></tr>
             <tr><th>Discount Price</th><td>{{ $product->discount_price ?? '-' }}</td></tr>
             <tr><th>Quantity</th>
                 <td>

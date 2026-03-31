@@ -508,7 +508,7 @@ $(document).ready(function() {
 
         // Seats & Price
         let seats = booking.seats_booked || '-';
-        let price = booking.price ? `₹${booking.price}` : '-';
+        let price = booking.price ? `c. ${booking.price}` : '-';
 
         // Status
         let status = 'Pending';

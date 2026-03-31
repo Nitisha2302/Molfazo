@@ -106,11 +106,11 @@
                     </td>
 
                     <td>
-                        ₹{{ $product->price }}
+                        c. {{ $product->price }}
                         @if($product->discount_price)
                             <br>
                             <small class="text-success">
-                                ₹{{ $product->discount_price }}
+                                c. {{ $product->discount_price }}
                             </small>
                         @endif
                     </td>
@@ -308,7 +308,7 @@
                     <tr><th>Name</th><td>{{ $product->name }}</td></tr>
                     <tr><th>Store</th><td>{{ $product->store?->name }}</td></tr>
                     <tr><th>Category</th><td>{{ $product->category?->name }}</td></tr>
-                    <tr><th>Price</th><td>₹{{ $product->price }}</td></tr>
+                    <tr><th>Price</th><td>c. {{ $product->price }}</td></tr>
                     <tr><th>Discount Price</th><td>{{ $product->discount_price ?? '-' }}</td></tr>
                    <tr>
                         <th>Quantity</th>
