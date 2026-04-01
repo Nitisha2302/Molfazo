@@ -3,7 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Review extends Model
+class ProductReview extends Model
 {
     protected $fillable = [
         'product_id',
@@ -32,6 +32,6 @@ class Review extends Model
     // ✅ Images
     public function images()
     {
-        return $this->hasMany(ReviewImage::class);
+        return $this->hasMany(ProductReviewImage::class);
     }
 }

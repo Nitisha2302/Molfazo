@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
-use App\Models\Review;
-use App\Models\ReviewImage;
+use App\Models\ProductReview;
+use App\Models\ProductReviewImage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -71,7 +71,7 @@ class ProductReviewController extends Controller
         }
 
         // 💾 Create or Update Review
-        $review = Review::updateOrCreate(
+        $review = ProductReview::updateOrCreate(
             [
                 'product_id' => $request->product_id,
                 'user_id'    => $user->id
@@ -91,7 +91,7 @@ class ProductReviewController extends Controller
 
                 $file->move(public_path('assets/review_images'), $filename);
 
-                ReviewImage::create([
+                ProductReviewImage::create([
                     'product_review_id' => $review->id,
                     'image' => $filename
                 ]);
