@@ -133,12 +133,12 @@
 
 
             <!-- Banks -->
-            <li class="@if (Route::currentRouteName() == 'dashboard.admin.banks.index') active @endif">
+            <!-- <li class="@if (Route::currentRouteName() == 'dashboard.admin.banks.index') active @endif">
                 <a href="{{ route('dashboard.admin.banks.index') }}">
                     <i class="fas fa-university"></i>
                     <span>All Banks</span>
                 </a>
-            </li>
+            </li> -->
 
             <!-- PROMOTION MODULE START -->
 
