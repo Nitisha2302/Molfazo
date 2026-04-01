@@ -151,6 +151,9 @@
                 $govDocs = $store->government_id
                     ? json_decode($store->government_id, true)
                     : [];
+                      $socialLinks = $store->social_links ? json_decode($store->social_links, true) : [];
+                    $deliveryPolicy = $store->delivery_policy ? json_decode($store->delivery_policy, true) : [];
+                    $returnPolicy = $store->return_policy ? json_decode($store->return_policy, true) : [];
             @endphp
         
             <div class="modal fade" id="storeDetailsModal{{ $store->id }}" tabindex="-1" aria-labelledby="storeDetailsLabel{{ $store->id }}" aria-hidden="true">
@@ -222,6 +225,91 @@
                                                     <span class="text-muted">No documents uploaded</span>
                                                 @endif
                                             </td>
+                                        </tr>
+
+                                        {{-- Background Image --}}
+                                        <tr>
+                                            <th>Background Image</th>
+                                            <td>
+                                                @if($store->store_background_image)
+                                                    <a href="{{ asset('assets/store_background/' . $store->store_background_image) }}" target="_blank">
+                                                        <img src="{{ asset('assets/store_background/' . $store->store_background_image) }}"
+                                                            style="width:100px; border-radius:6px;">
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted">No image</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+
+                                        {{-- Background Color --}}
+                                        <tr>
+                                            <th>Background Color</th>
+                                            <td>
+                                                @if($store->background_color)
+                                                    <div style="display:flex;align-items:center;gap:10px;">
+                                                        <div style="width:40px;height:40px;background:{{ $store->background_color }};border-radius:5px;border:1px solid #ccc;"></div>
+                                                        <span>{{ $store->background_color }}</span>
+                                                    </div>
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        </tr>
+
+                                        {{-- Social Links --}}
+                                        <tr>
+                                            <th>Social Links</th>
+                                            <td>
+                                                @if(count($socialLinks))
+                                                    <ul class="mb-0">
+                                                        @foreach($socialLinks as $link)
+                                                            <li>
+                                                                <strong>{{ ucfirst($link['type']) }}:</strong>
+                                                                <a href="{{ $link['url'] }}" target="_blank">
+                                                                    {{ $link['url'] }}
+                                                                </a>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                @else
+                                                    <span class="text-muted">No links</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+
+                                        {{-- Delivery Policy --}}
+                                        <tr>
+                                            <th>Delivery Policy</th>
+                                            <td>
+                                                @if(!empty($deliveryPolicy))
+                                                    <strong>Type:</strong> {{ $deliveryPolicy['type'] ?? '-' }} <br>
+                                                    <strong>Message:</strong> {{ $deliveryPolicy['message'] ?? '-' }} <br>
+                                                    <strong>Days:</strong> {{ $deliveryPolicy['days'] ?? '-' }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        </tr>
+
+                                        {{-- Return Policy --}}
+                                        <tr>
+                                            <th>Return Policy</th>
+                                            <td>
+                                                @if(!empty($returnPolicy))
+                                                    <strong>Type:</strong> {{ $returnPolicy['type'] ?? '-' }} <br>
+                                                    <strong>Message:</strong> {{ $returnPolicy['message'] ?? '-' }} <br>
+                                                    <strong>Days:</strong> {{ $returnPolicy['days'] ?? '-' }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        </tr>
+
+                                        {{-- Delivery Days --}}
+                                        <tr>
+                                            <th>Delivery Days</th>
+                                            <td>{{ $store->delivery_days ?? '-' }}</td>
                                         </tr>
                                     </table>
                                 </div>
