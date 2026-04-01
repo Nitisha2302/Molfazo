@@ -93,5 +93,10 @@ class Product extends Model
             ->where('approval_status', 'approved');
     }
 
+    public function fakeReviews()
+    {
+        return $this->hasMany(FakeReview::class);
+    }
+
     
 }

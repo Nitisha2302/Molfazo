@@ -24,6 +24,8 @@ use App\Http\Controllers\Customer\CategoryController as CustomerCategoryControll
 use App\Http\Controllers\vendor\VendorBankController;
 
 use App\Http\Controllers\vendor\NotificationController;
+use App\Http\Controllers\vendor\PromotionController;
+use App\Http\Controllers\vendor\ReviewController;
 
 use App\Http\Controllers\Customer\ChatController as CustomerChatController;
 
@@ -114,6 +116,13 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
     // Route::post('vendor/chat/send', [ChatController::class, 'send']);
 
     Route::get('vendor/rejections', [NotificationController::class, 'getRejections']);
+
+
+    Route::get('vendor/packages', [PromotionController::class,'packages']);
+    Route::get('vendor/payment-details', [PromotionController::class,'paymentDetails']);
+    Route::post('vendor/promotion-request', [PromotionController::class,'store']);
+
+    Route::post('vendor/add-review', [ReviewController::class,'store']);
 
 
 // CUSTOMER APIs
