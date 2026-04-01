@@ -53,6 +53,13 @@ class StoreController extends Controller
             'government_id'     => 'nullable|array',
             'government_id.*'   => 'file|mimes:jpg,jpeg,png,pdf|max:4096',
             'store_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+           'background_color' => 'nullable|string',
+            'social_links' => 'nullable|array',
+            'social_links.*.type' => 'required_with:social_links|string',
+            'social_links.*.url' => 'required_with:social_links|string',
+            'delivery_policy' => 'nullable|array',
+            'return_policy' => 'nullable|array',
+            'delivery_days' => 'nullable|string',
 
         ], [
             'name.required' => 'Store Name is required.',
@@ -118,8 +125,7 @@ class StoreController extends Controller
         }
 
         $govIdJson = json_encode($uploadedGovIds);
-        // Convert type array to JSON
-        $typeJson = json_encode($request->type);
+        $socialLinksJson = json_encode($request->social_links ?? []);
 
         $store = Store::create([
             'user_id' => $user->id,
@@ -140,6 +146,12 @@ class StoreController extends Controller
             'government_id' => $govIdJson,
             'status_id' => 2, // Pending admin approval
             'store_background_image' => $backgroundImagePath,
+
+          'background_color' => $request->background_color,
+            'social_links' => $socialLinksJson,
+            'delivery_policy' => json_encode($request->delivery_policy ?? []),
+            'return_policy' => json_encode($request->return_policy ?? []),
+            'delivery_days' => $request->delivery_days ?? null,
 
         ]);
 
@@ -242,6 +254,11 @@ class StoreController extends Controller
             'working_hours' => $store->working_hours,
             'status_id' => $store->status_id,
             'approved_at' => $store->approved_at,
+             'background_color' => $store->background_color,
+            'social_links' => $store->social_links ? json_decode($store->social_links, true) : [],
+            'delivery_policy' => $store->delivery_policy ? json_decode($store->delivery_policy, true) : [],
+            'return_policy' => $store->return_policy ? json_decode($store->return_policy, true) : [],
+            'delivery_days' => $store->delivery_days,
             'created_at' => $store->created_at,
             'updated_at' => $store->updated_at,
         ];
@@ -289,6 +306,14 @@ class StoreController extends Controller
             'government_id'     => 'nullable|array',
             'government_id.*'   => 'file|mimes:jpg,jpeg,png,pdf|max:4096',
             'store_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+
+             'background_color' => 'nullable|string',
+            'social_links' => 'nullable|array',
+            'social_links.*.type' => 'required_with:social_links|string',
+            'social_links.*.url' => 'required_with:social_links|string',
+            'delivery_policy' => 'nullable|array',
+            'return_policy' => 'nullable|array',
+            'delivery_days' => 'nullable|string',
         ], [
 
             // 🔴 VALIDATION MESSAGES
@@ -319,6 +344,16 @@ class StoreController extends Controller
             'store_background_image.image' => 'Background must be an image.',
             'store_background_image.mimes' => 'Background must be jpeg, png, jpg, gif or webp.',
             'store_background_image.max' => 'Background image must not exceed 4MB.',
+
+            'background_color.string' => 'Background color must be text.',
+            'social_email.email' => 'Social email must be valid.',
+            'social_facebook.url' => 'Facebook URL must be valid.',
+            'social_instagram.url' => 'Instagram URL must be valid.',
+            'social_youtube.url' => 'YouTube URL must be valid.',
+            'social_twitter.url' => 'Twitter URL must be valid.',
+            'social_whatsapp.url' => 'WhatsApp URL must be valid.',
+            'social_linkedin.url' => 'LinkedIn URL must be valid.',
+            'social_website.url' => 'Website URL must be valid.',
         ]);
 
         if ($validator->fails()) {
@@ -365,7 +400,7 @@ class StoreController extends Controller
 
             $store->government_id = json_encode($existingDocs);
         }
-
+      
         // ✅ UPDATE DATA
         $store->name = $request->name;
         $store->mobile = $request->mobile;
@@ -378,6 +413,12 @@ class StoreController extends Controller
         $store->self_pickup = $request->self_pickup ?? false;
         $store->description = $request->description;
         $store->working_hours = $request->working_hours;
+
+        $store->background_color = $request->background_color;
+        $store->delivery_policy = json_encode($request->delivery_policy ?? []);
+        $store->return_policy = json_encode($request->return_policy ?? []);
+        $store->delivery_days = $request->delivery_days ?? null;
+        $store->social_links = json_encode($request->social_links ?? []);
 
         // 🔥 IMPORTANT LOGIC
         $store->status_id = 2; // Pending again
