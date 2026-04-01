@@ -16,6 +16,10 @@ class Store extends Model
         'delivery_policy','delivery_days','social_links'
     ];
 
+    protected $casts = [
+        'type' => 'array',
+    ];
+
     public function vendor()
     {
         return $this->belongsTo(User::class, 'user_id');

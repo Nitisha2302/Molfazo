@@ -41,7 +41,8 @@ class StoreController extends Controller
             'country' => 'required|string',
             'city' => 'required|string',
             'address' => 'required|string',
-            'type' => 'required|in:1,2,3',
+            'type' => 'required|array',
+            'type.*' => 'in:1,2,3',
             'delivery_by_seller' => 'nullable|boolean',
             'self_pickup' => 'nullable|boolean',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -128,7 +129,7 @@ class StoreController extends Controller
             'country' => $request->country,
             'city' => $request->city,
             'address' => $request->address,
-            'type' => $request->type,
+            'type' => json_encode($request->type),
             'delivery_by_seller' => $request->delivery_by_seller ?? false,
             'self_pickup' => $request->self_pickup ?? false,
             'logo' => $logoPath,
@@ -233,7 +234,9 @@ class StoreController extends Controller
             'country' => $store->country,
             'city' => $store->city,
             'address' => $store->address,
-            'type' => $store->type,
+            // 'type' => $store->type,
+             'type' =>json_encode($store->type),
+            
             'delivery_by_seller' => $store->delivery_by_seller,
             'self_pickup' => $store->self_pickup,
             'logo' => $store->logo ? $store->logo : null, // Full URL
@@ -288,7 +291,8 @@ class StoreController extends Controller
             'country' => 'required|string',
             'city' => 'required|string',
             'address' => 'required|string',
-            'type' => 'required|in:1,2,3',
+            'type' => 'required|array',
+            'type.*' => 'in:1,2,3',
             'delivery_by_seller' => 'nullable|boolean',
             'self_pickup' => 'nullable|boolean',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -349,7 +353,7 @@ class StoreController extends Controller
         ]);
 
 
-        
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -402,7 +406,7 @@ class StoreController extends Controller
         $store->country = $request->country;
         $store->city = $request->city;
         $store->address = $request->address;
-        $store->type = $request->type;
+       $store->type = json_encode($request->type);
         $store->delivery_by_seller = $request->delivery_by_seller ?? false;
         $store->self_pickup = $request->self_pickup ?? false;
         $store->description = $request->description;
