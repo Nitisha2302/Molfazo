@@ -341,6 +341,7 @@ class StoreController extends Controller
             'government_id.*.mimes' => 'Documents must be jpg, png or pdf.',
             'government_id.*.max' => 'Each document must not exceed 4MB.',
 
+            
             'store_background_image.image' => 'Background must be an image.',
             'store_background_image.mimes' => 'Background must be jpeg, png, jpg, gif or webp.',
             'store_background_image.max' => 'Background image must not exceed 4MB.',
