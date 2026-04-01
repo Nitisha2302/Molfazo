@@ -181,7 +181,7 @@
                                         <tr><th>Name</th><td>{{ $store->name }}</td></tr>
                                         <tr><th>Email</th><td>{{ $store->email }}</td></tr>
                                         <tr><th>Mobile</th><td>{{ $store->mobile }}</td></tr>
-                                        <tr><th>Country</th><td>{{ $store->country }}</td></tr>
+                                        <!-- <tr><th>Country</th><td>{{ $store->country }}</td></tr> -->
                                         <tr><th>City</th><td>{{ $store->city }}</td></tr>
                                         <tr><th>Address</th><td>{{ $store->address }}</td></tr>
                                         <tr><th>Type</th>

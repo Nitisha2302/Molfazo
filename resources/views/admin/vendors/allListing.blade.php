@@ -208,7 +208,7 @@
                                         <tr><th>Name</th><td>{{ $vendor->name }}</td></tr>
                                         <tr><th>Email</th><td>{{ $vendor->email }}</td></tr>
                                         <tr><th>Mobile</th><td>{{ $vendor->mobile }}</td></tr>
-                                        <tr><th>Country</th><td>{{ $vendor->country }}</td></tr>
+                                        <!-- <tr><th>Country</th><td>{{ $vendor->country }}</td></tr> -->
                                         <tr><th>City</th><td>{{ $vendor->city }}</td></tr>
                                         <tr><th>Gov. ID Type</th><td>{{ $vendor->gov_id_type }}</td></tr>
                                         <tr><th>Gov. ID Number</th><td>{{ $vendor->gov_id_number }}</td></tr>

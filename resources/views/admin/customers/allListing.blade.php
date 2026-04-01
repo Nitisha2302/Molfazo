@@ -154,7 +154,7 @@
                                     <tr><th>Name</th><td>{{ $customer->name }}</td></tr>
                                     <tr><th>Mobile</th><td>{{ $customer->mobile }}</td></tr>
                                     <tr><th>Alternate Mobile</th><td>{{ $customer->alt_mobile }}</td></tr>
-                                    <tr><th>Country</th><td>{{ $customer->country ?? '-' }}</td></tr>
+                                    <!-- <tr><th>Country</th><td>{{ $customer->country ?? '-' }}</td></tr> -->
                                     <tr><th>City</th><td>{{ $customer->city ?? '-' }}</td></tr>
                                     <!-- <tr>
                                         <th>Status</th>
