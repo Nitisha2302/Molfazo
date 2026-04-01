@@ -12,7 +12,8 @@ class Store extends Model
     protected $fillable = [
         'user_id', 'name', 'email', 'mobile', 'country', 'city', 'address',
         'type', 'delivery_by_seller', 'self_pickup', 'logo', 'description',
-        'working_hours', 'status_id', 'approved_at','government_id','store_background_image','reject_reason'
+        'working_hours', 'status_id', 'approved_at','government_id','store_background_image','reject_reason','background_color','return_policy',
+        'delivery_policy','delivery_days','social_links'
     ];
 
     public function vendor()
