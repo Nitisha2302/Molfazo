@@ -12,8 +12,8 @@ class StoreController extends Controller
     // Get all stores paginated
     public function list(Request $request)
     {
-        $query = Store::query();
-        
+        // $query = Store::query();
+        $query = Store::where('status_id', 1); // ✅ only active stores
 
         // Optional filters
         if ($request->has('city')) {
