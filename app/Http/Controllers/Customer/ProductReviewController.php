@@ -71,7 +71,7 @@ class ProductReviewController extends Controller
         }
 
         // 💾 Create or Update Review
-        $review = ProductReview::updateOrCreate(
+        $review = Review::updateOrCreate(
             [
                 'product_id' => $request->product_id,
                 'user_id'    => $user->id
@@ -91,7 +91,7 @@ class ProductReviewController extends Controller
 
                 $file->move(public_path('assets/review_images'), $filename);
 
-                ProductReviewImage::create([
+                ReviewImage::create([
                     'product_review_id' => $review->id,
                     'image' => $filename
                 ]);
