@@ -130,6 +130,7 @@ class ProductReviewController extends Controller
     //     ], 200);
     // }
 
+    
     public function list($productId)
     {
         $product = Product::with(['reviews.user', 'reviews.images'])

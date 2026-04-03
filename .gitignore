@@ -16,6 +16,10 @@
 /public/assets/childcategory_images
 /public/assets/review_images
 /public/assets/bank_images
+/public/assets/qr_codes
+/public/assets/review_images
+/public/assets/review_profiles
+
 /storage/*.key
 /vendor
 .env
