@@ -183,8 +183,8 @@ Route::post('customer/chat/mark-read', [CustomerChatController::class, 'markRead
 
 
 
-  Route::post('/product/review/store', [ProductReviewController::class, 'store']);
-  Route::get('/product/{id}/reviews', [ProductReviewController::class, 'list']);
+  Route::post('customer/product/review/store', [ProductReviewController::class, 'store']);
+  Route::get('customer/product/{id}/reviews', [ProductReviewController::class, 'list']);
 
   //new flow
 

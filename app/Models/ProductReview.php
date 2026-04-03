@@ -10,11 +10,13 @@ class ProductReview extends Model
         'user_id',
         'vendor_id',
         'promotion_request_id',
-        'product_rating',
-        'seller_rating',
         'review',
         'username',
-        'title'
+        'title',
+        'profile_image',
+        'status',
+        'is_verified_purchase',
+        'rating'
     ];
 
     // ✅ Product relation
@@ -30,8 +32,9 @@ class ProductReview extends Model
     }
 
     // ✅ Images
-    public function images()
+   public function images()
     {
-        return $this->hasMany(ProductReviewImage::class);
+        return $this->hasMany(ProductReviewImage::class, 'review_id');
     }
+    
 }

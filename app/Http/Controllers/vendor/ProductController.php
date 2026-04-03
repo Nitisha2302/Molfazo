@@ -587,6 +587,7 @@ class ProductController extends Controller
 
             $products = Product::where('status_id', 1)
                 ->where('approval_status', 'approved') // 🔥 FIX
+                ->with(['reviews.images'])
                 ->latest()
                 ->get();
 
@@ -596,6 +597,7 @@ class ProductController extends Controller
             $products = Product::whereHas('store', function ($q) use ($user) {
                     $q->where('user_id', $user->id);
                 })
+                 ->with(['reviews.images'])
                 ->latest()
                 ->get();
         }
@@ -614,200 +616,220 @@ class ProductController extends Controller
     /**
      * Get product details
      */
-    public function details($id)
-    {
-        $user = Auth::guard('api')->user();
-        if (!$user || $user->role != 2 || $user->status_id != 1) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Vendor account is not approved or authenticated.',
-            ], 403);
-        }
-
-        $product = Product::where('id', $id)
-            ->whereHas('store', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })->first();
-
-        if (!$product) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Product not found.',
-            ], 404);
-        }
-
-        return response()->json([
-            'status' => true,
-              'message' => 'Products details fetched successfully.',
-            'data' => $this->formatProduct($product),
-        ], 200);
-    }
-
-    /**
-     * Format product for API response
-     */
-    private function formatProduct($product)
-    {
-           $banks = [];
-
-           if ($product->store && $product->store->user_id) {
-
-              $vendorBanks = \App\Models\VendorBank::with('bank')
-                ->where('user_id', $product->store->user_id)
-                ->get();
-
-            foreach ($vendorBanks as $vendorBank) {
-                $banks[] = [
-                    'id' => $vendorBank->id,
-                    'bank_id' => $vendorBank->bank_id,
-                    'bank_name' => $vendorBank->bank->name ?? null,
-                    'logo' => $vendorBank->bank->logo ?? null,
-                    'account_holder_name' => $vendorBank->account_holder_name,
-                    'account_number' => $vendorBank->account_number,
-                    'ifsc_code' => $vendorBank->ifsc_code,
-                    'phone_number' => $vendorBank->phone_number,
-                ];
+        public function details($id)
+        {
+            $user = Auth::guard('api')->user();
+            if (!$user || $user->role != 2 || $user->status_id != 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Vendor account is not approved or authenticated.',
+                ], 403);
             }
+
+            $product = Product::where('id', $id)
+                ->whereHas('store', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                  ->with(['reviews.images']) 
+                ->first();
+
+            if (!$product) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Product not found.',
+                ], 404);
             }
-        return [
-            'id' => $product->id,
-            'store_id' => $product->store_id,
-            
-            'article_number' => $product->article_number,
-            'approval_status' => $product->approval_status,
-            'is_original' => (bool)$product->is_original,
 
-            'parent_product_id' => $product->parent_product_id,
-
-            // 🔥 OPTIONAL BUT VERY USEFUL (frontend friendly)
-            // 'is_child' => $product->parent_product_id ? true : false,
-            // 'parent_id' => $product->parent_product_id,
-
-             'category' => $product->category ? [
-            'id' => $product->category->id,
-                'name' => $product->category->name,
-            ] : null,
-
-            'sub_category' => $product->subCategory ? [
-                'id' => $product->subCategory->id,
-                'name' => $product->subCategory->name,
-            ] : null,
-
-            'child_category' => $product->childCategory ? [
-                'id' => $product->childCategory->id,
-                'name' => $product->childCategory->name,
-            ] : null,
-            'name' => $product->name,
-            'description' => $product->description,
-            'price' => $product->price,
-            'discount_price' => $product->discount_price,
-            'available_quantity' => $product->available_quantity,
-            'delivery_available' => (bool)$product->delivery_available,
-            'delivery_price' => $product->delivery_price,
-            'delivery_time' => $product->delivery_time,
-            'characteristics' => $product->characteristics ? json_decode($product->characteristics, true) : null,
-            'tags' => $product->tags ? json_decode($product->tags, true) : null,
-            'status_id' => $product->status_id,
-            // 'status_name' => $this->getStatusName($product->status_id),
-            'attributes_json' => $product->attributes_json,
-            'status_name' => $product->status_id,
-           'payment_modes' => $product->payment_modes,
-             // ✅ BANK DATA ADDED HERE
-            /* ===============================
-           ✅ BANKS WITH ACCOUNT DETAILS
-            =============================== */
-            'banks' => $banks,
-            'images' => $product->images->map(function ($img) {
-                return [
-                    'id' => $img->id,
-                    'image' =>  $img->image,
-                    'color' => $img->color,
-                    'is_primary' => (bool)$img->is_primary,
-                ];
-            }),
-           'combinations' => $product->combinations->map(function ($combo) {
-                return [
-                    'id' => $combo->id,
-                    'variant' => json_decode($combo->combination, true),
-                    'price' => $combo->price,
-                    'price_before_discount' => $combo->price_before_discount,
-                    'cost_price' => $combo->cost_price,
-                    'description' => $combo->description,
-                   
-                    'stock' => $combo->stock,
-                    'images' => $combo->images ? json_decode($combo->images, true) : [],
-                ];
-            }),
-            'created_at' => $product->created_at,
-            'updated_at' => $product->updated_at,
-        ];
-    }
-
-    private function getStatusName($status)
-    {
-        return match ($status) {
-            1 => 'Active',
-            2 => 'Blocked',
-            3 => 'Deleted',
-            default => 'Unknown',
-        };
-    }
-
-    public function getstoreAllProducts($store_id)
-    {
-        /* ===============================
-        AUTHENTICATION (OPTIONAL)
-        =============================== */
-        $user = Auth::guard('api')->user();
-
-        // If this API should be public → remove this block
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthenticated.',
-            ], 401);
-        }
-
-        /* ===============================
-        STORE VALIDATION
-        =============================== */
-        $store = Store::where('id', $store_id)
-            ->where('status_id', 1) // 1 = Active
-            ->first();
-
-        if (!$store) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Store not found or not active.',
-            ], 404);
-        }
-
-        /* ===============================
-        FETCH STORE PRODUCTS
-        =============================== */
-        $products = Product::where('store_id', $store->id)->get();
-
-        if ($products->isEmpty()) {
             return response()->json([
                 'status' => true,
-                'data' => [],
-                'message' => 'No products found for this store.'
+                'message' => 'Products details fetched successfully.',
+                'data' => $this->formatProduct($product),
             ], 200);
         }
 
-        /* ===============================
-        FORMAT PRODUCTS
-        =============================== */
-        $products = $products->map(function ($product) {
-            return $this->formatProduct($product);
-        });
+        /**
+         * Format product for API response
+         */
+        private function formatProduct($product)
+        {
+            $banks = [];
 
-        return response()->json([
-            'status' => true,
-              'message' => 'Products fetched successfully.',
-            'data' => $products,
-        ], 200);
-    }
+            if ($product->store && $product->store->user_id) {
+
+                $vendorBanks = \App\Models\VendorBank::with('bank')
+                    ->where('user_id', $product->store->user_id)
+                    ->get();
+
+                foreach ($vendorBanks as $vendorBank) {
+                    $banks[] = [
+                        'id' => $vendorBank->id,
+                        'bank_id' => $vendorBank->bank_id,
+                        'bank_name' => $vendorBank->bank->name ?? null,
+                        'logo' => $vendorBank->bank->logo ?? null,
+                        'account_holder_name' => $vendorBank->account_holder_name,
+                        'account_number' => $vendorBank->account_number,
+                        'ifsc_code' => $vendorBank->ifsc_code,
+                        'phone_number' => $vendorBank->phone_number,
+                    ];
+                }
+                }
+            return [
+                'id' => $product->id,
+                'store_id' => $product->store_id,
+                
+                'article_number' => $product->article_number,
+                'approval_status' => $product->approval_status,
+                'is_original' => (bool)$product->is_original,
+
+                'parent_product_id' => $product->parent_product_id,
+
+                // 🔥 OPTIONAL BUT VERY USEFUL (frontend friendly)
+                // 'is_child' => $product->parent_product_id ? true : false,
+                // 'parent_id' => $product->parent_product_id,
+
+                'category' => $product->category ? [
+                'id' => $product->category->id,
+                    'name' => $product->category->name,
+                ] : null,
+
+                'sub_category' => $product->subCategory ? [
+                    'id' => $product->subCategory->id,
+                    'name' => $product->subCategory->name,
+                ] : null,
+
+                'child_category' => $product->childCategory ? [
+                    'id' => $product->childCategory->id,
+                    'name' => $product->childCategory->name,
+                ] : null,
+                'name' => $product->name,
+                'description' => $product->description,
+                'price' => $product->price,
+                'discount_price' => $product->discount_price,
+                'available_quantity' => $product->available_quantity,
+                'delivery_available' => (bool)$product->delivery_available,
+                'delivery_price' => $product->delivery_price,
+                'delivery_time' => $product->delivery_time,
+                'characteristics' => $product->characteristics ? json_decode($product->characteristics, true) : null,
+                'tags' => $product->tags ? json_decode($product->tags, true) : null,
+                'status_id' => $product->status_id,
+                // 'status_name' => $this->getStatusName($product->status_id),
+                'attributes_json' => $product->attributes_json,
+                'status_name' => $product->status_id,
+            'payment_modes' => $product->payment_modes,
+                // ✅ BANK DATA ADDED HERE
+                /* ===============================
+            ✅ BANKS WITH ACCOUNT DETAILS
+                =============================== */
+                'banks' => $banks,
+                'images' => $product->images->map(function ($img) {
+                    return [
+                        'id' => $img->id,
+                        'image' =>  $img->image,
+                        'color' => $img->color,
+                        'is_primary' => (bool)$img->is_primary,
+                    ];
+                }),
+            'combinations' => $product->combinations->map(function ($combo) {
+                    return [
+                        'id' => $combo->id,
+                        'variant' => json_decode($combo->combination, true),
+                        'price' => $combo->price,
+                        'price_before_discount' => $combo->price_before_discount,
+                        'cost_price' => $combo->cost_price,
+                        'description' => $combo->description,
+                    
+                        'stock' => $combo->stock,
+                        'images' => $combo->images ? json_decode($combo->images, true) : [],
+                    ];
+                }),
+                'reviews' => $product->reviews->map(function ($review) {
+                return [
+                    'id' => $review->id,
+                    'rating' => $review->rating,
+                    'title' => $review->title,
+                    'review' => $review->review,
+                    'username' => $review->username,
+                    'profile_image' => $review->profile_image,
+                    'created_at' => $review->created_at,
+
+                    'images' => $review->images->map(function ($img) {
+                        return [
+                            'id' => $img->id,
+                            'image' => $img->image,
+                        ];
+                    }),
+                ];
+            }),
+                'created_at' => $product->created_at,
+                'updated_at' => $product->updated_at,
+            ];
+        }
+
+        private function getStatusName($status)
+        {
+            return match ($status) {
+                1 => 'Active',
+                2 => 'Blocked',
+                3 => 'Deleted',
+                default => 'Unknown',
+            };
+        }
+
+        public function getstoreAllProducts($store_id)
+        {
+            /* ===============================
+            AUTHENTICATION (OPTIONAL)
+            =============================== */
+            $user = Auth::guard('api')->user();
+
+            // If this API should be public → remove this block
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthenticated.',
+                ], 401);
+            }
+
+            /* ===============================
+            STORE VALIDATION
+            =============================== */
+            $store = Store::where('id', $store_id)
+                ->where('status_id', 1) // 1 = Active
+                ->first();
+
+            if (!$store) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Store not found or not active.',
+                ], 404);
+            }
+
+            /* ===============================
+            FETCH STORE PRODUCTS
+            =============================== */
+            $products = Product::where('store_id', $store->id)  ->with(['reviews.images']) ->get();
+
+            if ($products->isEmpty()) {
+                return response()->json([
+                    'status' => true,
+                    'data' => [],
+                    'message' => 'No products found for this store.'
+                ], 200);
+            }
+
+            /* ===============================
+            FORMAT PRODUCTS
+            =============================== */
+            $products = $products->map(function ($product) {
+                return $this->formatProduct($product);
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Products fetched successfully.',
+                'data' => $products,
+            ], 200);
+        }
 
     public function getBankList(Request $request)
     {

@@ -17,7 +17,7 @@
 <table class="table table-striped table-bordered table-notification-list">
 <thead>
 <tr>
-    <th>ID</th>
+    <!-- <th>ID</th> -->
     <th>Vendor</th>
     <th>Product</th>
     <th>Package</th>
@@ -32,7 +32,7 @@
 <tbody>
 @forelse($requests as $req)
 <tr>
-    <td>{{ $req->id }}</td>
+    <!-- <td>{{ $req->id }}</td> -->
 
     <td>{{ $req->vendor->name ?? '-' }}</td>
 

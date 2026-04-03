@@ -9,57 +9,71 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Step 1: Add new JSON column
-        Schema::table('stores', function (Blueprint $table) {
-            $table->json('type_new')->nullable()->after('type');
-        });
+        // ✅ Step 1: Add new column if not exists
+        if (!Schema::hasColumn('stores', 'type_new')) {
+            Schema::table('stores', function (Blueprint $table) {
+                $table->json('type_new')->nullable()->after('type');
+            });
+        }
 
-        // Step 2: Convert existing ENUM values to JSON array
-        DB::statement("
-            UPDATE stores SET type_new =
-            CASE
-                WHEN type = 'Retail' THEN '[1]'
-                WHEN type = 'Online' THEN '[2]'
-                WHEN type = 'Wholesale' THEN '[3]'
-                WHEN type = 'Offline' THEN '[4]'
-                ELSE NULL
-            END
-        ");
+        // ✅ Step 2: Convert data ONLY if old type exists
+        if (Schema::hasColumn('stores', 'type')) {
+            DB::statement("
+                UPDATE stores SET type_new =
+                CASE
+                    WHEN type = 'Retail' THEN '[1]'
+                    WHEN type = 'Online' THEN '[2]'
+                    WHEN type = 'Wholesale' THEN '[3]'
+                    WHEN type = 'Offline' THEN '[4]'
+                    ELSE type_new
+                END
+            ");
 
-        // Step 3: Drop old column
-        Schema::table('stores', function (Blueprint $table) {
-            $table->dropColumn('type');
-        });
+            // ✅ Drop old column
+            Schema::table('stores', function (Blueprint $table) {
+                $table->dropColumn('type');
+            });
+        }
 
-        // Step 4: Rename new column
-        Schema::table('stores', function (Blueprint $table) {
-            $table->renameColumn('type_new', 'type');
-        });
+        // ✅ Step 3: Rename using CHANGE (MariaDB fix 🔥)
+        if (Schema::hasColumn('stores', 'type_new')) {
+
+            DB::statement("
+                ALTER TABLE stores 
+                CHANGE type_new type LONGTEXT
+            ");
+        }
     }
 
     public function down(): void
     {
-        Schema::table('stores', function (Blueprint $table) {
-            $table->enum('type_old', ['Retail','Online','Wholesale','Offline'])->nullable();
-        });
+        // reverse safely
+        if (Schema::hasColumn('stores', 'type')) {
 
-        DB::statement("
-            UPDATE stores SET type_old =
-            CASE
-                WHEN JSON_CONTAINS(type, '1') THEN 'Retail'
-                WHEN JSON_CONTAINS(type, '2') THEN 'Online'
-                WHEN JSON_CONTAINS(type, '3') THEN 'Wholesale'
-                WHEN JSON_CONTAINS(type, '4') THEN 'Offline'
-                ELSE NULL
-            END
-        ");
+            Schema::table('stores', function (Blueprint $table) {
+                $table->enum('type_old', ['Retail','Online','Wholesale','Offline'])->nullable();
+            });
 
-        Schema::table('stores', function (Blueprint $table) {
-            $table->dropColumn('type');
-        });
+            DB::statement("
+                UPDATE stores SET type_old =
+                CASE
+                    WHEN type LIKE '%1%' THEN 'Retail'
+                    WHEN type LIKE '%2%' THEN 'Online'
+                    WHEN type LIKE '%3%' THEN 'Wholesale'
+                    WHEN type LIKE '%4%' THEN 'Offline'
+                    ELSE NULL
+                END
+            ");
 
-        Schema::table('stores', function (Blueprint $table) {
-            $table->renameColumn('type_old', 'type');
-        });
+            Schema::table('stores', function (Blueprint $table) {
+                $table->dropColumn('type');
+            });
+
+            DB::statement("
+                ALTER TABLE stores 
+                CHANGE type_old type 
+                ENUM('Retail','Online','Wholesale','Offline')
+            ");
+        }
     }
 };

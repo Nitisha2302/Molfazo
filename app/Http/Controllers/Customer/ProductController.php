@@ -294,6 +294,27 @@ class ProductController extends Controller
                 ];
             });
 
+            $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
+           $product->total_reviews = $product->reviews_count;
+
+            $product->reviews = $product->reviews->map(function ($review) {
+                return [
+                    'id' => $review->id,
+                    'rating' => $review->rating,
+                    'title' => $review->title,
+                    'review' => $review->review,
+                    'username' => $review->username,
+                    'profile_image' => $review->profile_image,
+                    'created_at' => $review->created_at,
+                    'images' => $review->images->map(function ($img) {
+                        return [
+                            'id' => $img->id,
+                            'image' => $img->image,
+                        ];
+                    }),
+                ];
+            });
+
             unset($product->children);
 
             // 🔥 SORT SELLERS
@@ -549,6 +570,28 @@ class ProductController extends Controller
             ];
         });
 
+        $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
+        $product->total_reviews = $product->reviews_count;
+
+        $product->reviews = $product->reviews->map(function ($review) {
+            return [
+                'id' => $review->id,
+                'rating' => $review->rating,
+                'title' => $review->title,
+                'review' => $review->review,
+                'username' => $review->username,
+                'profile_image' => $review->profile_image,
+                'created_at' => $review->created_at,
+
+                'images' => $review->images->map(function ($img) {
+                    return [
+                        'id' => $img->id,
+                        'image' => $img->image,
+                    ];
+                }),
+            ];
+        });
+
         unset($product->children);
         $paymentModes = $product->store->user->payment_modes ?? [];
 
@@ -569,7 +612,9 @@ class ProductController extends Controller
         }
 
         // 🔥 Related products (NO PAGINATION)
-        $relatedProducts = Product::with(['primaryImage','store.user','store.vendorBanks.bank', 'combinations'])
+        $relatedProducts = Product::with(['primaryImage','store.user','store.vendorBanks.bank', 'combinations','reviews.images'])
+        ->withAvg('reviews', 'rating')   // 🔥 ADD
+        ->withCount('reviews')         
         ->where('status_id', 1)
         ->whereNull('parent_product_id')
         ->where('id', '!=', $product->id)
@@ -583,6 +628,25 @@ class ProductController extends Controller
             unset($item->primaryImage);
              // Favorite status
            $item->is_favorite = in_array($item->id, $favIds);
+           // ✅ ADD REVIEWS
+            $item->avg_rating = round($item->reviews_avg_rating ?? 0, 1);
+            $item->total_reviews = $item->reviews_count;
+
+            $item->reviews = $item->reviews->map(function ($review) {
+                return [
+                    'id' => $review->id,
+                    'rating' => $review->rating,
+                    'title' => $review->title,
+                    'review' => $review->review,
+                    'username' => $review->username,
+                    'profile_image' => $review->profile_image,
+                    'images' => $review->images->map(fn($img) => [
+                        'id' => $img->id,
+                        'image' => $img->image
+                    ])
+                ];
+            });
+
             $item->combinations = $item->combinations->map(function ($combo) {
                     return [
                         'id' => $combo->id,
@@ -776,8 +840,9 @@ class ProductController extends Controller
                         ->pluck('product_id')
                         ->toArray();
         }
-        $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage','store.user','store.vendorBanks.bank','combinations','children.store','children.primaryImage' ])
-            ->where('status_id', 1)->where('approval_status', 'approved')->whereNull('parent_product_id');
+        $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage','store.user','store.vendorBanks.bank','combinations','children.store','children.primaryImage','reviews.images' ])
+            ->withAvg('reviews', 'rating')   // 🔥 ADD
+            ->withCount('reviews')  ->where('status_id', 1)->where('approval_status', 'approved')->whereNull('parent_product_id');
 
         //  Search Keyword
         if ($request->has('search') && $request->search != '') {
@@ -895,6 +960,27 @@ class ProductController extends Controller
                 ];
             });
             unset($product->children);
+            $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
+            $product->total_reviews = $product->reviews_count;
+
+            $product->reviews = $product->reviews->map(function ($review) {
+                return [
+                    'id' => $review->id,
+                    'rating' => $review->rating,
+                    'title' => $review->title,
+                    'review' => $review->review,
+                    'username' => $review->username,
+                    'profile_image' => $review->profile_image,
+                    'created_at' => $review->created_at,
+
+                    'images' => $review->images->map(function ($img) {
+                        return [
+                            'id' => $img->id,
+                            'image' => $img->image,
+                        ];
+                    }),
+                ];
+            });
                $product->combinations = $product->combinations->map(function ($combo) {
                 return [
                     'id' => $combo->id,
@@ -1017,6 +1103,10 @@ class ProductController extends Controller
                 'product.store.vendorBanks.bank'
                 ,'product.combinations',
             ])
+            ->with(['product' => function ($q) {
+                $q->withAvg('reviews', 'rating')
+                ->withCount('reviews');
+            }])
             ->where('user_id', $user->id)
             ->latest()
             ->get();
@@ -1041,6 +1131,30 @@ class ProductController extends Controller
 
                 // favorite status
                 $product->is_favorite = true;
+
+                 // ✅ ⭐ ADD RATING
+                $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
+                $product->total_reviews = $product->reviews_count;
+
+                // ✅ ⭐ ADD REVIEWS
+                $product->reviews = $product->reviews->map(function ($review) {
+                    return [
+                        'id' => $review->id,
+                        'rating' => $review->rating,
+                        'title' => $review->title,
+                        'review' => $review->review,
+                        'username' => $review->username,
+                        'profile_image' => $review->profile_image,
+                        'created_at' => $review->created_at,
+
+                        'images' => $review->images->map(function ($img) {
+                            return [
+                                'id' => $img->id,
+                                'image' => $img->image,
+                            ];
+                        }),
+                    ];
+                });
 
                 $product->combinations = $product->combinations->map(function ($combo) {
                     return [

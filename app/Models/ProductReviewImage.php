@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class ProductReviewImage extends Model
 {
     protected $fillable = [
-        'product_review_id',
+        'review_id',
         'image'
     ];
 
-    public function review()
+     public function review()
     {
-        return $this->belongsTo(ProductReview::class, 'product_review_id');
+        return $this->belongsTo(ProductReview::class, 'review_id');
     }
 }

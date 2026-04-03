@@ -93,10 +93,12 @@ class Product extends Model
             ->where('approval_status', 'approved');
     }
 
-    public function fakeReviews()
-    {
-        return $this->hasMany(FakeReview::class);
-    }
+//   public function reviews()
+// {
+//     return $this->hasMany(ProductReview::class, 'product_id')
+//         ->whereNull('deleted_at')
+//         ->where('status', 'approved');
+// }
 
     
 }

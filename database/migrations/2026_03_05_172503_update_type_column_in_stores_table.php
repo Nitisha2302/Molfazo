@@ -9,54 +9,32 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('stores', function (Blueprint $table) {
-            $table->enum('type_new', ['Retail','Online','Wholesale','Offline'])->nullable();
-        });
+        // ✅ CASE 1: Agar type already exist hai → kuch mat karo
+        if (Schema::hasColumn('stores', 'type') && !Schema::hasColumn('stores', 'type_new')) {
+            return;
+        }
 
-        // Move existing data safely
-        DB::statement("
-            UPDATE stores SET type_new =
-            CASE
-                WHEN type = '1' THEN 'Retail'
-                WHEN type = '2' THEN 'Online'
-                WHEN type = '3' THEN 'Wholesale'
-                WHEN type = '4' THEN 'Offline'
-                ELSE 'Retail'
-            END
-        ");
+        // ✅ CASE 2: Agar type_new hai → usko type me convert karo
+        if (Schema::hasColumn('stores', 'type_new')) {
 
-        Schema::table('stores', function (Blueprint $table) {
-            $table->dropColumn('type');
-        });
+            // Agar type bhi exist karta hai → drop first
+            if (Schema::hasColumn('stores', 'type')) {
+                Schema::table('stores', function (Blueprint $table) {
+                    $table->dropColumn('type');
+                });
+            }
 
-        Schema::table('stores', function (Blueprint $table) {
-            $table->renameColumn('type_new', 'type');
-        });
+            // Rename using CHANGE (MariaDB safe)
+            DB::statement("
+                ALTER TABLE stores 
+                CHANGE type_new type 
+                ENUM('Retail','Online','Wholesale','Offline')
+            ");
+        }
     }
 
     public function down(): void
     {
-        Schema::table('stores', function (Blueprint $table) {
-            $table->json('type_new')->nullable();
-        });
-
-        DB::statement("
-            UPDATE stores SET type_new =
-            CASE
-                WHEN type = 'Retail' THEN '[1]'
-                WHEN type = 'Online' THEN '[2]'
-                WHEN type = 'Wholesale' THEN '[3]'
-                WHEN type = 'Offline' THEN '[4]'
-                ELSE '[1]'
-            END
-        ");
-
-        Schema::table('stores', function (Blueprint $table) {
-            $table->dropColumn('type');
-        });
-
-        Schema::table('stores', function (Blueprint $table) {
-            $table->renameColumn('type_new', 'type');
-        });
+        // optional (ignore)
     }
 };

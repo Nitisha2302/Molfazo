@@ -92,7 +92,7 @@ class ProductReviewController extends Controller
                 $file->move(public_path('assets/review_images'), $filename);
 
                 ProductReviewImage::create([
-                    'product_review_id' => $review->id,
+                    'review_id' => $review->id,
                     'image' => $filename
                 ]);
             }
@@ -131,46 +131,46 @@ class ProductReviewController extends Controller
     // }
 
     public function list($productId)
-{
-    $product = Product::with(['reviews.user', 'reviews.images'])
-        ->find($productId);
+    {
+        $product = Product::with(['reviews.user', 'reviews.images'])
+            ->find($productId);
 
-    if (!$product) {
+        if (!$product) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Product not found.'
+            ], 404);
+        }
+
+        $average = $product->reviews()->avg('rating');
+        $count   = $product->reviews()->count();
+
+        // ✅ Format reviews
+        $reviews = $product->reviews->map(function ($review) {
+
+            return [
+                'id'        => $review->id,
+                'rating'    => $review->rating,
+                'review'    => $review->review,
+                'user'      => [
+                    'id'   => $review->user->id,
+                    'name' => $review->user->name,
+                    'profile_photo' => $review->user->profile_photo
+                        ? $review->user->profile_photo
+                        : null
+                ],
+                'images' => $review->images->map(function ($img) {
+                    return  $img->image;
+                })
+            ];
+        });
+
         return response()->json([
-            'status'  => false,
-            'message' => 'Product not found.'
-        ], 404);
+            'status'         => true,
+            'average_rating' => $average ? round($average, 1) : 0,
+            'total_reviews'  => $count,
+            'reviews'        => $reviews
+        ], 200);
     }
-
-    $average = $product->reviews()->avg('rating');
-    $count   = $product->reviews()->count();
-
-    // ✅ Format reviews
-    $reviews = $product->reviews->map(function ($review) {
-
-        return [
-            'id'        => $review->id,
-            'rating'    => $review->rating,
-            'review'    => $review->review,
-            'user'      => [
-                'id'   => $review->user->id,
-                'name' => $review->user->name,
-                'profile_photo' => $review->user->profile_photo
-                    ? $review->user->profile_photo
-                    : null
-            ],
-            'images' => $review->images->map(function ($img) {
-                return  $img->image;
-            })
-        ];
-    });
-
-    return response()->json([
-        'status'         => true,
-        'average_rating' => $average ? round($average, 1) : 0,
-        'total_reviews'  => $count,
-        'reviews'        => $reviews
-    ], 200);
-}
 
 }
