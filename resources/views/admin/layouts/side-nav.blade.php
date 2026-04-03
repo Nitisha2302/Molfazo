@@ -149,7 +149,7 @@
                 </a>
             </li>
 
-            <!-- <li class="@if (Route::currentRouteName() == 'dashboard.admin.promotion.requests') active @endif">
+            <li class="@if (Route::currentRouteName() == 'dashboard.admin.promotion.requests') active @endif">
                 <a href="{{ route('dashboard.admin.promotion.requests') }}">
                     <i class="fas fa-clipboard-check"></i>
                     <span>Promotion Requests</span>
@@ -161,7 +161,7 @@
                     <i class="fas fa-credit-card"></i>
                     <span>Payment Settings</span>
                 </a>
-            </li> -->
+            </li>
 
             <!-- PROMOTION MODULE END -->
 
