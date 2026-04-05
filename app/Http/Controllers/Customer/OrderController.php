@@ -706,6 +706,7 @@ class OrderController extends Controller
                 'status' => $order->status_id,
                 'payment_type' => $order->payment_type,
                  'delivery_method' => $order->delivery_method,
+                  'order_date' => $order->created_at->format('d M Y h:i A'),
                 'bank' => $order->bank ? [
                     'bank_id' => $order->bank->id,
                     'bank_name' => $order->bank->name,

@@ -47,6 +47,7 @@
                         <th>Email</th>
                         <th>Mobile</th>
                         <th>Status</th>
+                        <th>KYC status</th>
                         <th>Reject Reason</th>
                         <th>Action</th>
                     </tr>
@@ -76,6 +77,15 @@
                                     @elseif($vendor->status_id == 2) Pending
                                     @elseif($vendor->status_id == 3) Rejected
                                     @else Blocked @endif
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge 
+                                    @if($vendor->kyc_status == 'verified') bg-success
+                                    @elseif($vendor->kyc_status == 'pending') bg-warning
+                                    @else bg-danger @endif">
+                                    {{ ucfirst($vendor->kyc_status) }}
                                 </span>
                             </td>
                             <td>{{ $vendor->reject_reason ?? '-' }}</td>

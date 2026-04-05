@@ -147,17 +147,51 @@ class BannerController extends Controller
 
     public function store(Request $request)
     {
+
+
         $request->validate([
             'title' => 'nullable|string|max:255',
             'cities' => 'required|array|min:1',
-            'cities.*' => 'exists:cities,id', // validate each city ID
+            'cities.*' => 'exists:cities,id',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'status' => 'required|in:0,1',
 
-             // NEW
             'link_type' => 'nullable|in:store,product',
             'link_ids' => 'nullable|array',
+        ], [
+            // 🔥 Cities
+            'cities.required' => 'Please select at least one city',
+            'cities.array' => 'Cities must be a valid array',
+            'cities.min' => 'Select at least one city',
+            'cities.*.exists' => 'Selected city is invalid',
+
+            // 🔥 Image
+            'image.required' => 'Banner image is required',
+            'image.image' => 'File must be an image',
+            'image.mimes' => 'Image must be jpeg, png, jpg, gif or webp',
+            'image.max' => 'Image size must be less than 2MB',
+
+            // 🔥 Status
+            'status.required' => 'Status is required',
+            'status.in' => 'Invalid status selected',
+
+            // 🔥 Link Type
+            'link_type.in' => 'Link type must be store or product',
+
+            // 🔥 Link IDs
+            'link_ids.array' => 'Link selection must be valid',
         ]);
+        // $request->validate([
+        //     'title' => 'nullable|string|max:255',
+        //     'cities' => 'required|array|min:1',
+        //     'cities.*' => 'exists:cities,id', // validate each city ID
+        //     'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        //     'status' => 'required|in:0,1',
+
+        //      // NEW
+        //     'link_type' => 'nullable|in:store,product',
+        //     'link_ids' => 'nullable|array',
+        // ]);
 
         // Handle "All Cities"
         if (in_array('all', $request->cities)) {
@@ -252,6 +286,18 @@ class BannerController extends Controller
 
     public function update(Request $request, Banner $banner)
     {
+        // $request->validate([
+        //     'title' => 'nullable|string|max:255',
+        //     'cities' => 'required|array|min:1',
+        //     'cities.*' => 'exists:cities,id',
+        //     'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        //     'status' => 'required|in:0,1',
+
+        //     // NEW
+        //     'link_type' => 'nullable|in:store,product',
+        //     'link_ids' => 'nullable|array',
+        // ]);
+
         $request->validate([
             'title' => 'nullable|string|max:255',
             'cities' => 'required|array|min:1',
@@ -259,10 +305,31 @@ class BannerController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'status' => 'required|in:0,1',
 
-            // NEW
             'link_type' => 'nullable|in:store,product',
             'link_ids' => 'nullable|array',
+        ], [
+            // 🔥 Cities
+            'cities.required' => 'Please select at least one city',
+            'cities.array' => 'Cities must be a valid array',
+            'cities.min' => 'Select at least one city',
+            'cities.*.exists' => 'Selected city is invalid',
+
+            // 🔥 Image (optional in update)
+            'image.image' => 'File must be an image',
+            'image.mimes' => 'Image must be jpeg, png, jpg, gif or webp',
+            'image.max' => 'Image size must be less than 2MB',
+
+            // 🔥 Status
+            'status.required' => 'Status is required',
+            'status.in' => 'Invalid status selected',
+
+            // 🔥 Link Type
+            'link_type.in' => 'Link type must be store or product',
+
+            // 🔥 Link IDs
+            'link_ids.array' => 'Link selection must be valid',
         ]);
+
 
         // Handle "All Cities"
         if (in_array('all', $request->cities)) {

@@ -26,6 +26,7 @@ use App\Http\Controllers\vendor\VendorBankController;
 use App\Http\Controllers\vendor\NotificationController;
 use App\Http\Controllers\vendor\PromotionController;
 use App\Http\Controllers\vendor\ReviewController;
+use App\Http\Controllers\vendor\KycController;
 
 use App\Http\Controllers\Customer\ChatController as CustomerChatController;
 
@@ -195,6 +196,17 @@ Route::post('vendor/product/combination/update/{id}',[ProductController::class,'
 Route::delete('vendor/product/combination/delete/{id}',[ProductController::class,'deleteCombination']);
 
 Route::post('vendor/product/copy/{id}',[ProductController::class, 'copyProduct']);
+
+// ================= KYC =================
+
+// Protected
+Route::middleware('auth:api')->group(function () {
+    Route::post('/kyc/create-session', [KycController::class, 'createSession']);
+});
+
+
+// Public (DIDIT webhook)
+Route::post('/didit/webhook', [KycController::class, 'webhook'])->name('didit.webhook');
 
 
 
