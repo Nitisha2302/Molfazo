@@ -204,6 +204,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/kyc/create-session', [KycController::class, 'createSession']);
 });
 
+
 // Public (DIDIT webhook)
 Route::post('/didit/webhook', [KycController::class, 'webhook'])->name('didit.webhook');
 
