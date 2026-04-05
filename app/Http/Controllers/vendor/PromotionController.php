@@ -12,7 +12,27 @@ use Illuminate\Support\Facades\Validator;
 class PromotionController extends Controller
 {
     // ✅ GET PACKAGES
-    public function packages()
+    // public function packages()
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Unauthorized'
+    //         ], 401);
+    //     }
+
+    //     $packages = PromotionPackage::select('id','title','review_count','price')->get();
+
+    //     return response()->json([
+    //         'status' => true,
+    //           'message' => 'packages fetched successfully',
+    //         'data' => $packages
+    //     ]);
+    // }
+
+    public function packages(Request $request)
     {
         $user = Auth::guard('api')->user();
 
@@ -23,12 +43,47 @@ class PromotionController extends Controller
             ], 401);
         }
 
+        // ✅ GET ALL PACKAGES
         $packages = PromotionPackage::select('id','title','review_count','price')->get();
+
+        // ✅ Agar product_id nahi aaya → simple return
+        if (!$request->filled('product_id')) {
+
+            return response()->json([
+                'status' => true,
+                'message' => 'packages fetched successfully',
+                'data' => $packages
+            ]);
+        }
+
+        // ✅ Agar product_id aaya → status bhi attach karo
+        $request->validate([
+            'product_id' => 'exists:products,id'
+        ]);
+
+        $requests = PromotionRequest::where('vendor_id', $user->id)
+            ->where('product_id', $request->product_id)
+            ->get()
+            ->keyBy('package_id');
+
+        $data = $packages->map(function ($package) use ($requests) {
+
+            $promotion = $requests[$package->id] ?? null;
+
+            return [
+                'id' => $package->id,
+                'title' => $package->title,
+                'review_count' => $package->review_count,
+                'price' => $package->price,
+                'status' => $promotion->status ?? null,
+                'is_applied' => $promotion ? true : false
+            ];
+        });
 
         return response()->json([
             'status' => true,
-              'message' => 'packages fetched successfully',
-            'data' => $packages
+            'message' => 'packages with status fetched successfully',
+            'data' => $data
         ]);
     }
 

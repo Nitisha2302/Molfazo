@@ -38,6 +38,10 @@ class VendorController extends Controller
     {
         if ($vendor->role != 2) return back()->with('error', 'Invalid vendor');
 
+        // ❌ Agar DIDIT bhi nahi aur docs bhi nahi
+        if ($vendor->kyc_status != 'verified') {
+            return back()->with('success', 'Vendor not verified (DIDIT Documents verfication is required)');
+        }
         $vendor->status_id = 1; // Active
          $vendor->reject_reason = null;
         $vendor->save();
@@ -49,7 +53,10 @@ class VendorController extends Controller
     public function reject(Request $request,User $vendor)
     {
         if ($vendor->role != 2) return back()->with('error', 'Invalid vendor');
-
+      // ❌ Agar DIDIT bhi nahi aur docs bhi nahi
+        if ($vendor->kyc_status != 'verified') {
+            return back()->with('success', 'Vendor not verified (DIDIT Documents verfication is required)');
+        }
         $vendor->status_id = 3; // Rejected
         $vendor->reject_reason = $request->reject_reason;
         $vendor->save();

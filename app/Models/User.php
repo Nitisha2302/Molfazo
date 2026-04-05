@@ -46,6 +46,14 @@ class User extends Authenticatable
         'fcm_token',
         'payment_modes',
         'reject_reason',
+
+        'kyc_status',
+        'kyc_session_id',
+        'verified_name',
+        'verified_doc_type',
+        'verified_doc_number',
+
+
     ];
 
     protected $casts = [

@@ -449,6 +449,9 @@ class AuthController extends Controller
             'gov_id_number'    => $request->gov_id_number,
             'government_id'    => $govDocJson, // multiple files stored
 
+             // NEW
+           'kyc_status' => 'pending',
+
             'city'             => $request->city,
             'country'          => $request->country,
             'profile_photo'    => $profilePhotoName,

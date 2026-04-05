@@ -17,12 +17,19 @@ class AdminPaymentController extends Controller
     public function update(Request $request)
     {
         // ✅ VALIDATION
-        $request->validate([
+            $request->validate([
             'account_name'   => 'required|string|max:255',
             'account_number' => 'required|string|max:50',
             'ifsc'           => 'nullable|string|max:50',
             'upi_id'         => 'nullable|string|max:100',
             'qr_code'        => 'nullable|image|max:2048',
+        ], [
+            'account_name.required' => 'Account name is required',
+            'account_number.required' => 'Account number is required',
+            'ifsc.string' => 'IFSC must be valid text',
+            'upi_id.string' => 'UPI ID must be valid',
+            'qr_code.image' => 'QR code must be an image',
+            'qr_code.max' => 'QR code must be less than 2MB',
         ]);
 
         // ✅ DEFAULT OLD IMAGE

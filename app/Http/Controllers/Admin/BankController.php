@@ -31,10 +31,30 @@ class BankController extends Controller
     // Store
     public function store(Request $request)
     {
+        // $request->validate([
+        //     'name'   => 'required|string|max:255',
+        //     'logo'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        //     'status' => 'required|in:0,1',
+        // ]);
+
         $request->validate([
             'name'   => 'required|string|max:255',
             'logo'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'status' => 'required|in:0,1',
+        ], [
+            // 🔥 Name
+            'name.required' => 'Bank name is required',
+            'name.string' => 'Bank name must be valid text',
+            'name.max' => 'Bank name must not exceed 255 characters',
+
+            // 🔥 Logo
+            'logo.image' => 'Logo must be an image',
+            'logo.mimes' => 'Logo must be jpeg, png, jpg or webp',
+            'logo.max' => 'Logo size must be less than 2MB',
+
+            // 🔥 Status
+            'status.required' => 'Status is required',
+            'status.in' => 'Invalid status selected',
         ]);
 
         $fileName = null;
@@ -64,10 +84,30 @@ class BankController extends Controller
     // Update
     public function update(Request $request, Bank $bank)
     {
+        // $request->validate([
+        //     'name'   => 'required|string|max:255',
+        //     'logo'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        //     'status' => 'required|in:0,1',
+        // ]);
+
         $request->validate([
             'name'   => 'required|string|max:255',
             'logo'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'status' => 'required|in:0,1',
+        ], [
+            // 🔥 Name
+            'name.required' => 'Bank name is required',
+            'name.string' => 'Bank name must be valid text',
+            'name.max' => 'Bank name must not exceed 255 characters',
+
+            // 🔥 Logo (optional in update)
+            'logo.image' => 'Logo must be an image',
+            'logo.mimes' => 'Logo must be jpeg, png, jpg or webp',
+            'logo.max' => 'Logo size must be less than 2MB',
+
+            // 🔥 Status
+            'status.required' => 'Status is required',
+            'status.in' => 'Invalid status selected',
         ]);
 
         if ($request->hasFile('logo')) {
