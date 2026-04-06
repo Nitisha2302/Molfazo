@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Models\PromotionPackage;
 use App\Models\AdminPaymentDetail;
+use App\Models\ProductReview;
 use App\Models\PromotionRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -69,12 +70,23 @@ class PromotionController extends Controller
         $data = $packages->map(function ($package) use ($requests) {
 
             $promotion = $requests[$package->id] ?? null;
+            // ✅ COUNT USED REVIEWS
+           $usedReviews = 0;
+            if ($promotion) {
+                $usedReviews = ProductReview::where('product_id', $promotion->product_id)
+                ->where('vendor_id', $promotion->vendor_id)
+                ->count();
+            }
 
             return [
                 'id' => $package->id,
                 'title' => $package->title,
                 'review_count' => $package->review_count,
                 'price' => $package->price,
+                 // ✅ NEW FIELDS
+                'used_reviews' => $usedReviews,
+                'remaining_reviews' => $promotion ? ($package->review_count - $usedReviews) : $package->review_count,
+
                 'status' => $promotion->status ?? null,
                 'is_applied' => $promotion ? true : false,
                   'promotion_request_id' => $promotion->id ?? null
