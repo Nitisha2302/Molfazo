@@ -22,14 +22,14 @@ class AdminPaymentController extends Controller
             'account_number' => 'required|string|max:50',
             'ifsc'           => 'nullable|string|max:50',
             'upi_id'         => 'nullable|string|max:100',
-            'qr_code'        => 'nullable|image|max:2048',
+            'qr_code'        => 'nullable|image|max:1024',
         ], [
             'account_name.required' => 'Account name is required',
             'account_number.required' => 'Account number is required',
             'ifsc.string' => 'IFSC must be valid text',
             'upi_id.string' => 'UPI ID must be valid',
             'qr_code.image' => 'QR code must be an image',
-            'qr_code.max' => 'QR code must be less than 2MB',
+            'qr_code.max' => 'QR code must be less than 1MB',
         ]);
 
         // ✅ DEFAULT OLD IMAGE

@@ -40,13 +40,20 @@ class CategoryController extends Controller
         $request->validate(
             [
                 'name' => 'required|string|max:255|unique:categories,name',
-                'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:1024',
             ],
             [
+
+                // 🔹 NAME
                 'name.required' => 'Category name is required.',
-                'name.string'   => 'Category name must be a valid text.',
+                'name.string'   => 'Category name must be valid text.',
                 'name.max'      => 'Category name cannot exceed 255 characters.',
                 'name.unique'   => 'This category already exists.',
+
+                // 🔹 IMAGE
+                'image.image' => 'Please upload a valid image file.',
+                'image.mimes' => 'Only JPG, JPEG, PNG, and WEBP formats are allowed.',
+                'image.max'   => 'Image size must be less than 1MB.',
             ]
         );
 
@@ -185,15 +192,37 @@ class CategoryController extends Controller
     // Store sub-category
     public function storeSubCategory(Request $request)
     {
+        // $request->validate([
+        //     'category_id' => 'required|exists:categories,id',
+        //     'name' => 'required|string|max:255|unique:sub_categories,name,NULL,id,category_id,' . $request->category_id,
+        //        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:1024',
+        // ], [
+        //     'category_id.required' => 'Please select a category.',
+        //     'category_id.exists' => 'Selected category is invalid.',
+        //     'name.required' => 'Sub-category name is required.',
+        //     'name.unique' => 'This sub-category already exists in the selected category.',
+        // ]);
+
         $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255|unique:sub_categories,name,NULL,id,category_id,' . $request->category_id,
-               'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:1024',
         ], [
+
+            // 🔹 CATEGORY
             'category_id.required' => 'Please select a category.',
-            'category_id.exists' => 'Selected category is invalid.',
+            'category_id.exists'   => 'Selected category is invalid.',
+
+            // 🔹 NAME
             'name.required' => 'Sub-category name is required.',
-            'name.unique' => 'This sub-category already exists in the selected category.',
+            'name.string'   => 'Sub-category name must be valid text.',
+            'name.max'      => 'Sub-category name cannot exceed 255 characters.',
+            'name.unique'   => 'This sub-category already exists in the selected category.',
+
+            // 🔹 IMAGE
+            'image.image' => 'Please upload a valid image file.',
+            'image.mimes' => 'Only JPG, JPEG, PNG, and WEBP formats are allowed.',
+            'image.max'   => 'Image size must be less than 1MB.',
         ]);
 
          $imageName = null;
@@ -228,11 +257,38 @@ class CategoryController extends Controller
     {
         $subCategory = SubCategory::findOrFail($id);
 
+        // $request->validate([
+        //     'category_id' => 'required|exists:categories,id',
+        //     'name' => 'required|string|max:255|unique:sub_categories,name,' . $id . ',id,category_id,' . $request->category_id,
+        //     'status_id' => 'required|in:1,2',
+        //      'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:1024',
+        // ]);
+
         $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255|unique:sub_categories,name,' . $id . ',id,category_id,' . $request->category_id,
             'status_id' => 'required|in:1,2',
-             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:1024',
+        ], [
+
+            // 🔹 CATEGORY
+            'category_id.required' => 'Category is required.',
+            'category_id.exists'   => 'Selected category is invalid.',
+
+            // 🔹 NAME
+            'name.required' => 'Sub-category name is required.',
+            'name.string'   => 'Sub-category name must be valid text.',
+            'name.max'      => 'Sub-category name cannot exceed 255 characters.',
+            'name.unique'   => 'This sub-category already exists in the selected category.',
+
+            // 🔹 STATUS
+            'status_id.required' => 'Status is required.',
+            'status_id.in'       => 'Invalid status selected.',
+
+            // 🔹 IMAGE
+            'image.image' => 'Please upload a valid image file.',
+            'image.mimes' => 'Only JPG, JPEG, PNG, and WEBP formats are allowed.',
+            'image.max'   => 'Image size must be less than 1MB.',
         ]);
 
         // image upload
@@ -337,17 +393,44 @@ class CategoryController extends Controller
 
     public function storeChildCategory(Request $request)
     {
+        // $request->validate([
+        //     'sub_category_id' => 'required|exists:sub_categories,id',
+        //     'name' => 'required|string|max:255|unique:child_categories,name,NULL,id,sub_category_id,' . $request->sub_category_id,
+        //     'status_id' => 'required|in:1,2',
+        //     'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        // ], [
+        //     'sub_category_id.required' => 'Please select a sub category.',
+        //     'sub_category_id.exists'   => 'Selected sub category is invalid.',
+        //     'name.required'            => 'Child category name is required.',
+        //     'name.unique'              => 'This child category already exists under the selected sub category.',
+        //     'status_id.required'       => 'Please select status.',
+        // ]);
+
         $request->validate([
             'sub_category_id' => 'required|exists:sub_categories,id',
             'name' => 'required|string|max:255|unique:child_categories,name,NULL,id,sub_category_id,' . $request->sub_category_id,
             'status_id' => 'required|in:1,2',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:1024',
         ], [
+
+            // 🔹 SUB CATEGORY
             'sub_category_id.required' => 'Please select a sub category.',
             'sub_category_id.exists'   => 'Selected sub category is invalid.',
-            'name.required'            => 'Child category name is required.',
-            'name.unique'              => 'This child category already exists under the selected sub category.',
-            'status_id.required'       => 'Please select status.',
+
+            // 🔹 NAME
+            'name.required' => 'Child category name is required.',
+            'name.string'   => 'Child category name must be valid text.',
+            'name.max'      => 'Child category name cannot exceed 255 characters.',
+            'name.unique'   => 'This child category already exists under the selected sub category.',
+
+            // 🔹 STATUS
+            'status_id.required' => 'Please select status.',
+            'status_id.in'       => 'Invalid status selected.',
+
+            // 🔹 IMAGE
+            'image.image' => 'Please upload a valid image file.',
+            'image.mimes' => 'Only JPG, JPEG, PNG, and WEBP formats are allowed.',
+            'image.max'   => 'Image size must be less than 1MB.',
         ]);
 
         $sub = SubCategory::with('category')->findOrFail($request->sub_category_id);
@@ -405,9 +488,27 @@ class CategoryController extends Controller
             'sub_category_id' => 'required|exists:sub_categories,id',
             'name' => 'required|string|max:255|unique:child_categories,name,' . $id . ',id,sub_category_id,' . $request->sub_category_id,
             'status_id' => 'required|in:1,2',
-             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:1024',
         ], [
-            'name.unique' => 'This child category already exists under the selected sub category.'
+
+            // 🔹 SUB CATEGORY
+            'sub_category_id.required' => 'Please select a sub category.',
+            'sub_category_id.exists'   => 'Selected sub category is invalid.',
+
+            // 🔹 NAME
+            'name.required' => 'Child category name is required.',
+            'name.string'   => 'Child category name must be valid text.',
+            'name.max'      => 'Child category name cannot exceed 255 characters.',
+            'name.unique'   => 'This child category already exists under the selected sub category.',
+
+            // 🔹 STATUS
+            'status_id.required' => 'Please select status.',
+            'status_id.in'       => 'Invalid status selected.',
+
+            // 🔹 IMAGE
+            'image.image' => 'Please upload a valid image file.',
+            'image.mimes' => 'Only JPG, JPEG, PNG, and WEBP formats are allowed.',
+            'image.max'   => 'Image size must be less than 1MB.',
         ]);
 
         if ($request->status_id == 1 &&
