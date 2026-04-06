@@ -153,7 +153,7 @@ class BannerController extends Controller
             'title' => 'nullable|string|max:255',
             'cities' => 'required|array|min:1',
             'cities.*' => 'exists:cities,id',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:1024',
             'status' => 'required|in:0,1',
 
             'link_type' => 'nullable|in:store,product',
@@ -169,7 +169,7 @@ class BannerController extends Controller
             'image.required' => 'Banner image is required',
             'image.image' => 'File must be an image',
             'image.mimes' => 'Image must be jpeg, png, jpg, gif or webp',
-            'image.max' => 'Image size must be less than 2MB',
+            'image.max' => 'Image size must be less than 1MB',
 
             // 🔥 Status
             'status.required' => 'Status is required',
@@ -302,7 +302,7 @@ class BannerController extends Controller
             'title' => 'nullable|string|max:255',
             'cities' => 'required|array|min:1',
             'cities.*' => 'exists:cities,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:1024',
             'status' => 'required|in:0,1',
 
             'link_type' => 'nullable|in:store,product',
@@ -317,7 +317,7 @@ class BannerController extends Controller
             // 🔥 Image (optional in update)
             'image.image' => 'File must be an image',
             'image.mimes' => 'Image must be jpeg, png, jpg, gif or webp',
-            'image.max' => 'Image size must be less than 2MB',
+            'image.max' => 'Image size must be less than 1MB',
 
             // 🔥 Status
             'status.required' => 'Status is required',

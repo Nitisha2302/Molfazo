@@ -39,7 +39,7 @@ class BankController extends Controller
 
         $request->validate([
             'name'   => 'required|string|max:255',
-            'logo'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'logo'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:1024',
             'status' => 'required|in:0,1',
         ], [
             // 🔥 Name
@@ -50,7 +50,7 @@ class BankController extends Controller
             // 🔥 Logo
             'logo.image' => 'Logo must be an image',
             'logo.mimes' => 'Logo must be jpeg, png, jpg or webp',
-            'logo.max' => 'Logo size must be less than 2MB',
+            'logo.max' => 'Logo size must be less than 1MB',
 
             // 🔥 Status
             'status.required' => 'Status is required',
@@ -92,7 +92,7 @@ class BankController extends Controller
 
         $request->validate([
             'name'   => 'required|string|max:255',
-            'logo'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'logo'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:1024',
             'status' => 'required|in:0,1',
         ], [
             // 🔥 Name
@@ -103,7 +103,7 @@ class BankController extends Controller
             // 🔥 Logo (optional in update)
             'logo.image' => 'Logo must be an image',
             'logo.mimes' => 'Logo must be jpeg, png, jpg or webp',
-            'logo.max' => 'Logo size must be less than 2MB',
+            'logo.max' => 'Logo size must be less than 1MB',
 
             // 🔥 Status
             'status.required' => 'Status is required',
