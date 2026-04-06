@@ -76,7 +76,8 @@ class PromotionController extends Controller
                 'review_count' => $package->review_count,
                 'price' => $package->price,
                 'status' => $promotion->status ?? null,
-                'is_applied' => $promotion ? true : false
+                'is_applied' => $promotion ? true : false,
+                  'promotion_request_id' => $promotion->id ?? null
             ];
         });
 
