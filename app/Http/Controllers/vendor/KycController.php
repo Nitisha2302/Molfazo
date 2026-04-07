@@ -36,7 +36,7 @@ class KycController extends Controller
         return response()->json([
             'status' => true,
             'session_id' => $response['session_id'],
-            'sdk_token' => $response['token']
+            'sdk_token' => $response['session_token']
         ]);
     }
 
@@ -54,12 +54,11 @@ class KycController extends Controller
             return response()->json(['status' => false]);
         }
 
-        if ($status === 'approved') {
+        if (strtolower($status) === 'approved') {
             $user->kyc_status = 'verified';
         } else {
             $user->kyc_status = 'failed';
         }
-
         // store full response
         $user->kyc_response = json_encode($request->all());
 
