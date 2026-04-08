@@ -191,39 +191,53 @@ class KycController extends Controller
 
         if ($verification) {
 
-        $frontUrl = $verification['full_front_image'] ?? $verification['front_image'] ?? null;
-        $backUrl  = $verification['full_back_image'] ?? $verification['back_image'] ?? null;
+            $frontUrl = $verification['full_front_image'] ?? $verification['front_image'] ?? null;
+            $backUrl  = $verification['full_back_image'] ?? $verification['back_image'] ?? null;
 
-        $savedFiles = [];
+            $savedFiles = [];
 
-        // 📥 Download FRONT IMAGE
-        if ($frontUrl) {
-            $frontName = 'front_' . time() . '.jpg';
-            $frontPath = public_path('assets/gov_id_document/' . $frontName);
+            // 📥 Download FRONT IMAGE
+            if ($frontUrl) {
+                $frontName = 'front_' . time() . '.jpg';
+                $frontPath = public_path('assets/gov_id_document/' . $frontName);
 
-            $image = Http::get($frontUrl)->body();
-            file_put_contents($frontPath, $image);
+                $image = Http::get($frontUrl)->body();
+                file_put_contents($frontPath, $image);
 
-            $savedFiles[] = $frontName;
+                $savedFiles[] = $frontName;
+            }
+
+            // 📥 Download BACK IMAGE
+            if ($backUrl) {
+                $backName = 'back_' . time() . '.jpg';
+                $backPath = public_path('assets/gov_id_document/' . $backName);
+
+                $image = Http::get($backUrl)->body();
+                file_put_contents($backPath, $image);
+
+                $savedFiles[] = $backName;
+            }
+
+            // ✅ Save in same DB format as manual upload
+            if (!empty($savedFiles)) {
+                $user->government_id = json_encode($savedFiles);
+            }
+
+            // OPTIONAL extracted data
+            $user->verified_name = $verification['full_name'] ?? null;
+
+            // ALSO update main name (like profile)
+            if (!empty($verification['full_name'])) {
+                $user->name = $verification['full_name'];
+            }
+            // $user->verified_doc_type = $request->input('data.document_type');
+            // $user->verified_doc_number = $request->input('data.document_number');
+
         }
 
-        // 📥 Download BACK IMAGE
-        if ($backUrl) {
-            $backName = 'back_' . time() . '.jpg';
-            $backPath = public_path('assets/gov_id_document/' . $backName);
-
-            $image = Http::get($backUrl)->body();
-            file_put_contents($backPath, $image);
-
-            $savedFiles[] = $backName;
-        }
-
-        // ✅ Save in same DB format as manual upload
-        if (!empty($savedFiles)) {
-            $user->government_id = json_encode($savedFiles);
-        }
-        $selfieData = $request->input('decision.selfie_verification');
-
+        // =======================
+        // ✅ SELFIE (ALWAYS TRY)
+        // =======================
         $selfieUrl = $selfieData['selfie_image']
             ?? $selfieData['face_image']
             ?? $selfieData['image']
@@ -231,25 +245,9 @@ class KycController extends Controller
 
         if ($selfieUrl) {
             $selfieName = 'selfie_' . time() . '.jpg';
-            $selfiePath = public_path('assets/profile_image/' . $selfieName);
+            file_put_contents(public_path('assets/profile_image/' . $selfieName), Http::get($selfieUrl)->body());
 
-            $image = Http::get($selfieUrl)->body();
-            file_put_contents($selfiePath, $image);
-
-            // save as profile photo
             $user->profile_photo = $selfieName;
-        }
-
-        // OPTIONAL extracted data
-        $user->verified_name = $verification['full_name'] ?? null;
-
-        // ALSO update main name (like profile)
-        if (!empty($verification['full_name'])) {
-            $user->name = $verification['full_name'];
-        }
-        // $user->verified_doc_type = $request->input('data.document_type');
-        // $user->verified_doc_number = $request->input('data.document_number');
-
         }
 
         $user->save();
