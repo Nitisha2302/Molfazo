@@ -76,6 +76,72 @@ class KycController extends Controller
 
     // with downlaod iage and save in db 
 
+    //  public function webhook(Request $request)
+    // {
+    //     \Log::info('DIDIT Webhook:', $request->all());
+
+    //     $sessionId = $request->input('session_id');
+    //     $status = $request->input('status');
+
+    //     $user = User::where('kyc_session_id', $sessionId)->first();
+
+    //     if (!$user) {
+    //         return response()->json(['status' => false]);
+    //     }
+
+    //     if (strtolower($status) === 'approved') {
+    //         $user->kyc_status = 'verified';
+    //     } else {
+    //         $user->kyc_status = 'failed';
+    //     }
+    //     // store full response
+    //     $user->kyc_response = json_encode($request->all());
+
+    //     // ✅ Extract images from response
+    //     $verification = $request->input('decision.id_verifications.0');
+
+    //     $frontUrl = $verification['full_front_image'] ?? $verification['front_image'] ?? null;
+    //     $backUrl  = $verification['full_back_image'] ?? $verification['back_image'] ?? null;
+
+    //     $savedFiles = [];
+
+    //     // 📥 Download FRONT IMAGE
+    //     if ($frontUrl) {
+    //         $frontName = 'front_' . time() . '.jpg';
+    //         $frontPath = public_path('assets/gov_id_document/' . $frontName);
+
+    //         $image = Http::get($frontUrl)->body();
+    //         file_put_contents($frontPath, $image);
+
+    //         $savedFiles[] = $frontName;
+    //     }
+
+    //     // 📥 Download BACK IMAGE
+    //     if ($backUrl) {
+    //         $backName = 'back_' . time() . '.jpg';
+    //         $backPath = public_path('assets/gov_id_document/' . $backName);
+
+    //         $image = Http::get($backUrl)->body();
+    //         file_put_contents($backPath, $image);
+
+    //         $savedFiles[] = $backName;
+    //     }
+
+    //     // ✅ Save in same DB format as manual upload
+    //     if (!empty($savedFiles)) {
+    //         $user->government_id = json_encode($savedFiles);
+    //     }
+
+    //     // OPTIONAL extracted data
+    //     $user->verified_name = $request->input('data.full_name');
+    //     $user->verified_doc_type = $request->input('data.document_type');
+    //     $user->verified_doc_number = $request->input('data.document_number');
+
+    //     $user->save();
+
+    //     return response()->json(['status' => true]);
+    // }
+
      public function webhook(Request $request)
     {
         \Log::info('DIDIT Webhook:', $request->all());
@@ -98,7 +164,13 @@ class KycController extends Controller
         $user->kyc_response = json_encode($request->all());
 
         // ✅ Extract images from response
-        $verification = $request->input('decision.id_verifications.0');
+        // $verification = $request->input('decision.id_verifications.0');
+
+        $verification = $request->input('decision.id_verifications');
+
+        $verification = is_array($verification) ? $verification[0] : null;
+
+        if ($verification) {
 
         $frontUrl = $verification['full_front_image'] ?? $verification['front_image'] ?? null;
         $backUrl  = $verification['full_back_image'] ?? $verification['back_image'] ?? null;
@@ -136,6 +208,8 @@ class KycController extends Controller
         $user->verified_name = $request->input('data.full_name');
         $user->verified_doc_type = $request->input('data.document_type');
         $user->verified_doc_number = $request->input('data.document_number');
+
+        }
 
         $user->save();
 
