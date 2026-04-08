@@ -254,6 +254,7 @@ class KycController extends Controller
 
         return response()->json(['status' => true]);
     }
+    
 
 
 
