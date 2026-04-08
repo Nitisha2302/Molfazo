@@ -166,11 +166,11 @@ class KycController extends Controller
             return response()->json(['status' => false]);
         }
 
-        $status = strtolower($status);
+        $status = strtolower(trim($status));
 
         if ($status === 'approved') {
             $user->kyc_status = 'verified';
-        } elseif ($status === 'in_review') {
+        } elseif ($status === 'in review') {
             $user->kyc_status = 'pending';
         } else {
             $user->kyc_status = 'failed';
@@ -254,7 +254,7 @@ class KycController extends Controller
 
         return response()->json(['status' => true]);
     }
-    
+
 
 
 
