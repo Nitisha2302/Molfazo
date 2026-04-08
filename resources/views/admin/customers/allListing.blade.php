@@ -138,14 +138,12 @@
                         <div class="row">
 
                             <div class="col-md-4 text-center mb-3">
-                                @php
-                                    $profile = $customer->profile_photo
-                                        ? asset('assets/profile_photo/' . $customer->profile_photo)
-                                        : asset('assets/profile_photo/default.png');
+                                 @php
+                                        $profileImage = $customer->profile_photo ? asset('assets/profile_image/' . $customer->profile_photo) : asset('assets/profile_image/default.png');
                                 @endphp
 
-                                <a href="{{ $profile }}" target="_blank">
-                                    <img src="{{ $profile }}" class="img-fluid rounded">
+                                <a href="{{ $profileImage }}" target="_blank">
+                                    <img src="{{ $profileImage }}" class="img-fluid rounded">
                                 </a>
                             </div>
 
