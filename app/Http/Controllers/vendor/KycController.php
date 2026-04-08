@@ -166,7 +166,7 @@ class KycController extends Controller
             return response()->json(['status' => false]);
         }
 
-        $status = strtolower(trim($status));
+       $status = strtolower(trim($request->input('decision.status')));
 
         if ($status === 'approved') {
             $user->kyc_status = 'verified';
@@ -175,73 +175,33 @@ class KycController extends Controller
         } else {
             $user->kyc_status = 'failed';
         }
-        // store full response
-        $user->kyc_response = json_encode($request->all());
-
-        // ✅ Extract images from response
-        // $verification = $request->input('decision.id_verifications.0');
 
         $verification = $request->input('decision.id_verifications');
-
         $verification = is_array($verification) ? $verification[0] : null;
-
-        $selfieData = $request->input('decision.selfie_verification');
-
-    
 
         if ($verification) {
 
-            $frontUrl = $verification['full_front_image'] ?? $verification['front_image'] ?? null;
-            $backUrl  = $verification['full_back_image'] ?? $verification['back_image'] ?? null;
+            $frontUrl = $verification['front_image']
+                ?? $verification['full_front_image']
+                ?? ($verification['matches'][0]['front_image_url'] ?? null);
 
-            $savedFiles = [];
+            $backUrl = $verification['back_image']
+                ?? $verification['full_back_image']
+                ?? null;
 
-            // 📥 Download FRONT IMAGE
-            if ($frontUrl) {
-                $frontName = 'front_' . time() . '.jpg';
-                $frontPath = public_path('assets/gov_id_document/' . $frontName);
-
-                $image = Http::get($frontUrl)->body();
-                file_put_contents($frontPath, $image);
-
-                $savedFiles[] = $frontName;
-            }
-
-            // 📥 Download BACK IMAGE
-            if ($backUrl) {
-                $backName = 'back_' . time() . '.jpg';
-                $backPath = public_path('assets/gov_id_document/' . $backName);
-
-                $image = Http::get($backUrl)->body();
-                file_put_contents($backPath, $image);
-
-                $savedFiles[] = $backName;
-            }
-
-            // ✅ Save in same DB format as manual upload
-            if (!empty($savedFiles)) {
-                $user->government_id = json_encode($savedFiles);
-            }
-
-            // OPTIONAL extracted data
+            // name
             $user->verified_name = $verification['full_name'] ?? null;
 
-            // ALSO update main name (like profile)
             if (!empty($verification['full_name'])) {
                 $user->name = $verification['full_name'];
             }
-            // $user->verified_doc_type = $request->input('data.document_type');
-            // $user->verified_doc_number = $request->input('data.document_number');
-
         }
 
-        // =======================
-        // ✅ SELFIE (ALWAYS TRY)
-        // =======================
-        $selfieUrl = $selfieData['selfie_image']
-            ?? $selfieData['face_image']
-            ?? $selfieData['image']
-            ?? null;
+        // ✅ SELFIE FIX
+        $liveness = $request->input('decision.liveness_checks');
+        $liveness = is_array($liveness) ? $liveness[0] : null;
+
+        $selfieUrl = $liveness['reference_image'] ?? null;
 
         if ($selfieUrl) {
             $selfieName = 'selfie_' . time() . '.jpg';
@@ -249,7 +209,6 @@ class KycController extends Controller
 
             $user->profile_photo = $selfieName;
         }
-
         $user->save();
 
         return response()->json(['status' => true]);
@@ -257,5 +216,6 @@ class KycController extends Controller
 
 
 
+    
 
 }
