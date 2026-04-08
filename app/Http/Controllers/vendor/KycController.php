@@ -81,8 +81,8 @@ class KycController extends Controller
         \Log::info('DIDIT Webhook:', $request->all());
 
         $sessionId = $request->input('session_id');
-        $status = $request->input('status');
-
+        // $status = $request->input('status');
+        $status = strtolower(trim($request->input('decision.status')));
         $user = User::where('kyc_session_id', $sessionId)->first();
 
         if (!$user) {
