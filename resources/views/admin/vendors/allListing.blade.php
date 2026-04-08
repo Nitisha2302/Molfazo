@@ -204,6 +204,7 @@
                             <div class="row">
                                 {{-- Profile Photo --}}
                                 <div class="col-md-4 text-center mb-3">
+                                    
                                     @php
                                         $profileImage = $vendor->profile_photo ? asset('assets/profile_image/' . $vendor->profile_photo) : asset('assets/profile_image/default.png');
                                     @endphp
