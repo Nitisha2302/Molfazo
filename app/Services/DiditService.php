@@ -17,23 +17,6 @@ class DiditService
         $this->workflow_id  = config('services.didit.workflow_id');
     }
 
-    //    public function createSession($user)
-    //     {
-    //         $response = Http::withBasicAuth($this->apiKey, '') // 👈 IMPORTANT
-    //             ->acceptJson()
-    //             ->post($this->baseUrl . '/v1/session', [
-    //                 'external_id' => (string) $user->id,
-    //                 'callback_url' => route('didit.webhook'),
-    //             ]);
-
-    //         \Log::info('DIDIT DEBUG', [
-    //             'status' => $response->status(),
-    //             'body' => $response->body(),
-    //         ]);
-
-    //         return $response->json();
-    //     }
-
     // 7-4-26
 
   public function createSession($user)

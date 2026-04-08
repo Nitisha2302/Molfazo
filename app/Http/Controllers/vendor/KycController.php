@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\DiditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class KycController extends Controller
 {
@@ -40,8 +41,42 @@ class KycController extends Controller
         ]);
     }
 
-    // // ✅ Webhook
-    public function webhook(Request $request)
+    // // ✅ Webhook correct
+    // public function webhook(Request $request)
+    // {
+    //     \Log::info('DIDIT Webhook:', $request->all());
+
+    //     $sessionId = $request->input('session_id');
+    //     $status = $request->input('status');
+
+    //     $user = User::where('kyc_session_id', $sessionId)->first();
+
+    //     if (!$user) {
+    //         return response()->json(['status' => false]);
+    //     }
+
+    //     if (strtolower($status) === 'approved') {
+    //         $user->kyc_status = 'verified';
+    //     } else {
+    //         $user->kyc_status = 'failed';
+    //     }
+    //     // store full response
+    //     $user->kyc_response = json_encode($request->all());
+
+    //     // OPTIONAL extracted data
+    //     $user->verified_name = $request->input('data.full_name');
+    //     $user->verified_doc_type = $request->input('data.document_type');
+    //     $user->verified_doc_number = $request->input('data.document_number');
+
+    //     $user->save();
+
+    //     return response()->json(['status' => true]);
+    // }
+
+
+    // with downlaod iage and save in db 
+
+     public function webhook(Request $request)
     {
         \Log::info('DIDIT Webhook:', $request->all());
 
@@ -62,6 +97,41 @@ class KycController extends Controller
         // store full response
         $user->kyc_response = json_encode($request->all());
 
+        // ✅ Extract images from response
+        $verification = $request->input('decision.id_verifications.0');
+
+        $frontUrl = $verification['full_front_image'] ?? $verification['front_image'] ?? null;
+        $backUrl  = $verification['full_back_image'] ?? $verification['back_image'] ?? null;
+
+        $savedFiles = [];
+
+        // 📥 Download FRONT IMAGE
+        if ($frontUrl) {
+            $frontName = 'front_' . time() . '.jpg';
+            $frontPath = public_path('assets/gov_id_document/' . $frontName);
+
+            $image = Http::get($frontUrl)->body();
+            file_put_contents($frontPath, $image);
+
+            $savedFiles[] = $frontName;
+        }
+
+        // 📥 Download BACK IMAGE
+        if ($backUrl) {
+            $backName = 'back_' . time() . '.jpg';
+            $backPath = public_path('assets/gov_id_document/' . $backName);
+
+            $image = Http::get($backUrl)->body();
+            file_put_contents($backPath, $image);
+
+            $savedFiles[] = $backName;
+        }
+
+        // ✅ Save in same DB format as manual upload
+        if (!empty($savedFiles)) {
+            $user->government_id = json_encode($savedFiles);
+        }
+
         // OPTIONAL extracted data
         $user->verified_name = $request->input('data.full_name');
         $user->verified_doc_type = $request->input('data.document_type');
@@ -72,43 +142,6 @@ class KycController extends Controller
         return response()->json(['status' => true]);
     }
 
-    
-    // public function webhook(Request $request)
-    // {
-    //     \Log::info('DIDIT Webhook:', $request->all());
-
-    //     // ✅ STEP 1: Get user ID
-    //     $externalId = $request->input('external_id');
-
-    //     // ✅ STEP 2: Get status
-    //     $status = $request->input('status');
-
-    //     // ✅ STEP 3: Find user
-    //     $user = User::find($externalId);
-
-    //     if (!$user) {
-    //         \Log::error('User not found for DIDIT', ['external_id' => $externalId]);
-    //         return response()->json(['status' => false]);
-    //     }
-
-    //     // ✅ STEP 4: Update status
-    //     if ($status === 'approved') {
-    //         $user->kyc_status = 'verified';
-    //     } else {
-    //         $user->kyc_status = 'failed';
-    //     }
-
-    //     // ✅ STEP 5: Save full response
-    //     $user->kyc_response = json_encode($request->all());
-
-    //     // ✅ OPTIONAL: Save extracted data
-    //     $user->verified_name = $request->input('data.full_name');
-    //     $user->verified_doc_number = $request->input('data.document_number');
-
-    //     $user->save();
-
-    //     return response()->json(['status' => true]);
-    // }
 
 
 }
