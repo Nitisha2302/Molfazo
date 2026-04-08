@@ -76,83 +76,6 @@ class KycController extends Controller
 
     // with downlaod iage and save in db 
 
-    // public function webhook(Request $request)
-    // {
-    //     \Log::info('DIDIT Webhook:', $request->all());
-
-    //     $sessionId = $request->input('session_id');
-    //     $status = $request->input('status');
-
-    //     $user = User::where('kyc_session_id', $sessionId)->first();
-
-    //     if (!$user) {
-    //         return response()->json(['status' => false]);
-    //     }
-
-    //     if (strtolower($status) === 'approved') {
-    //         $user->kyc_status = 'verified';
-    //     } else {
-    //         $user->kyc_status = 'failed';
-    //     }
-    //     // store full response
-    //     $user->kyc_response = json_encode($request->all());
-
-    //     // ✅ Extract images from response
-    //     // $verification = $request->input('decision.id_verifications.0');
-
-    //     $verification = $request->input('decision.id_verifications');
-
-    //     $verification = is_array($verification) ? $verification[0] : null;
-
-    //     if ($verification) {
-
-    //     $frontUrl = $verification['full_front_image'] ?? $verification['front_image'] ?? null;
-    //     $backUrl  = $verification['full_back_image'] ?? $verification['back_image'] ?? null;
-
-    //     $savedFiles = [];
-
-    //     // 📥 Download FRONT IMAGE
-    //     if ($frontUrl) {
-    //         $frontName = 'front_' . time() . '.jpg';
-    //         $frontPath = public_path('assets/gov_id_document/' . $frontName);
-
-    //         $image = Http::get($frontUrl)->body();
-    //         file_put_contents($frontPath, $image);
-
-    //         $savedFiles[] = $frontName;
-    //     }
-
-    //     // 📥 Download BACK IMAGE
-    //     if ($backUrl) {
-    //         $backName = 'back_' . time() . '.jpg';
-    //         $backPath = public_path('assets/gov_id_document/' . $backName);
-
-    //         $image = Http::get($backUrl)->body();
-    //         file_put_contents($backPath, $image);
-
-    //         $savedFiles[] = $backName;
-    //     }
-
-    //     // ✅ Save in same DB format as manual upload
-    //     if (!empty($savedFiles)) {
-    //         $user->government_id = json_encode($savedFiles);
-    //     }
-
-    //     // OPTIONAL extracted data
-    //     $user->verified_name = $request->input('data.full_name');
-    //     $user->verified_doc_type = $request->input('data.document_type');
-    //     $user->verified_doc_number = $request->input('data.document_number');
-
-    //     }
-
-    //     $user->save();
-
-    //     return response()->json(['status' => true]);
-    // }
-
-    // with anme and selfie 
-
-    
     public function webhook(Request $request)
     {
         \Log::info('DIDIT Webhook:', $request->all());
@@ -166,56 +89,133 @@ class KycController extends Controller
             return response()->json(['status' => false]);
         }
 
-       $status = strtolower(trim($request->input('decision.status')));
-
-        if ($status === 'approved') {
+        if (strtolower($status) === 'approved') {
             $user->kyc_status = 'verified';
-        } elseif ($status === 'in review') {
-            $user->kyc_status = 'pending';
         } else {
             $user->kyc_status = 'failed';
         }
+        // store full response
+        $user->kyc_response = json_encode($request->all());
+
+        // ✅ Extract images from response
+        // $verification = $request->input('decision.id_verifications.0');
 
         $verification = $request->input('decision.id_verifications');
+
         $verification = is_array($verification) ? $verification[0] : null;
 
         if ($verification) {
 
-            $frontUrl = $verification['front_image']
-                ?? $verification['full_front_image']
-                ?? ($verification['matches'][0]['front_image_url'] ?? null);
+        $frontUrl = $verification['full_front_image'] ?? $verification['front_image'] ?? null;
+        $backUrl  = $verification['full_back_image'] ?? $verification['back_image'] ?? null;
 
-            $backUrl = $verification['back_image']
-                ?? $verification['full_back_image']
-                ?? null;
+        $savedFiles = [];
 
-            // name
-            $user->verified_name = $verification['full_name'] ?? null;
+        // 📥 Download FRONT IMAGE
+        if ($frontUrl) {
+            $frontName = 'front_' . time() . '.jpg';
+            $frontPath = public_path('assets/gov_id_document/' . $frontName);
 
-            if (!empty($verification['full_name'])) {
-                $user->name = $verification['full_name'];
-            }
+            $image = Http::get($frontUrl)->body();
+            file_put_contents($frontPath, $image);
+
+            $savedFiles[] = $frontName;
         }
 
-        // ✅ SELFIE FIX
-        $liveness = $request->input('decision.liveness_checks');
-        $liveness = is_array($liveness) ? $liveness[0] : null;
+        // 📥 Download BACK IMAGE
+        if ($backUrl) {
+            $backName = 'back_' . time() . '.jpg';
+            $backPath = public_path('assets/gov_id_document/' . $backName);
 
-        $selfieUrl = $liveness['reference_image'] ?? null;
+            $image = Http::get($backUrl)->body();
+            file_put_contents($backPath, $image);
 
-        if ($selfieUrl) {
-            $selfieName = 'selfie_' . time() . '.jpg';
-            file_put_contents(public_path('assets/profile_image/' . $selfieName), Http::get($selfieUrl)->body());
-
-            $user->profile_photo = $selfieName;
+            $savedFiles[] = $backName;
         }
+
+        // ✅ Save in same DB format as manual upload
+        if (!empty($savedFiles)) {
+            $user->government_id = json_encode($savedFiles);
+        }
+
+        // OPTIONAL extracted data
+        $user->verified_name = $request->input('data.full_name');
+        $user->verified_doc_type = $request->input('data.document_type');
+        $user->verified_doc_number = $request->input('data.document_number');
+
+        }
+
         $user->save();
 
         return response()->json(['status' => true]);
     }
 
-
+    // with anme and selfie 
 
     
+    // public function webhook(Request $request)
+    // {
+    //     \Log::info('DIDIT Webhook:', $request->all());
+
+    //     $sessionId = $request->input('session_id');
+    //     $status = $request->input('status');
+
+    //     $user = User::where('kyc_session_id', $sessionId)->first();
+
+    //     if (!$user) {
+    //         return response()->json(['status' => false]);
+    //     }
+
+    //    $status = strtolower(trim($request->input('decision.status')));
+
+    //     if ($status === 'approved') {
+    //         $user->kyc_status = 'verified';
+    //     } elseif ($status === 'in review') {
+    //         $user->kyc_status = 'pending';
+    //     } else {
+    //         $user->kyc_status = 'failed';
+    //     }
+
+    //     $verification = $request->input('decision.id_verifications');
+    //     $verification = is_array($verification) ? $verification[0] : null;
+
+    //     if ($verification) {
+
+    //         $frontUrl = $verification['front_image']
+    //             ?? $verification['full_front_image']
+    //             ?? ($verification['matches'][0]['front_image_url'] ?? null);
+
+    //         $backUrl = $verification['back_image']
+    //             ?? $verification['full_back_image']
+    //             ?? null;
+
+    //         // name
+    //         $user->verified_name = $verification['full_name'] ?? null;
+
+    //         if (!empty($verification['full_name'])) {
+    //             $user->name = $verification['full_name'];
+    //         }
+    //     }
+
+    //     // ✅ SELFIE FIX
+    //     $liveness = $request->input('decision.liveness_checks');
+    //     $liveness = is_array($liveness) ? $liveness[0] : null;
+
+    //     $selfieUrl = $liveness['reference_image'] ?? null;
+
+    //     if ($selfieUrl) {
+    //         $selfieName = 'selfie_' . time() . '.jpg';
+    //         file_put_contents(public_path('assets/profile_image/' . $selfieName), Http::get($selfieUrl)->body());
+
+    //         $user->profile_photo = $selfieName;
+    //     }
+    //     $user->save();
+
+    //     return response()->json(['status' => true]);
+    // }
+
+
+
+
 
 }
