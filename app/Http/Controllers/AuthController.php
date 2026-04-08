@@ -339,7 +339,7 @@ class AuthController extends Controller
         VALIDATION
         =============================== */
         $rules = [
-            'name'            => 'required|string|max:255',
+            'name'            => 'nullable|string|max:255',
             'email'           => 'required|email|unique:users,email',
             'password'        => 'required|min:6|confirmed',
 
@@ -436,9 +436,8 @@ class AuthController extends Controller
         CREATE USER
         =============================== */
         $user->update([
-            'name'             => $request->name,
+            // 'name'             => $request->name,
             'email'            => $request->email,
-            // 'mobile'           => $request->mobile,
             'alt_mobile'       => $request->alt_mobile,
             'password'         => Hash::make($request->password),
 
@@ -449,12 +448,12 @@ class AuthController extends Controller
             'gov_id_number'    => $request->gov_id_number,
             // 'government_id'    => $govDocJson, // multiple files stored
 
-             // NEW
+            // NEW
             //    'kyc_status' => 'pending',
 
             'city'             => $request->city,
             'country'          => $request->country,
-            'profile_photo'    => $profilePhotoName,
+            // 'profile_photo'    => $profilePhotoName,
             'terms_accepted'   => true,
 
             'device_id'        => $request->device_id,
