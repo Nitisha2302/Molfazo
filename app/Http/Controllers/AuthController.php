@@ -820,6 +820,8 @@ class AuthController extends Controller
                 'terms_accepted' => $user->terms_accepted,
                 'is_social'      => $user->is_social,
 
+                'kyc_status'      => $user->kyc_status,
+
                 /* Device */
                 'device_type' => $user->device_type,
                 'fcm_token'   => $user->fcm_token,
