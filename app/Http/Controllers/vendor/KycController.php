@@ -83,7 +83,8 @@ class KycController extends Controller
         $sessionId = $request->input('session_id');
         // $status = $request->input('status');
         $status = strtolower(trim($request->input('decision.status')));
-        $user = User::where('kyc_session_id', $sessionId)->first();
+        $userId = $request->input('decision.vendor_data');
+        $user = User::find($userId);
 
         if (!$user) {
             return response()->json(['status' => false]);
@@ -139,9 +140,9 @@ class KycController extends Controller
         }
 
         // OPTIONAL extracted data
-        $user->verified_name = $request->input('data.full_name');
-        $user->verified_doc_type = $request->input('data.document_type');
-        $user->verified_doc_number = $request->input('data.document_number');
+        // $user->verified_name = $request->input('data.full_name');
+        // $user->verified_doc_type = $request->input('data.document_type');
+        // $user->verified_doc_number = $request->input('data.document_number');
 
         }
 
