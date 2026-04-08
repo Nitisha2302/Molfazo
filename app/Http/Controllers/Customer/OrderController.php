@@ -29,286 +29,6 @@ class OrderController extends Controller
    
     // with combination price
 
-    // public function placeOrder(Request $request)
-    // {
-    //     $user = Auth::guard('api')->user();
-
-    //    if (!$user) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Unauthorized'
-    //         ], 401);
-    //     }
-
-    //     // 🔥 Custom validation
-    //     $validator = Validator::make(
-    //         $request->all(),
-    //         [
-    //             // 'address_id'      => 'required|exists:user_addresses,id',
-    //             // 'address_id' => 'required_if:delivery_method,home_delivery|exists:user_addresses,id',
-    //             'address_id' => 'nullable|required_if:delivery_method,home_delivery|exists:user_addresses,id',
-    //             'payment_type'    => 'required|in:cod,online',
-    //             'delivery_method' => 'nullable|string',
-    //              'bank_id'      => 'required_if:payment_type,online|exists:banks,id'
-    //         ],
-    //         [
-    //             // ✅ ADDRESS
-    //             'address_id.required_if' => 'Delivery address is required for home delivery.',
-    //            'address_id.exists' => 'Selected delivery address is invalid.',
-    //             'payment_type.required' => 'Payment type is required',
-    //             'payment_type.in'       => 'Payment type must be COD or Online',
-    //              'bank_id.required_if' => 'Please select a bank for online payment.',
-    //             'bank_id.exists'      => 'Selected bank is invalid.',
-    //         ]
-    //     );
-        
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $validator->errors()->first()
-    //         ], 201);
-    //     }
-
-
-    //     $cartItems = Cart::with(['product', 'combination'])
-    //     ->where('user_id', $user->id)
-    //     ->get();
-
-    //     if ($cartItems->isEmpty()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Your cart is empty.'
-    //         ], 400);
-    //     }
-
-    //     // Ensure single store
-    //     $storeIds = $cartItems->pluck('product.store_id')->unique();
-    //     if ($storeIds->count() > 1) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Multiple store products not allowed in one order.'
-    //         ], 400);
-    //     }
-
-    //     $storeId = $storeIds->first();
-
-    //     $store = Store::with('user')->find($storeId);
-
-    //     $paymentModes = $store->user->payment_modes ?? [];
-
-    //     if ($request->payment_type == 'online' && !in_array('bank', $paymentModes)) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'This vendor does not support bank payment.'
-    //         ], 400);
-    //     }
-
-    //     // $address = UserAddress::where('id', $request->address_id)
-    //     //     ->where('user_id', $user->id)
-    //     //     ->first();
-
-    //     // if (!$address) {
-    //     //     return response()->json([
-    //     //         'status' => false,
-    //     //         'message' => 'Invalid address selected.'
-    //     //     ], 400);
-    //     // }
-
-
-    //     $deliveryAddress = null;
-
-    //     if ($request->delivery_method === 'home_delivery') {
-
-    //         $address = UserAddress::where('id', $request->address_id)
-    //             ->where('user_id', $user->id)
-    //             ->first();
-
-    //         if (!$address) {
-    //             return response()->json([
-    //                 'status' => false,
-    //                 'message' => 'Invalid address selected.'
-    //             ], 400);
-    //         }
-
-    //         $deliveryAddress = $address->full_name.', '.$address->address.', '.$address->city.' - '.$address->pincode;
-
-    //     } else {
-
-    //         // ✅ SELF PICKUP → use store address
-    //         $store = Store::find($storeId);
-
-    //         $deliveryAddress = $store->name . ', ' . $store->address. ', ' . $store->city. ', ' . $store->country ?? 'Store Pickup';
-
-    //     }
-
-    //     // Check stock availability
-    //     foreach ($cartItems as $item) {
-
-    //         if ($item->combination) {
-
-    //             if ($item->quantity > $item->combination->stock) {
-    //                 return response()->json([
-    //                     'status' => false,
-    //                     'message' => "Variant of {$item->product->name} is out of stock."
-    //                 ], 400);
-    //             }
-
-    //         } else {
-
-    //             if ($item->quantity > $item->product->available_quantity) {
-    //                 return response()->json([
-    //                     'status' => false,
-    //                     'message' => "Product {$item->product->name} does not have enough stock."
-    //                 ], 400);
-    //             }
-
-    //         }
-    //     }
-
-
-    //     DB::beginTransaction();
-
-    //     try {
-    //         $total = 0;
-
-    //         foreach ($cartItems as $item) {
-    //             $price = $item->combination->price 
-    //                 ?? $item->product->discount_price 
-    //                 ?? $item->product->price;
-
-    //             $total += $price * $item->quantity;
-    //         }
-
-    //          // 🔐 Secure Bank Account Fetch
-    //         $accountNumber = null;
-
-    //         if ($request->payment_type === 'online') {
-
-    //             // get vendor id from store
-    //             $store = Store::find($storeId);
-
-    //             $vendorBank = DB::table('vendor_banks')
-    //                 ->where('user_id', $store->user_id)
-    //                 ->where('bank_id', $request->bank_id)
-    //                 ->first();
-
-    //             if (!$vendorBank) {
-    //                 return response()->json([
-    //                     'status' => false,
-    //                     'message' => 'Selected bank is not available for this vendor.'
-    //                 ], 400);
-    //             }
-
-    //             $accountNumber = $vendorBank->account_number;
-    //         }
-            
-
-
-    //         // Create order
-    //         $order = Order::create([
-    //             'user_id'          => $user->id,
-    //             'store_id'         => $storeId,
-    //             'total_amount'     => $total,
-    //             'status_id'        => 1, // New
-    //             'delivery_method'  => $request->delivery_method ?? 'home_delivery',
-    //             // 'delivery_address' => $address->full_name.', '.$address->address.', '.$address->city.' - '.$address->pincode,
-    //              'delivery_address' => $deliveryAddress,
-    //             'payment_type'     => $request->payment_type,
-    //             'bank_id' => $request->payment_type == 'online'
-    //             ? $request->bank_id
-    //             : null,
-    //             'account_number'   => $accountNumber,
-    //         ]);
-
-    //         // Create order items & decrement stock
-    //         foreach ($cartItems as $item) {
-
-    //             $price = $item->combination->price 
-    //                 ?? $item->product->discount_price 
-    //                 ?? $item->product->price;
-
-    //             OrderItem::create([
-    //                 'order_id'       => $order->id,
-    //                 'product_id'     => $item->product_id,
-    //                 'combination_id' => $item->combination_id, // ✅ ADD THIS
-    //                 'quantity'       => $item->quantity,
-    //                 'price'          => $price,
-    //             ]);
-
-    //             // ✅ STOCK REDUCTION
-    //             if ($item->combination) {
-    //                 $item->combination->decrement('stock', $item->quantity);
-    //             } else {
-    //                 $item->product->decrement('available_quantity', $item->quantity);
-    //             }
-    //         }
-
-    //         // Clear cart
-    //         Cart::where('user_id', $user->id)->delete();
-
-    //          // ✅ SEND NOTIFICATION TO STORE OWNER / VENDOR
-    //         $store = Store::find($storeId);
-
-    //         if ($store) {
-
-    //             $vendor = User::find($store->user_id);
-
-    //             if ($vendor && $vendor->fcm_token) {
-
-    //                 // product name message
-    //                 $firstProduct = $cartItems->first()->product->name ?? 'Product';
-    //                 $productCount = $cartItems->count();
-
-    //                 $productText = $productCount > 1
-    //                     ? $firstProduct . " + " . ($productCount - 1) . " more"
-    //                     : $firstProduct;
-
-    //                 $title = "🛒 New Order";
-    //                 $body  = $user->name . " placed a new order for " . $productText;
-
-    //                 $tokens = [
-    //                     [
-    //                         'fcm_token' => $vendor->fcm_token,
-    //                         'device_type'  => $vendor->device_type ?? 'android',
-    //                         'user_id'      => $vendor->id,
-    //                     ]
-    //                 ];
-
-    //                 $notificationData = [
-    //                     'notification_type' => 3,
-    //                     'title' => $title,
-    //                     'body'  => $body,
-    //                       'order_id' => $order->id, 
-    //                 ];
-
-    //                 $fcmService = new FCMService();
-    //                $fcmService->sendNotification($tokens, $notificationData, true);
-
-    //             }
-    //         }
-
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'status' => true,
-    //             'message' => 'Order placed successfully.',
-    //             'order_id' => $order->id
-    //         ]);
-
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Failed to place order.',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
-    // with send sms 
-
     public function placeOrder(Request $request)
     {
         $user = Auth::guard('api')->user();
@@ -324,6 +44,8 @@ class OrderController extends Controller
         $validator = Validator::make(
             $request->all(),
             [
+                // 'address_id'      => 'required|exists:user_addresses,id',
+                // 'address_id' => 'required_if:delivery_method,home_delivery|exists:user_addresses,id',
                 'address_id' => 'nullable|required_if:delivery_method,home_delivery|exists:user_addresses,id',
                 'payment_type'    => 'required|in:cod,online',
                 'delivery_method' => 'nullable|string',
@@ -381,6 +103,17 @@ class OrderController extends Controller
                 'message' => 'This vendor does not support bank payment.'
             ], 400);
         }
+
+        // $address = UserAddress::where('id', $request->address_id)
+        //     ->where('user_id', $user->id)
+        //     ->first();
+
+        // if (!$address) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'Invalid address selected.'
+        //     ], 400);
+        // }
 
 
         $deliveryAddress = null;
@@ -515,75 +248,45 @@ class OrderController extends Controller
             Cart::where('user_id', $user->id)->delete();
 
              // ✅ SEND NOTIFICATION TO STORE OWNER / VENDOR
-            // $store = Store::find($storeId);
+            $store = Store::find($storeId);
 
-            $store = Store::with('user')->find($storeId);
-            $vendor = $store->user;
+            if ($store) {
 
-            // Prepare notification description
-            // Prepare notification description
-            $productsData = $cartItems->map(function ($item) {
-                return "{$item->product->name} x{$item->quantity} - " . ($item->combination->price ?? $item->product->discount_price ?? $item->product->price);
-            });
+                $vendor = User::find($store->user_id);
 
-            // Convert collection to array for implode
-            $notificationDesc = "You have a new order from {$user->name}.\nTotal: {$total}\nProducts:\n" . implode("\n", $productsData->toArray());
+                if ($vendor && $vendor->fcm_token) {
 
-            // Optional: Send SMS to vendor
-            $vendor = $store->user;
-            if ($vendor && $vendor->mobile) {
-                $txnId = 'order_' . time();
-                $hash = $this->generateSha256Hex(
-                    "borafzo;BORAFZO;{$vendor->mobile};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
-                );
+                    // product name message
+                    $firstProduct = $cartItems->first()->product->name ?? 'Product';
+                    $productCount = $cartItems->count();
 
-                Http::get('https://api.osonsms.com/sendsms_v1.php', [
-                    'login' => 'borafzo',
-                    'from' => 'BORAFZO',
-                    'phone_number' => $vendor->mobile,
-                    'msg' => $notificationDesc,
-                    'txn_id' => $txnId,
-                    'str_hash' => $hash,
-                ]);
+                    $productText = $productCount > 1
+                        ? $firstProduct . " + " . ($productCount - 1) . " more"
+                        : $firstProduct;
+
+                    $title = "🛒 New Order";
+                    $body  = $user->name . " placed a new order for " . $productText;
+
+                    $tokens = [
+                        [
+                            'fcm_token' => $vendor->fcm_token,
+                            'device_type'  => $vendor->device_type ?? 'android',
+                            'user_id'      => $vendor->id,
+                        ]
+                    ];
+
+                    $notificationData = [
+                        'notification_type' => 3,
+                        'title' => $title,
+                        'body'  => $body,
+                          'order_id' => $order->id, 
+                    ];
+
+                    $fcmService = new FCMService();
+                   $fcmService->sendNotification($tokens, $notificationData, true);
+
+                }
             }
-
-            // if ($store) {
-
-            //     $vendor = User::find($store->user_id);
-
-            //     if ($vendor && $vendor->fcm_token) {
-
-            //         // product name message
-            //         $firstProduct = $cartItems->first()->product->name ?? 'Product';
-            //         $productCount = $cartItems->count();
-
-            //         $productText = $productCount > 1
-            //             ? $firstProduct . " + " . ($productCount - 1) . " more"
-            //             : $firstProduct;
-
-            //         $title = "🛒 New Order";
-            //         $body  = $user->name . " placed a new order for " . $productText;
-
-            //         $tokens = [
-            //             [
-            //                 'fcm_token' => $vendor->fcm_token,
-            //                 'device_type'  => $vendor->device_type ?? 'android',
-            //                 'user_id'      => $vendor->id,
-            //             ]
-            //         ];
-
-            //         $notificationData = [
-            //             'notification_type' => 3,
-            //             'title' => $title,
-            //             'body'  => $body,
-            //               'order_id' => $order->id, 
-            //         ];
-
-            //         $fcmService = new FCMService();
-            //        $fcmService->sendNotification($tokens, $notificationData, true);
-
-            //     }
-            // }
 
             DB::commit();
 
@@ -604,11 +307,308 @@ class OrderController extends Controller
         }
     }
 
-      private function generateSha256Hex(string $input): string
-    {
-        $utf8String = mb_convert_encoding($input, 'UTF-8');
-        return hash('sha256', $utf8String);
-    }
+    // with send sms 
+
+    // public function placeOrder(Request $request)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //    if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Unauthorized'
+    //         ], 401);
+    //     }
+
+    //     // 🔥 Custom validation
+    //     $validator = Validator::make(
+    //         $request->all(),
+    //         [
+    //             'address_id' => 'nullable|required_if:delivery_method,home_delivery|exists:user_addresses,id',
+    //             'payment_type'    => 'required|in:cod,online',
+    //             'delivery_method' => 'nullable|string',
+    //              'bank_id'      => 'required_if:payment_type,online|exists:banks,id'
+    //         ],
+    //         [
+    //             // ✅ ADDRESS
+    //             'address_id.required_if' => 'Delivery address is required for home delivery.',
+    //            'address_id.exists' => 'Selected delivery address is invalid.',
+    //             'payment_type.required' => 'Payment type is required',
+    //             'payment_type.in'       => 'Payment type must be COD or Online',
+    //              'bank_id.required_if' => 'Please select a bank for online payment.',
+    //             'bank_id.exists'      => 'Selected bank is invalid.',
+    //         ]
+    //     );
+        
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validator->errors()->first()
+    //         ], 201);
+    //     }
+
+
+    //     $cartItems = Cart::with(['product', 'combination'])
+    //     ->where('user_id', $user->id)
+    //     ->get();
+
+    //     if ($cartItems->isEmpty()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Your cart is empty.'
+    //         ], 400);
+    //     }
+
+    //     // Ensure single store
+    //     $storeIds = $cartItems->pluck('product.store_id')->unique();
+    //     if ($storeIds->count() > 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Multiple store products not allowed in one order.'
+    //         ], 400);
+    //     }
+
+    //     $storeId = $storeIds->first();
+
+    //     $store = Store::with('user')->find($storeId);
+
+    //     $paymentModes = $store->user->payment_modes ?? [];
+
+    //     if ($request->payment_type == 'online' && !in_array('bank', $paymentModes)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'This vendor does not support bank payment.'
+    //         ], 400);
+    //     }
+
+
+    //     $deliveryAddress = null;
+
+    //     if ($request->delivery_method === 'home_delivery') {
+
+    //         $address = UserAddress::where('id', $request->address_id)
+    //             ->where('user_id', $user->id)
+    //             ->first();
+
+    //         if (!$address) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Invalid address selected.'
+    //             ], 400);
+    //         }
+
+    //         $deliveryAddress = $address->full_name.', '.$address->address.', '.$address->city.' - '.$address->pincode;
+
+    //     } else {
+
+    //         // ✅ SELF PICKUP → use store address
+    //         $store = Store::find($storeId);
+
+    //         $deliveryAddress = $store->name . ', ' . $store->address. ', ' . $store->city. ', ' . $store->country ?? 'Store Pickup';
+
+    //     }
+
+    //     // Check stock availability
+    //     foreach ($cartItems as $item) {
+
+    //         if ($item->combination) {
+
+    //             if ($item->quantity > $item->combination->stock) {
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => "Variant of {$item->product->name} is out of stock."
+    //                 ], 400);
+    //             }
+
+    //         } else {
+
+    //             if ($item->quantity > $item->product->available_quantity) {
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => "Product {$item->product->name} does not have enough stock."
+    //                 ], 400);
+    //             }
+
+    //         }
+    //     }
+
+
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $total = 0;
+
+    //         foreach ($cartItems as $item) {
+    //             $price = $item->combination->price 
+    //                 ?? $item->product->discount_price 
+    //                 ?? $item->product->price;
+
+    //             $total += $price * $item->quantity;
+    //         }
+
+    //          // 🔐 Secure Bank Account Fetch
+    //         $accountNumber = null;
+
+    //         if ($request->payment_type === 'online') {
+
+    //             // get vendor id from store
+    //             $store = Store::find($storeId);
+
+    //             $vendorBank = DB::table('vendor_banks')
+    //                 ->where('user_id', $store->user_id)
+    //                 ->where('bank_id', $request->bank_id)
+    //                 ->first();
+
+    //             if (!$vendorBank) {
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => 'Selected bank is not available for this vendor.'
+    //                 ], 400);
+    //             }
+
+    //             $accountNumber = $vendorBank->account_number;
+    //         }
+            
+
+
+    //         // Create order
+    //         $order = Order::create([
+    //             'user_id'          => $user->id,
+    //             'store_id'         => $storeId,
+    //             'total_amount'     => $total,
+    //             'status_id'        => 1, // New
+    //             'delivery_method'  => $request->delivery_method ?? 'home_delivery',
+    //             // 'delivery_address' => $address->full_name.', '.$address->address.', '.$address->city.' - '.$address->pincode,
+    //              'delivery_address' => $deliveryAddress,
+    //             'payment_type'     => $request->payment_type,
+    //             'bank_id' => $request->payment_type == 'online'
+    //             ? $request->bank_id
+    //             : null,
+    //             'account_number'   => $accountNumber,
+    //         ]);
+
+    //         // Create order items & decrement stock
+    //         foreach ($cartItems as $item) {
+
+    //             $price = $item->combination->price 
+    //                 ?? $item->product->discount_price 
+    //                 ?? $item->product->price;
+
+    //             OrderItem::create([
+    //                 'order_id'       => $order->id,
+    //                 'product_id'     => $item->product_id,
+    //                 'combination_id' => $item->combination_id, // ✅ ADD THIS
+    //                 'quantity'       => $item->quantity,
+    //                 'price'          => $price,
+    //             ]);
+
+    //             // ✅ STOCK REDUCTION
+    //             if ($item->combination) {
+    //                 $item->combination->decrement('stock', $item->quantity);
+    //             } else {
+    //                 $item->product->decrement('available_quantity', $item->quantity);
+    //             }
+    //         }
+
+    //         // Clear cart
+    //         Cart::where('user_id', $user->id)->delete();
+
+    //          // ✅ SEND NOTIFICATION TO STORE OWNER / VENDOR
+    //         // $store = Store::find($storeId);
+
+    //         $store = Store::with('user')->find($storeId);
+    //         $vendor = $store->user;
+
+    //         // Prepare notification description
+    //         // Prepare notification description
+    //         $productsData = $cartItems->map(function ($item) {
+    //             return "{$item->product->name} x{$item->quantity} - " . ($item->combination->price ?? $item->product->discount_price ?? $item->product->price);
+    //         });
+
+    //         // Convert collection to array for implode
+    //         $notificationDesc = "You have a new order from {$user->name}.\nTotal: {$total}\nProducts:\n" . implode("\n", $productsData->toArray());
+
+    //         // Optional: Send SMS to vendor
+    //         $vendor = $store->user;
+    //         if ($vendor && $vendor->mobile) {
+    //             $txnId = 'order_' . time();
+    //             $hash = $this->generateSha256Hex(
+    //                 "borafzo;BORAFZO;{$vendor->mobile};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
+    //             );
+
+    //             Http::get('https://api.osonsms.com/sendsms_v1.php', [
+    //                 'login' => 'borafzo',
+    //                 'from' => 'BORAFZO',
+    //                 'phone_number' => $vendor->mobile,
+    //                 'msg' => $notificationDesc,
+    //                 'txn_id' => $txnId,
+    //                 'str_hash' => $hash,
+    //             ]);
+    //         }
+
+    //         // if ($store) {
+
+    //         //     $vendor = User::find($store->user_id);
+
+    //         //     if ($vendor && $vendor->fcm_token) {
+
+    //         //         // product name message
+    //         //         $firstProduct = $cartItems->first()->product->name ?? 'Product';
+    //         //         $productCount = $cartItems->count();
+
+    //         //         $productText = $productCount > 1
+    //         //             ? $firstProduct . " + " . ($productCount - 1) . " more"
+    //         //             : $firstProduct;
+
+    //         //         $title = "🛒 New Order";
+    //         //         $body  = $user->name . " placed a new order for " . $productText;
+
+    //         //         $tokens = [
+    //         //             [
+    //         //                 'fcm_token' => $vendor->fcm_token,
+    //         //                 'device_type'  => $vendor->device_type ?? 'android',
+    //         //                 'user_id'      => $vendor->id,
+    //         //             ]
+    //         //         ];
+
+    //         //         $notificationData = [
+    //         //             'notification_type' => 3,
+    //         //             'title' => $title,
+    //         //             'body'  => $body,
+    //         //               'order_id' => $order->id, 
+    //         //         ];
+
+    //         //         $fcmService = new FCMService();
+    //         //        $fcmService->sendNotification($tokens, $notificationData, true);
+
+    //         //     }
+    //         // }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Order placed successfully.',
+    //             'order_id' => $order->id
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Failed to place order.',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    //   private function generateSha256Hex(string $input): string
+    // {
+    //     $utf8String = mb_convert_encoding($input, 'UTF-8');
+    //     return hash('sha256', $utf8String);
+    // }
 
     /* =========================
        MY ORDERS
