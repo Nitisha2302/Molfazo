@@ -450,7 +450,7 @@ class AuthController extends Controller
             'government_id'    => $govDocJson, // multiple files stored
 
              // NEW
-           'kyc_status' => 'pending',
+        //    'kyc_status' => 'pending',
 
             'city'             => $request->city,
             'country'          => $request->country,
