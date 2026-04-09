@@ -165,6 +165,20 @@
 
             <!-- PROMOTION MODULE END -->
 
+            <!-- <li class="@if (Route::is('dashboard.admin.video-plans.*')) active @endif">
+                <a href="{{ route('dashboard.admin.video-plans.index') }}">
+                    <i class="fas fa-gift"></i>
+                    <span>Store video Packages</span>
+                </a>
+            </li>
+
+             <li class="@if (Route::currentRouteName() == 'dashboard.admin.video.requests.index') active @endif">
+                <a href="{{ route('dashboard.admin.video.requests.index') }}">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Store video Requests</span>
+                </a>
+            </li> -->
+
         @endif
 
 

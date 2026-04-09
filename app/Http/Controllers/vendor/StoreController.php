@@ -10,6 +10,12 @@ use Auth;
 use Validator;
 use App\Services\FCMService;
 use App\Models\User;
+use App\Models\VideoPlan;
+use App\Models\PaymentRequest; 
+use Illuminate\Support\Facades\Storage;
+use App\Models\VideoRequest;
+use Illuminate\Support\Facades\File;
+
 
 class StoreController extends Controller
 {
@@ -158,6 +164,217 @@ class StoreController extends Controller
         ], 200);
     }
 
+    // with background video
+
+    // public function create(Request $request)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if ($user->role != 2) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'You are not a vendor.',
+    //         ], 403);
+    //     }
+
+    //     if ($user->status_id != 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Your vendor account is not approved yet. Please wait for admin approval.',
+    //         ], 403);
+    //     }
+
+
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required|string',
+    //         'mobile' => 'required|string',
+    //         'email' => 'nullable|email',
+    //         'country' => 'required|string',
+    //         'city' => 'required|string',
+    //         'address' => 'required|string',
+    //         'type' => 'required|array',
+    //         'type.*' => 'in:1,2,3,4',
+    //         'delivery_by_seller' => 'nullable|boolean',
+    //         'self_pickup' => 'nullable|boolean',
+    //         'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+    //         'description' => 'nullable|string',
+    //         'working_hours' => 'nullable|string',
+    //         'government_id'     => 'nullable|array',
+    //         'government_id.*'   => 'file|mimes:jpg,jpeg,png,pdf|max:4096',
+    //         'store_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+    //        'background_color' => 'nullable|string',
+    //         'social_links' => 'nullable|array',
+    //         'social_links.*.type' => 'required_with:social_links|string',
+    //         'social_links.*.url' => 'required_with:social_links|string',
+    //         'delivery_policy' => 'nullable|array',
+    //         'return_policy' => 'nullable|array',
+    //         'delivery_days' => 'nullable|string',
+
+    //                // Optional video chunk only if vendor wants to upload
+    //         'chunk' => 'nullable|file|mimes:mp4,mov,avi',
+    //         'chunk_index' => 'nullable|integer|min:0',
+    //         'total_chunks' => 'nullable|integer|min:1',
+    //         'upload_id' => 'nullable|string',
+
+    //     ], [
+    //         'name.required' => 'Store Name is required.',
+    //         'mobile.required' => 'Store Mobile Number is required.',
+    //         'email.required' => 'Store Email Address is required.',
+    //         'email.email' => 'Store Email must be a valid email address.',
+    //         'country.required' => 'Country is required.',
+    //         'city.required' => 'City is required.',
+    //         'address.required' => 'Complete Address is required.',
+    //         // UPDATED MESSAGE
+    //         'type.required' => 'Store Type is required.',
+    //         'type.array' => 'Store Type must be an array.',
+    //         'type.*.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale,4=Offline.',
+    //         // 'type.required' => 'Store Type is required.',
+    //         // 'type.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale.',
+    //         'logo.image' => 'Logo must be an image file.',
+    //         'logo.mimes' => 'Logo must be jpeg, png, jpg, gif, or webp.',
+    //         'logo.max' => 'Logo size cannot exceed 2MB.',
+    //         // 'government_id.required' => 'At least one store document is required.',
+    //         // 'government_id.*.mimes'  => 'Store documents must be jpg, png, or pdf.',
+
+    //         'store_background_image.image' => 'Store background must be an image file.',
+    //         'store_background_image.mimes' => 'Store background must be jpeg, png, jpg, gif, or webp.',
+    //         'store_background_image.max'   => 'Store background image size cannot exceed 4MB.',
+
+
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validator->errors()->first(),
+    //         ], 422);
+    //     }
+
+    //     // Handle logo upload
+    //     $logoPath = null;
+    //     if ($request->hasFile('logo')) {
+    //         $file = $request->file('logo');
+    //         $filename = time() . '_' . $file->getClientOriginalName();
+    //         $file->move(public_path('assets/store_logo'), $filename);
+    //         $logoPath =  $filename;
+    //     }
+
+    //     $backgroundImagePath = null;
+
+    //     if ($request->hasFile('store_background_image')) {
+    //         $file = $request->file('store_background_image');
+    //         $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+    //         $file->move(public_path('assets/store_background'), $filename);
+    //         $backgroundImagePath = $filename;
+    //     }
+
+
+    //     $uploadedGovIds = [];
+
+    //     if ($request->hasFile('government_id')) {
+    //         foreach ($request->file('government_id') as $file) {
+    //             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+    //             $file->move(public_path('assets/store_documents'), $filename);
+    //             $uploadedGovIds[] = $filename;
+    //         }
+    //     }
+
+    //     $govIdJson = json_encode($uploadedGovIds);
+    //     $socialLinksJson = json_encode($request->social_links ?? []);
+
+    //     $videoPath = null;
+    //     $videoExpiresAt = null;
+
+    //     $store = Store::create([
+    //         'user_id' => $user->id,
+    //         'name' => $request->name,
+    //         'mobile' => $request->mobile,
+    //         'email' => $request->email,
+    //         'country' => $request->country,
+    //         'city' => $request->city,
+    //         'address' => $request->address,
+    //         'type' => json_encode($request->type),
+    //         'delivery_by_seller' => $request->delivery_by_seller ?? false,
+    //         'self_pickup' => $request->self_pickup ?? false,
+    //         'logo' => $logoPath,
+    //         'description' => $request->description ?? null,
+    //         'working_hours' => $request->working_hours ?? null,
+    //         'government_id' => $govIdJson,
+    //         'status_id' => 2, // Pending admin approval
+    //         'store_background_image' => $backgroundImagePath,
+
+    //       'background_color' => $request->background_color,
+    //         'social_links' => $socialLinksJson,
+    //         'delivery_policy' => json_encode($request->delivery_policy ?? []),
+    //         'return_policy' => json_encode($request->return_policy ?? []),
+    //         'delivery_days' => $request->delivery_days ?? null,
+
+    //         'background_video' => $videoPath,         // nullable
+    //         'video_expires_at' => $videoExpiresAt,    // nullable
+    //         'video_plan_id' => $store->video_plan_id ?? null,
+
+    //     ]);
+
+    //     // ---------------- VIDEO CHUNK UPLOAD ----------------
+       
+    //     // Only allow video if vendor has active plan
+    //     if ($store->video_plan && $request->hasFile('chunk') && $request->upload_id) {
+    //         $uploadId = $request->upload_id;
+    //         $chunkIndex = $request->chunk_index;
+    //         $totalChunks = $request->total_chunks;
+    //         $chunk = $request->file('chunk');
+
+    //         $chunkDir = storage_path("app/video_chunks/{$uploadId}");
+    //         if (!file_exists($chunkDir)) mkdir($chunkDir, 0777, true);
+
+    //         $chunk->move($chunkDir, "chunk_{$chunkIndex}");
+
+    //         // Merge if last chunk
+    //         if ($chunkIndex == $totalChunks - 1) {
+    //             $finalDir = public_path("assets/store_videos");
+    //             if (!file_exists($finalDir)) mkdir($finalDir, 0777, true);
+
+    //             $finalName = time() . '_' . uniqid() . '.mp4';
+    //             $finalPath = $finalDir . '/' . $finalName;
+
+    //             $output = fopen($finalPath, 'ab');
+    //             for ($i = 0; $i < $totalChunks; $i++) {
+    //                 $chunkFile = "{$chunkDir}/chunk_{$i}";
+    //                 if (!file_exists($chunkFile)) {
+    //                     fclose($output);
+    //                     return response()->json(['status'=>false,'message'=>'Missing chunk'], 500);
+    //                 }
+    //                 fwrite($output, file_get_contents($chunkFile));
+    //                 @unlink($chunkFile);
+    //             }
+    //             fclose($output);
+    //             File::deleteDirectory($chunkDir);
+
+    //             $store->background_video = $finalName;
+    //             $store->video_expires_at = now()->addDays($store->video_plan->duration_days);
+    //             $store->save();
+
+    //             return response()->json([
+    //                 'status'=>true,
+    //                 'message'=>'Store created and video uploaded successfully.',
+    //                 'data'=>$this->formatStore($store),
+    //             ]);
+    //         }
+
+    //         return response()->json([
+    //             'status'=>true,
+    //             'message'=>'Store created and chunk uploaded successfully.',
+    //             'data'=>$this->formatStore($store),
+    //         ]);
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Store created successfully. Waiting for admin approval.',
+    //         'data' => $this->formatStore($store),
+    //     ], 200);
+    // }
+
     /**
      * List all stores for the logged-in vendor
      */
@@ -189,6 +406,8 @@ class StoreController extends Controller
         ], 200);
     }
 
+
+    
     /**
      * Get store details for the logged-in vendor
      */
@@ -461,4 +680,110 @@ class StoreController extends Controller
             'data' => $this->formatStore($store),
         ], 200);
     }
+
+
+     // video plan
+    public function plans()
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        $plans = VideoPlan::select('id', 'name', 'duration_days', 'price', 'created_at')
+                    ->latest()
+                    ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Plans fetched successfully',
+            'data' => $plans
+        ]);
+    }
+
+    public function sendVideoRequest(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        $request->validate(
+            [
+                'store_id' => 'required|exists:stores,id',
+                'plan_id' => 'required|exists:video_plans,id',
+                'payment_screenshot' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            ],
+            [
+                'store_id.required' => 'Store is required',
+                'store_id.exists' => 'Store not found',
+
+                'plan_id.required' => 'Please select a plan',
+                'plan_id.exists' => 'Selected plan is invalid',
+
+                'payment_screenshot.required' => 'Payment screenshot is required',
+                'payment_screenshot.image' => 'File must be an image',
+                'payment_screenshot.mimes' => 'Only JPG, JPEG, PNG allowed',
+                'payment_screenshot.max' => 'Image size must be less than 2MB',
+            ]
+        );
+
+        // ✅ Check store belongs to user (IMPORTANT SECURITY)
+        $store = \App\Models\Store::where('id', $request->store_id)
+                    ->where('user_id', $user->id)
+                    ->first();
+
+        if (!$store) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid store or not owned by user'
+            ], 403);
+        }
+
+        // ✅ Upload screenshot
+        $path = null;
+
+        if ($request->hasFile('payment_screenshot')) {
+            $file = $request->file('payment_screenshot');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('assets/payment_screenshots'), $filename);
+            $path = $filename;
+        }
+
+        // ✅ Prevent duplicate pending request (optional but recommended)
+        $exists = VideoRequest::where('store_id', $store->id)
+            ->where('plan_id', $request->plan_id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You already have a pending request for this plan'
+            ], 400);
+        }
+
+        // ✅ Save request
+        VideoRequest::create([
+            'store_id' => $store->id,
+            'vendor_id' => $user->id,
+            'plan_id' => $request->plan_id,
+            'payment_screenshot' => $path,
+            'status' => 'pending'
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Request sent to admin'
+        ]);
+    }
+
 }

@@ -13,7 +13,10 @@ class Store extends Model
         'user_id', 'name', 'email', 'mobile', 'country', 'city', 'address',
         'type', 'delivery_by_seller', 'self_pickup', 'logo', 'description',
         'working_hours', 'status_id', 'approved_at','government_id','store_background_image','reject_reason','background_color','return_policy',
-        'delivery_policy','delivery_days','social_links'
+        'delivery_policy','delivery_days','social_links',
+        'background_video',
+    'video_expires_at',
+    'video_plan_id'
     ];
 
     protected $casts = [
