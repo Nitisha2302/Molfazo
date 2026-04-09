@@ -12,7 +12,7 @@
             <!-- Dashboard -->
             <li class="@if (Route::currentRouteName() == 'dashboard.admin.dashboard') active @endif">
                 <a href="{{ route('dashboard.admin.dashboard') }}">
-                    <span class="d-flex gap-3 align-items-end">
+                   <span class="d-flex gap-2 align-items-center">
                         <i class="fas fa-tachometer-alt"></i>
                         <span>Dashboard</span>
                     </span>
