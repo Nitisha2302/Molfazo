@@ -18,6 +18,8 @@ use App\Http\Controllers\Admin\AttributeRequestController;
 use App\Http\Controllers\Admin\PromotionRequestController;
 use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\Admin\PromotionPackageController;
+use App\Http\Controllers\Admin\VideoPlanController;
+use App\Http\Controllers\Admin\VideoRequestController;
 
 
 Route::fallback(function () {
@@ -198,6 +200,21 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
         Route::get('promotion-requests/{id}/reject', [PromotionRequestController::class,'reject'])
             ->name('promotion.requests.reject');
 
+
+       Route::resource('video-plans', VideoPlanController::class);
+
+       Route::prefix('store/video')->group(function () {
+
+            Route::get('video-requests', [VideoRequestController::class, 'index'])
+                ->name('video.requests.index');
+
+            Route::get('approve/{id}', [VideoRequestController::class, 'approve'])
+                ->name('video.requests.approve');
+
+            Route::get('reject/{id}', [VideoRequestController::class, 'reject'])
+                ->name('video.requests.reject');
+
+        });
 
     });  
 
