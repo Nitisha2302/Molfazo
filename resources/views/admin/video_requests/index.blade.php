@@ -39,6 +39,7 @@
     <!-- Store -->
     <td>{{ $req->store->name ?? '-' }}</td>
 
+    
     <!-- Plan -->
     <td>{{ $req->plan->name ?? '-' }}</td>
 
