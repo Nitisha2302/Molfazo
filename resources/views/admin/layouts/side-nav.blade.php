@@ -1,7 +1,7 @@
 <aside class="sidebar-nav">
     <div class="d-flex align-items-center justify-content-center">
         <a class="navbar-brand" href="">
-            <img class="full-imgbox" src="{{ asset('assets/admin/images/molofzo_logo.png') }}" width="100" alt="logo">
+            <img class="full-imgbox" src="{{ asset('assets/admin/images/molofzo_logo.png') }}" width="200" alt="logo">
         </a>
     </div>
 
