@@ -53,7 +53,7 @@
     <td>{{ $plan->name }}</td>
     <!-- <td>{{ $plan->video_count }}</td> -->
     <td>{{ $plan->duration_days }} Days</td>
-    <td>{{ $plan->price }}</td>
+    <td>c. {{ $plan->price }}</td>
 
     <td>
         <div class="d-flex align-items-center gap-2">

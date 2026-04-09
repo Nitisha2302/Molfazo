@@ -21,6 +21,8 @@
 /public/assets/payment_screenshots
 /public/assets/email-logo
 
+/public/assets/store_videos
+
 
 /storage/*.key
 /vendor

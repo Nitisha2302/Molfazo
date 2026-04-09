@@ -165,7 +165,6 @@ class StoreController extends Controller
     }
 
     // with background video
-
     // public function create(Request $request)
     // {
     //     $user = Auth::guard('api')->user();
@@ -284,42 +283,51 @@ class StoreController extends Controller
 
     //     $videoPath = null;
     //     $videoExpiresAt = null;
+    //     $isChunkRequest = $request->hasFile('chunk');
+    //    $isFirstChunk = $isChunkRequest && $request->chunk_index == 0;
 
-    //     $store = Store::create([
-    //         'user_id' => $user->id,
-    //         'name' => $request->name,
-    //         'mobile' => $request->mobile,
-    //         'email' => $request->email,
-    //         'country' => $request->country,
-    //         'city' => $request->city,
-    //         'address' => $request->address,
-    //         'type' => json_encode($request->type),
-    //         'delivery_by_seller' => $request->delivery_by_seller ?? false,
-    //         'self_pickup' => $request->self_pickup ?? false,
-    //         'logo' => $logoPath,
-    //         'description' => $request->description ?? null,
-    //         'working_hours' => $request->working_hours ?? null,
-    //         'government_id' => $govIdJson,
-    //         'status_id' => 2, // Pending admin approval
-    //         'store_background_image' => $backgroundImagePath,
+    //    if (!$isChunkRequest || $isFirstChunk) {
 
-    //       'background_color' => $request->background_color,
-    //         'social_links' => $socialLinksJson,
-    //         'delivery_policy' => json_encode($request->delivery_policy ?? []),
-    //         'return_policy' => json_encode($request->return_policy ?? []),
-    //         'delivery_days' => $request->delivery_days ?? null,
+    //         $store = Store::create([
+    //             'user_id' => $user->id,
+    //             'name' => $request->name,
+    //             'mobile' => $request->mobile,
+    //             'email' => $request->email,
+    //             'country' => $request->country,
+    //             'city' => $request->city,
+    //             'address' => $request->address,
+    //             'type' => json_encode($request->type),
+    //             'delivery_by_seller' => $request->delivery_by_seller ?? false,
+    //             'self_pickup' => $request->self_pickup ?? false,
+    //             'logo' => $logoPath,
+    //             'description' => $request->description ?? null,
+    //             'working_hours' => $request->working_hours ?? null,
+    //             'government_id' => $govIdJson,
+    //             'status_id' => 2, // Pending admin approval
+    //             'store_background_image' => $backgroundImagePath,
 
-    //         'background_video' => $videoPath,         // nullable
-    //         'video_expires_at' => $videoExpiresAt,    // nullable
-    //         'video_plan_id' => $store->video_plan_id ?? null,
+    //         'background_color' => $request->background_color,
+    //             'social_links' => $socialLinksJson,
+    //             'delivery_policy' => json_encode($request->delivery_policy ?? []),
+    //             'return_policy' => json_encode($request->return_policy ?? []),
+    //             'delivery_days' => $request->delivery_days ?? null,
 
-    //     ]);
+    //             'background_video' => $videoPath,         // nullable
+    //             'video_expires_at' => $videoExpiresAt,    // nullable
+    //             'video_plan_id' => $store->video_plan_id ?? null,
+
+    //         ]);
+
+    //     }else {
+    //         // next chunks → same store uthao
+    //         $store = Store::where('user_id', $user->id)->latest()->first();
+    //     }
 
     //     // ---------------- VIDEO CHUNK UPLOAD ----------------
        
     //     // Only allow video if vendor has active plan
-    //     if ($store->video_plan && $request->hasFile('chunk') && $request->upload_id) {
-    //         $uploadId = $request->upload_id;
+    //     if ($request->hasFile('chunk') && $request->upload_id){
+    //        $uploadId = $request->upload_id;
     //         $chunkIndex = $request->chunk_index;
     //         $totalChunks = $request->total_chunks;
     //         $chunk = $request->file('chunk');
@@ -329,8 +337,9 @@ class StoreController extends Controller
 
     //         $chunk->move($chunkDir, "chunk_{$chunkIndex}");
 
-    //         // Merge if last chunk
+    //         // LAST CHUNK → MERGE
     //         if ($chunkIndex == $totalChunks - 1) {
+
     //             $finalDir = public_path("assets/store_videos");
     //             if (!file_exists($finalDir)) mkdir($finalDir, 0777, true);
 
@@ -338,33 +347,40 @@ class StoreController extends Controller
     //             $finalPath = $finalDir . '/' . $finalName;
 
     //             $output = fopen($finalPath, 'ab');
+
     //             for ($i = 0; $i < $totalChunks; $i++) {
     //                 $chunkFile = "{$chunkDir}/chunk_{$i}";
+
     //                 if (!file_exists($chunkFile)) {
     //                     fclose($output);
-    //                     return response()->json(['status'=>false,'message'=>'Missing chunk'], 500);
+    //                     return response()->json([
+    //                         'status'=>false,
+    //                         'message'=>'Missing chunk'
+    //                     ], 500);
     //                 }
+
     //                 fwrite($output, file_get_contents($chunkFile));
     //                 @unlink($chunkFile);
     //             }
+
     //             fclose($output);
     //             File::deleteDirectory($chunkDir);
 
+    //             // ✅ SAVE VIDEO IN STORE
     //             $store->background_video = $finalName;
-    //             $store->video_expires_at = now()->addDays($store->video_plan->duration_days);
+    //             $store->video_expires_at = now()->addDays(30); // temp
     //             $store->save();
 
     //             return response()->json([
     //                 'status'=>true,
-    //                 'message'=>'Store created and video uploaded successfully.',
+    //                 'message'=>'Store + Video uploaded successfully',
     //                 'data'=>$this->formatStore($store),
     //             ]);
     //         }
 
     //         return response()->json([
     //             'status'=>true,
-    //             'message'=>'Store created and chunk uploaded successfully.',
-    //             'data'=>$this->formatStore($store),
+    //             'message'=>'Chunk uploaded',
     //         ]);
     //     }
 
@@ -476,6 +492,13 @@ class StoreController extends Controller
             'delivery_policy' => $store->delivery_policy ? json_decode($store->delivery_policy, true) : [],
             'return_policy' => $store->return_policy ? json_decode($store->return_policy, true) : [],
             'delivery_days' => $store->delivery_days,
+
+            // ✅ 🔥 VIDEO FORMAT ADDED
+            'background_video' => $store->background_video 
+                ? $store->background_video
+                : null,
+
+            'video_expires_at' => $store->video_expires_at,
             'created_at' => $store->created_at,
             'updated_at' => $store->updated_at,
         ];
@@ -683,7 +706,7 @@ class StoreController extends Controller
 
 
      // video plan
-    public function plans()
+    public function plans(Request $request)
     {
         $user = Auth::guard('api')->user();
 
@@ -694,14 +717,69 @@ class StoreController extends Controller
             ], 401);
         }
 
-        $plans = VideoPlan::select('id', 'name', 'duration_days', 'price', 'created_at')
+        // ✅ GET ALL PLANS
+        $plans = VideoPlan::select('id', 'name', 'duration_days', 'price')
                     ->latest()
                     ->get();
 
+        // ✅ IF store_id NOT passed → simple response
+        if (!$request->filled('store_id')) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Plans fetched successfully',
+                'data' => $plans
+            ]);
+        }
+
+        // ✅ VALIDATION
+        $request->validate([
+            'store_id' => 'exists:stores,id'
+        ]);
+
+        // ✅ CHECK STORE BELONGS TO USER
+        $store = Store::where('id', $request->store_id)
+                    ->where('user_id', $user->id)
+                    ->first();
+
+        if (!$store) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Store not found or not owned by user'
+            ], 403);
+        }
+
+        // ✅ GET VIDEO REQUESTS FOR THIS STORE
+        $videoRequests = VideoRequest::where('store_id', $store->id)
+            ->where('vendor_id', $user->id)
+            ->get()
+            ->keyBy('plan_id'); // 🔥 IMPORTANT
+
+        // ✅ MAP DATA LIKE PACKAGES
+        $data = $plans->map(function ($plan) use ($videoRequests, $store) {
+
+            $request = $videoRequests[$plan->id] ?? null;
+
+            return [
+                'id' => $plan->id,
+                'name' => $plan->name,
+                'duration_days' => $plan->duration_days,
+                'price' => $plan->price,
+
+                // ✅ STATUS LOGIC
+                'status' => $request->status ?? null,
+                'is_applied' => $request ? true : false,
+                'video_request_id' => $request->id ?? null,
+
+                // ✅ STORE VIDEO INFO
+                'current_video' => $store->background_video ?? null,
+                'video_expires_at' => $store->video_expires_at ?? null,
+            ];
+        });
+
         return response()->json([
             'status' => true,
-            'message' => 'Plans fetched successfully',
-            'data' => $plans
+            'message' => 'Plans with status fetched successfully',
+            'data' => $data
         ]);
     }
 
@@ -786,4 +864,174 @@ class StoreController extends Controller
         ]);
     }
 
+    public function uploadStoreVideo(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        // ❌ AUTH ERROR
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized user'
+            ], 401);
+        }
+
+        // ❌ VALIDATION
+        $validator = Validator::make($request->all(), [
+            'store_id' => 'required|exists:stores,id',
+            'chunk' => 'required|file|mimes:mp4,mov,avi',
+            'chunk_index' => 'required|integer|min:0',
+            'total_chunks' => 'required|integer|min:1',
+            'upload_id' => 'required|string',
+        ], [
+            'store_id.required' => 'Store ID is required',
+            'store_id.exists' => 'Store not found',
+
+            'chunk.required' => 'Video chunk is required',
+            'chunk.file' => 'Invalid chunk file',
+            'chunk.mimes' => 'Only MP4, MOV, AVI formats allowed',
+
+            'chunk_index.required' => 'Chunk index is required',
+            'chunk_index.integer' => 'Chunk index must be a number',
+            'chunk_index.min' => 'Chunk index must be 0 or greater',
+
+            'total_chunks.required' => 'Total chunks is required',
+            'total_chunks.integer' => 'Total chunks must be a number',
+            'total_chunks.min' => 'Total chunks must be at least 1',
+
+            'upload_id.required' => 'Upload ID is required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
+
+        // ❌ STORE OWNERSHIP CHECK
+        $store = Store::where('id', $request->store_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$store) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You do not have permission to upload video for this store'
+            ], 403);
+        }
+
+        // ❌ PLAN APPROVAL CHECK
+        $approvedPlan = VideoRequest::where('store_id', $store->id)
+            ->where('status', 'approved')
+            ->latest()
+            ->first();
+
+        if (!$approvedPlan) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No approved video plan found. Please purchase and get approval first.'
+            ], 400);
+        }
+
+        // ❌ EXPIRED PLAN CHECK (optional but important)
+        if ($store->video_expires_at && now()->greaterThan($store->video_expires_at)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Your previous video plan has expired. Please renew your plan.'
+            ], 400);
+        }
+
+        try {
+
+            // ---------------- CHUNK UPLOAD ----------------
+
+            $uploadId = $request->upload_id;
+            $chunkIndex = $request->chunk_index;
+            $totalChunks = $request->total_chunks;
+            $chunk = $request->file('chunk');
+
+            $chunkDir = storage_path("app/video_chunks/{$uploadId}");
+
+            if (!file_exists($chunkDir)) {
+                mkdir($chunkDir, 0777, true);
+            }
+
+            $chunk->move($chunkDir, "chunk_{$chunkIndex}");
+
+            // ✅ LAST CHUNK → MERGE
+            if ($chunkIndex == $totalChunks - 1) {
+
+                $finalDir = public_path("assets/store_videos");
+
+                if (!file_exists($finalDir)) {
+                    mkdir($finalDir, 0777, true);
+                }
+
+                $finalName = time() . '_' . uniqid() . '.mp4';
+                $finalPath = $finalDir . '/' . $finalName;
+
+                $output = fopen($finalPath, 'ab');
+
+                for ($i = 0; $i < $totalChunks; $i++) {
+
+                    $chunkFile = "{$chunkDir}/chunk_{$i}";
+
+                    if (!file_exists($chunkFile)) {
+                        fclose($output);
+
+                        return response()->json([
+                            'status' => false,
+                            'message' => "Missing chunk at index {$i}"
+                        ], 500);
+                    }
+
+                    fwrite($output, file_get_contents($chunkFile));
+                    @unlink($chunkFile);
+                }
+
+                fclose($output);
+                File::deleteDirectory($chunkDir);
+
+                // ✅ PLAN DETAILS
+                $plan = VideoPlan::find($approvedPlan->plan_id);
+
+                if (!$plan) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Invalid plan configuration'
+                    ], 500);
+                }
+
+                // ✅ UPDATE STORE
+                $store->background_video = $finalName;
+                $store->video_plan_id = $plan->id;
+                $store->video_expires_at = now()->addDays($plan->duration_days);
+                $store->save();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Video uploaded successfully',
+                    'data' => [
+                        'video' => $finalName,
+                        'plan_name' => $plan->name,
+                        'expires_at' => $store->video_expires_at
+                    ]
+                ]);
+            }
+
+            // ✅ INTERMEDIATE CHUNK
+            return response()->json([
+                'status' => true,
+                'message' => "Chunk {$chunkIndex} uploaded successfully"
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Upload failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

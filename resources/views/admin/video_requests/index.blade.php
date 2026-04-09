@@ -46,7 +46,7 @@
     <td>{{ $req->plan->duration_days ?? '-' }} Days</td>
 
     <!-- Price -->
-    <td>₹ {{ $req->plan->price ?? '-' }}</td>
+    <td>c. {{ $req->plan->price ?? '-' }}</td>
 
     <!-- Screenshot -->
     <td>
