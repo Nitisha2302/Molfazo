@@ -406,6 +406,8 @@ class StoreController extends Controller
         ], 200);
     }
 
+
+    
     /**
      * Get store details for the logged-in vendor
      */
