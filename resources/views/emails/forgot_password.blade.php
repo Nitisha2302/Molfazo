@@ -12,7 +12,7 @@
         <p>Hello {{ $name ?? 'User' }},</p>
 
         <p>
-            You requested to reset your <strong>Molfazo</strong> account password.
+            You requested to reset your <strong>inBozor</strong> account password.
             Below is your new password:
         </p>
 
@@ -35,7 +35,7 @@
 
         <p>
             Stay healthy,<br>
-            <strong>The Molfazo Team</strong>
+            <strong>The inBozor Team</strong>
         </p>
     </div>
 
