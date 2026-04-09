@@ -894,7 +894,7 @@ class AuthController extends Controller
         $user->save();
 
         try {
-            $logoPath = url('/') . "/assets/email-logo/logo_hewie.png";
+            $logoPath = url('/') . "/assets/email-logo/logo_molfazo.png";
 
             Mail::to($user->email)->send(
                 new ForgotPasswordMail(

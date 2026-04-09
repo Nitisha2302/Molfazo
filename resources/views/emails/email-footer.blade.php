@@ -1,4 +1,4 @@
-<div class="footer">© 2025 Hewie. All rights reserved.</div>
+<div class="footer">© 2026 inBozor. All rights reserved.</div>
 </div>
 </body>
 
