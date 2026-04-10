@@ -163,6 +163,7 @@ class StoreController extends Controller
             'data' => $this->formatStore($store),
         ], 200);
     }
+    
 
     // with background video
     // public function create(Request $request)
