@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\Admin\PromotionPackageController;
 use App\Http\Controllers\Admin\VideoPlanController;
 use App\Http\Controllers\Admin\VideoRequestController;
+use App\Http\Controllers\Admin\EnquiryController;
 
 
 Route::fallback(function () {
@@ -49,6 +50,12 @@ Route::post('/delete-account-confirm', [AdminAuthController::class, 'confirmDele
 Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     // Admin Dashboard
     Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'role:1']], function () {
+
+
+      Route::get('edit-privacy-policy', [EnquiryController::class, 'editPrivacyPolicy'])->name('privacy-policy.edit');
+        Route::post('update-privacy-policy', [EnquiryController::class, 'updatePrvacyPolicy'])->name('privacy-policy.update');
+        Route::get('edit-terms-conditions', [EnquiryController::class, 'editTermsConditions'])->name('terms-comditions-edit');
+        Route::post('update-terms-conditions', [EnquiryController::class, 'updateTermsConditions'])->name('update-terms-comditions');
 
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::get('notifications/{id}', [NotificationController::class, 'show'])->name('notifications.show');
