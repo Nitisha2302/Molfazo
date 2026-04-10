@@ -127,7 +127,7 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
 
     Route::get('vendor/store/video-plans', [StoreController::class, 'plans']);
     Route::post('vendor/store/video-request', [StoreController::class, 'sendVideoRequest']);
-
+     Route::post('vendor/store/video-upload', [StoreController::class, 'uploadStoreVideo']);
 
 // CUSTOMER APIs
 
