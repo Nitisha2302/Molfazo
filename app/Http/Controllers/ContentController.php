@@ -12,6 +12,7 @@ class ContentController extends Controller
     {
         $policy = PrivacyPolicy::first();
 
+        
         if (!$policy) {
             return response()->json([
                 'status' => false,

@@ -41,6 +41,7 @@ Route::get('/global-search', [GlobalSearchController::class, 'search'])->name('g
 
 Route::get('/delete-account/{id?}', [AdminAuthController::class, 'showDeleteAccountPage'])->name('delete-account.page');
 
+
 Route::post('/delete-account-confirm', [AdminAuthController::class, 'confirmDeleteAccount'])->name('delete-account.confirm');
 
 
