@@ -27,6 +27,7 @@ use App\Http\Controllers\vendor\NotificationController;
 use App\Http\Controllers\vendor\PromotionController;
 use App\Http\Controllers\vendor\ReviewController;
 use App\Http\Controllers\vendor\KycController;
+use App\Http\Controllers\ContentController;
 
 use App\Http\Controllers\Customer\ChatController as CustomerChatController;
 
@@ -46,6 +47,9 @@ use App\Http\Controllers\Customer\ChatController as CustomerChatController;
 Route::middleware('auth:sanctum', 'throttle.auth')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('privacy-policy', [ContentController::class, 'privacyPolicy']);
+Route::get('terms-conditions', [ContentController::class, 'termsConditions']);
 
 // Route::post('vendor/register', [AuthController::class, 'vendorRegister']);
 // Route::post('send-otp', [AuthController::class, 'sendOtp']);
