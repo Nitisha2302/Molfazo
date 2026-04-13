@@ -133,4 +133,59 @@ class EnquiryController extends Controller
     }
 
 
+   public function allQueries(Request $request)
+    {
+        $query = Enquiry::with('user');
+
+        // 🔍 Search by mobile
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->whereHas('user', function($q) use ($search) {
+                $q->where('mobile', 'like', "%{$search}%");
+            });
+        }
+
+        // 🔽 Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        $enquiries = $query->latest()->paginate(10);
+
+        return view('admin.enquiry.index', compact('enquiries'));
+    }
+
+    public function answerQuery(Request $request)
+    {
+        $request->validate([
+            'query_id' => 'required|exists:enquiries,id',
+            'answer'   => 'required|string',
+        ]);
+
+        $enquiry = Enquiry::findOrFail($request->query_id);
+
+        $enquiry->update([
+            'answer' => $request->answer,
+            'status' => 'answered',
+            'answered_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => 'Answer submitted successfully.'
+        ]);
+    }
+
+    public function deleteQuery(Request $request)
+    {
+        $request->validate([
+            'query_id' => 'required|exists:enquiries,id',
+        ]);
+
+        Enquiry::findOrFail($request->query_id)->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+
 }

@@ -58,6 +58,10 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
         Route::get('edit-terms-conditions', [EnquiryController::class, 'editTermsConditions'])->name('terms-comditions-edit');
         Route::post('update-terms-conditions', [EnquiryController::class, 'updateTermsConditions'])->name('update-terms-comditions');
 
+         Route::get('queries', [EnquiryController::class, 'allQueries'])->name('queries');
+        Route::post('queries/answer', [EnquiryController::class, 'answerQuery'])->name('answer');
+        Route::delete('queries/delete', [EnquiryController::class, 'deleteQuery'])->name('delete');
+
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::get('notifications/{id}', [NotificationController::class, 'show'])->name('notifications.show');
         Route::get('products/{id}', [ProductController::class, 'show'])->name('products.show');

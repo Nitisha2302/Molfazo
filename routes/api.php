@@ -51,6 +51,9 @@ Route::middleware('auth:sanctum', 'throttle.auth')->get('/user', function (Reque
 Route::get('privacy-policy', [ContentController::class, 'privacyPolicy']);
 Route::get('terms-conditions', [ContentController::class, 'termsConditions']);
 
+ Route::post('enquiry/store', [ContentController::class, 'storeEnquiry']);
+Route::get('enquiry/list', [ContentController::class, 'myEnquiries']);
+
 // Route::post('vendor/register', [AuthController::class, 'vendorRegister']);
 // Route::post('send-otp', [AuthController::class, 'sendOtp']);
 // Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
