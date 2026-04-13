@@ -10,10 +10,13 @@ use App\Models\TermsCondition;
 class EnquiryController extends Controller
 {
 
-    public function editPrivacyPolicy()
+    public function editPrivacyPolicy(Request $request)
     {
-        $privacyPolicy = PrivacyPolicy::first(); // Assume only 1 policy exists
-        return view('admin.PrivacyPolicy.edit', compact('privacyPolicy'));
+        $type = $request->type ?? 'customer';
+
+        $privacyPolicy = PrivacyPolicy::where('type', $type)->first();
+
+        return view('admin.PrivacyPolicy.edit', compact('privacyPolicy', 'type'));
     }
 
     public function updatePrvacyPolicy(Request $request)
@@ -21,20 +24,23 @@ class EnquiryController extends Controller
         $request->validate([
             'title' => 'required|string',
            'content' => 'required|string',
+            'type' => 'required|in:vendor,customer',
         ], [
             'title.required' => 'Please enter the privacy policy title.',
             'content.required' => 'Please enter the privacy policy content.',
+              'type.required' => 'Please enter the privacy policy type.',
         ]);
         // Clean HTML before saving
         $cleanedTitle = $this->cleanHtml($request->title);
         $cleanedContent = $this->cleanHtml($request->content);
 
         // check if record exists
-        $policy = PrivacyPolicy::first();
+        $policy = PrivacyPolicy::where('type', $request->type)->first();
 
         $data = [
             'title'   => $cleanedTitle,
             'content' => $cleanedContent,
+            'type'    => $request->type,
         ];
 
         if ($policy) {
@@ -48,32 +54,37 @@ class EnquiryController extends Controller
     
 
 
-    public function editTermsConditions()
+    public function editTermsConditions(Request $request)
     {
-        $privacyPolicy = TermsCondition::first(); // Assume only 1 policy exists
-        return view('admin.PrivacyPolicy.editTermCondition', compact('privacyPolicy'));
-    }
+        $type = $request->type ?? 'customer';
 
+        $privacyPolicy = TermsCondition::where('type', $type)->first();
+
+        return view('admin.PrivacyPolicy.editTermCondition', compact('privacyPolicy', 'type'));
+    }
 
     public function updateTermsConditions(Request $request)
     {
         $request->validate([
             'title'   => 'required|string',
             'content' => 'required|string',
+              'type'    => 'required|in:vendor,customer',
         ], [
             'title.required'   => 'Please enter the title.',
             'content.required' => 'Please enter the content.',
+            'content.required' => 'Please enter the type.',
         ]);
 
         // Clean HTML before saving
         $cleanedTitle = $this->cleanHtml($request->title);
         $cleanedContent = $this->cleanHtml($request->content);
 
-        $policy = TermsCondition::first();
+        $policy = TermsCondition::where('type', $request->type)->first();
 
         $data = [
             'title'   => $cleanedTitle,
             'content' => $cleanedContent,
+            'type'    => $request->type,
         ];
 
         if ($policy) {

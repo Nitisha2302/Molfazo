@@ -28,6 +28,16 @@
                   <div class="form-container">
                     <div class="row">
 
+                    <div class="col-md-12">
+                        <div class="form-group mb-4">
+                            <label for="type">Select Type</label>
+                            <select name="type" class="form-control">
+                                <option value="customer" {{ ($type ?? '') == 'customer' ? 'selected' : '' }}>Customer</option>
+                                <option value="vendor" {{ ($type ?? '') == 'vendor' ? 'selected' : '' }}>Vendor</option>
+                            </select>
+                        </div>
+                    </div>
+
                         <div class="col-md-12">
                             <div class="form-group mb-4">
                                 <label for="title">Title</label>
@@ -76,6 +86,11 @@
         CKEDITOR.replace('content-editor', {
             height: 300,   // bigger height for content
             allowedContent: true
+        });
+        //  Change type → reload with query param
+        $('select[name="type"]').on('change', function () {
+            let type = $(this).val();
+            window.location.href = "?type=" + type;
         });
     });
 </script>
