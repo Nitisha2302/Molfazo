@@ -134,7 +134,7 @@ class AuthController extends Controller
         $apiKey = config('services.oson.api_key');
         $txnId  = 'otp_' . time();
 
-          $message = __('messages.sms.otp', ['otp' => $otp]);
+          $message = __('messages.customer.sms.otp', ['otp' => $otp]);
 
         $hashInput = "$txnId;$login;$from;$phone;$apiKey";
         $hash = hash('sha256', mb_convert_encoding($hashInput, 'UTF-8'));
