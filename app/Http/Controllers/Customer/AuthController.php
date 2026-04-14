@@ -111,7 +111,8 @@ class AuthController extends Controller
 
         // 📩 Send SMS (real numbers only)
         // if (app()->environment('production')) {
-            $this->sendOsonSms($phone, $otp);
+            // $this->sendOsonSms($phone, $otp);
+            $this->sendOsonSms($phone, $otp, app()->getLocale());
         // }
 
         return response()->json([
@@ -129,7 +130,7 @@ class AuthController extends Controller
        /**
      * OSON SMS
      */
-    private function sendOsonSms($phone, $otp,$lang = 'tj')
+    private function sendOsonSms($phone, $otp,$lang)
     {
         /* 🌐 Set language */
         app()->setLocale($lang);
