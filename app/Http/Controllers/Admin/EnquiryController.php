@@ -136,6 +136,7 @@ class EnquiryController extends Controller
    public function allQueries(Request $request)
     {
         $query = Enquiry::with('user');
+        
 
         // 🔍 Search by mobile
         if ($request->filled('search')) {
