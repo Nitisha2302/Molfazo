@@ -1086,7 +1086,7 @@ class AuthController extends Controller
         }
 
         $request->validate([
-            'language'     => 'required|in:en,ru,ru',
+            'language'     => 'required',
             'device_token' => 'required|string',
             'device_type'  => 'required|string',
         ]);
