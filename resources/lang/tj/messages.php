@@ -53,7 +53,7 @@ return [
             ],
 
             'sms' => [
-                'otp_message' => 'Коди тасдиқи шумо: :otp',
+                'otp_message' => 'Рамзи тасдиқ: :otp барои ворид шудан ба inBozor',
             ],
 
         ],
@@ -106,7 +106,7 @@ return [
             ],
 
             'sms' => [
-                'otp_message' => 'Ваш OTP для входа: :otp',
+                'otp_message' => 'Рамзи тасдиқ: :otp барои ворид шудан ба inBozor',
             ],
 
         ],
@@ -206,7 +206,7 @@ return [
         ],
 
         'sms' => [
-            'otp' => 'Рамзи OTP шумо: :otp',
+            'otp' => 'Рамзи тасдиқ: :otp барои ворид шудан ба inBozor',
         ],
 
         'verify_otp' => [

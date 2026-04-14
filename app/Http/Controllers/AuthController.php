@@ -600,7 +600,7 @@ class AuthController extends Controller
             $apiKey = config('services.oson.api_key');
 
             $hash = $this->generateSha256Hex(
-                "{$login};{$from};{$phone};{$apiKey};{$txnId}"
+                "$txnId;$login;$from;$phone;$apiKey"
             );
             // $hash = $this->generateSha256Hex(
             //     "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
