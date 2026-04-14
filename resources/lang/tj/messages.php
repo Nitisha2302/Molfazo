@@ -1,0 +1,216 @@
+<?php
+
+return [
+
+    'language' => [
+        'updated' => 'Язык успешно обновлен.',
+        'validation' => [
+            'required' => 'Выберите язык.',
+            'in' => 'Выбран неверный язык.',
+        ],
+    ],
+
+    'logout' => [
+        'logout_success' => 'Шумо муваффақона аз система баромадед.',
+         'user_not_authenticated' => 'Шумо тасдиқ нашудаед. Лутфан ворид шавед.',
+    ],
+
+    'getProfile' => [
+        'success' => 'Профил бор карда шуд.',
+        'user_not_authenticated' => 'Шумо тасдиқ нашудаед. Лутфан ворид шавед.',
+    ],
+
+
+    'vendor' => [
+
+        'completeprofile' => [
+
+            'user_not_authenticated' => 'Корбар тасдиқ нашудааст.',
+            'mobile_not_verified' => 'Лутфан рақами телефони худро тасдиқ кунед.',
+            'register_success' => 'Фурӯшанда бо муваффақият сабт шуд. Интизори тасдиқи администратор.',
+
+            'validation' => [
+                'name_required'       => 'Номи пурра ҳатмист.',
+                'email_required'     => 'Email ҳатмист.',
+                'email_unique'       => 'Ин email аллакай сабт шудааст.',
+                'mobile_required'    => 'Рақами телефон ҳатмист.',
+                'mobile_unique'      => 'Ин рақами телефон аллакай сабт шудааст.',
+                'password_confirmed' => 'Паролҳо мувофиқат намекунанд.',
+                'terms_required'     => 'Шумо бояд шартҳоро қабул кунед.',
+            ],
+        ],
+
+
+        'send_otp' => [
+
+            'mobile_exists' => 'Ин рақам аллакай сабт шудааст.',
+            'otp_sent'      => 'OTP ба рақами шумо фиристода шуд.',
+            'otp_test'      => 'OTP худкор тавлид шуд (режими тестӣ)',
+
+            'validation' => [
+                'mobile_required' => 'Рақами телефон ҳатмист.',
+                'mobile_invalid'  => 'Рақами телефон нодуруст аст.',
+            ],
+
+            'sms' => [
+                'otp_message' => 'Коди тасдиқи шумо: :otp',
+            ],
+
+        ],
+
+
+        'verify_otp' => [
+
+            'invalid_otp'   => 'OTP нодуруст аст.',
+            'otp_expired'   => 'Муҳлати OTP ба анҷом расид.',
+            'otp_verified'  => 'OTP бо муваффақият тасдиқ шуд.',
+
+            'validation' => [
+                'otp_required'   => 'OTP ҳатмист.',
+                'otp_digits'     => 'OTP бояд 6 рақам бошад.',
+                'mobile_invalid' => 'Рақами телефон нодуруст аст.',
+                'email_invalid'  => 'Email нодуруст аст.',
+            ],
+
+        ],
+
+
+
+        'login' => [
+
+            'account_not_found' => 'Ҳисоб ёфт нашуд. Лутфан аввал сабти ном кунед.',
+            'invalid_credentials' => 'Маълумоти воридшавӣ нодуруст аст.',
+            'only_vendor' => 'Танҳо фурӯшандагон метавонанд ворид шаванд.',
+            'rejected' => 'Ҳисоби фурӯшандаи шумо рад карда шудааст.',
+            'blocked' => 'Ҳисоби шумо баста шудааст. Ба дастгирӣ муроҷиат кунед.',
+            'login_success' => 'Воридшавӣ бо муваффақият анҷом шуд.',
+
+            'validation' => [
+                'login_required'    => 'Email ё рақами телефон лозим аст.',
+                'password_required' => 'Парол лозим аст.',
+            ],
+
+        ],
+
+        'login_otp' => [
+
+            'account_not_found' => 'Аккаунт не найден. Пожалуйста, зарегистрируйтесь.',
+            'only_vendor'       => 'Только продавцы могут войти здесь.',
+            'not_active'        => 'Ваш аккаунт не активен.',
+            'otp_sent'          => 'OTP отправлен на ваш номер.',
+            'otp_test'          => 'OTP сгенерирован автоматически (тестовый режим).',
+
+            'validation' => [
+                'mobile_required' => 'Введите номер телефона.',
+                'mobile_invalid'  => 'Номер должен быть от 8 до 15 цифр.',
+            ],
+
+            'sms' => [
+                'otp_message' => 'Ваш OTP для входа: :otp',
+            ],
+
+        ],
+
+
+        'verify_login_otp' => [
+
+            'invalid' => 'OTP ё рақами телефон нодуруст аст.',
+            'expired' => 'Мӯҳлати OTP гузаштааст. Лутфан дубора дархост кунед.',
+            'login_success' => 'Воридшавӣ бомуваффақият анҷом шуд.',
+
+            'validation' => [
+                'mobile_required' => 'Рақами телефон лозим аст.',
+                'mobile_invalid'  => 'Рақами телефон нодуруст аст.',
+                'otp_required'    => 'OTP лозим аст.',
+                'otp_digits'      => 'OTP бояд 6 рақам бошад.',
+            ],
+
+        ],
+
+
+        'forgot_password' => [
+
+            'success' => 'Пароли нав ба почтаи электронии шумо фиристода шуд.',
+            'email_failed' => 'Фиристодани email ноком шуд. Баъдтар кӯшиш кунед.',
+
+            'validation' => [
+                'email_required' => 'Email лозим аст.',
+                'email_invalid'  => 'Email дуруст ворид кунед.',
+                'email_exists'   => 'Email сабт нашудааст.',
+            ],
+
+        ],
+
+
+        'reset_password' => [
+
+            'invalid_password' => 'Парол бо пароли фиристодашуда мувофиқат намекунад.',
+            'expired'          => 'Мӯҳлати парол гузаштааст. Лутфан дубора дархост кунед.',
+            'success'          => 'Парол бо муваффақият навсозӣ шуд.',
+
+            'validation' => [
+                'email_required'    => 'Email лозим аст.',
+                'email_invalid'     => 'Email дуруст ворид кунед.',
+                'email_exists'      => 'Email ёфт нашуд.',
+
+                'password_required'  => 'Парол лозим аст.',
+                'password_digits'    => 'Парол бояд 6 рақам бошад.',
+                'password_confirmed' => 'Паролҳо мувофиқат намекунанд.',
+            ],
+
+        ],
+
+
+        'apple_login' => [
+
+            'invalid_token' => 'Токени Apple нодуруст аст.',
+            'blocked'       => 'Ҳисоб аз тарафи админ баста шудааст.',
+            'success'       => 'Воридшавӣ бо Apple бомуваффақият анҷом шуд.',
+            'failed'        => 'Аутентификатсияи Apple ноком шуд.',
+
+            'validation' => [
+                'identity_token_required' => 'Identity token лозим аст.',
+                'apple_id_required'       => 'Apple ID лозим аст.',
+                'email_invalid'           => 'Email дуруст ворид кунед.',
+                'name_string'             => 'Ном бояд матн бошад.',
+            ],
+
+        ],
+
+      
+
+
+
+
+
+
+
+
+
+    ],
+
+    'customer' => [
+        'update_profile' => [
+
+            'unauthenticated' => 'Корбар тасдиқ нашудааст.',
+            'success'         => 'Профил бомуваффақият навсозӣ шуд.',
+
+            'validation' => [
+                'name_string'        => 'Ном бояд матн бошад.',
+                'name_max'           => 'Ном набояд аз 255 ҳарф зиёд бошад.',
+                'email_invalid'      => 'Email дуруст ворид кунед.',
+                'email_unique'       => 'Ин email аллакай истифода шудааст.',
+                'mobile_unique'      => 'Ин рақам аллакай истифода шудааст.',
+                'alt_mobile_string'  => 'Рақами иловагӣ бояд матн бошад.',
+                'country_string'     => 'Кишвар бояд матн бошад.',
+                'city_string'        => 'Шаҳр бояд матн бошад.',
+                'photo_image'        => 'Акс бояд файл-расм бошад.',
+                'photo_mimes'        => 'Акс бояд jpeg, png, jpg ё gif бошад.',
+                'photo_max'          => 'Акс набояд аз 2MB зиёд бошад.',
+            ],
+
+        ],
+    ],
+
+
+];

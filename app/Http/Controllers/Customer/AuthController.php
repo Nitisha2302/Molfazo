@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Models\UserLang;
 
 class AuthController extends Controller
 {
@@ -207,18 +208,29 @@ class AuthController extends Controller
             ], 401);
         }
 
+
+         // 🌐 Language detect
+        $userLang = UserLang::where('user_id', $user->id)
+            ->where('device_token', $user->device_token)
+            ->where('device_type', $user->device_type)
+            ->first();
+
+        $lang = $userLang ? $userLang->language : 'tj';
+        app()->setLocale($lang);
+
         // Custom validation messages
-        $messages = [
-            'name.string' => 'Name must be a valid string.',
-            'name.max' => 'Name cannot exceed 255 characters.',
-            'email.email' => 'Please enter a valid email address.',
-            'email.unique' => 'This email is already taken.',
-            'alt_mobile.string' => 'Alternate mobile must be a valid string.',
-            'country.string' => 'Country must be a valid string.',
-            'city.string' => 'City must be a valid string.',
-            'profile_photo.image' => 'Profile photo must be an image file.',
-            'profile_photo.mimes' => 'Profile photo must be jpeg, png, jpg, or gif.',
-            'profile_photo.max' => 'Profile photo cannot exceed 2MB.',
+       $messages = [
+            'name.string' => __('messages.customer.update_profile.validation.name_string'),
+            'name.max' => __('messages.customer.update_profile.validation.name_max'),
+            'email.email' => __('messages.customer.update_profile.validation.email_invalid'),
+            'email.unique' => __('messages.customer.update_profile.validation.email_unique'),
+            'mobile.unique' => __('messages.customer.update_profile.validation.mobile_unique'),
+            'alt_mobile.string' => __('messages.customer.update_profile.validation.alt_mobile_string'),
+            'country.string' => __('messages.customer.update_profile.validation.country_string'),
+            'city.string' => __('messages.customer.update_profile.validation.city_string'),
+            'profile_photo.image' => __('messages.customer.update_profile.validation.photo_image'),
+            'profile_photo.mimes' => __('messages.customer.update_profile.validation.photo_mimes'),
+            'profile_photo.max' => __('messages.customer.update_profile.validation.photo_max'),
         ];
 
         // Validation
@@ -269,7 +281,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Profile updated successfully',
+           'message' => __('messages.customer.update_profile.success'),
             'data' => $user
         ],200);
     }

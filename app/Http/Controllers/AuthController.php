@@ -17,6 +17,7 @@ use App\Mail\ForgotPasswordMail;
 use Illuminate\Support\Str;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use App\Models\UserLang;
 
 
 
@@ -26,14 +27,19 @@ class AuthController extends Controller
 
     public function sendMobileOtp(Request $request)
     {
+
+            // 🌐 Language detect (from request OR default)
+        $lang = $request->header('lang') ?? 'tj';
+        app()->setLocale($lang);
+
         $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
             'device_type'  => 'nullable|string|max:255',
             'device_token' => 'nullable|string|max:255',
             'fcm_token'    => 'nullable|string|max:255',
         ], [
-            'phone_number.required' => 'Mobile number is required.',
-            'phone_number.digits_between' => 'Invalid mobile number.',
+           'phone_number.required' => __('messages.vendor.send_otp.validation.mobile_required'),
+           'phone_number.digits_between' => __('messages.vendor.send_otp.validation.mobile_invalid'),
         ]);
 
         if ($validator->fails()) {
@@ -51,7 +57,7 @@ class AuthController extends Controller
         if ($existingUser) {
             return response()->json([
                 'status' => false,
-                'message' => 'This mobile number already exist',
+                  'message' => __('messages.vendor.send_otp.mobile_exists'),
             ], 201);
         }
 
@@ -68,8 +74,8 @@ class AuthController extends Controller
             'mobile_otp' => $otp,
             'mobile_otp_sent_at' => now(),
         ]);
-
-        $responseMessage = 'OTP sent to your mobile number.';
+        $smsMessage = __('messages.vendor.send_otp.sms.otp_message', ['otp' => $otp]);
+         $responseMessage = __('messages.vendor.send_otp.otp_sent');
         $responseOtp = null;
 
         /** 🌍 OSON SMS (9-digit numbers) */
@@ -83,7 +89,7 @@ class AuthController extends Controller
                 'login' => 'borafzo',
                 'from'  => 'BORAFZO',
                 'phone_number' => $phone,
-                'msg'   => "Your verification code: {$otp}",
+                'msg'   => $smsMessage,
                 'txn_id' => $txnId,
                 'str_hash' => $hash,
             ]);
@@ -91,7 +97,7 @@ class AuthController extends Controller
 
         /** 🇮🇳 INDIA TEST MODE */
         if (strlen($phone) === 10) {
-            $responseMessage = 'Auto OTP generated (testing mode)';
+              $responseMessage = __('messages.vendor.send_otp.otp_test');
             $responseOtp = $otp;
         }
 
@@ -105,80 +111,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /* =============================================
-    Anukool Vendor Register
-    ==============================================*/
-    // public function sendMobileOtp(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'phone_number' => 'required|digits_between:8,15',
-    //         'device_type'  => 'nullable|string|max:255',
-    //         'device_token'    => 'nullable|string|max:255',
-    //         'fcm_token'    => 'nullable|string|max:255',
-    //     ], [
-    //         'phone_number.required' => 'Mobile number is required.',
-    //         'phone_number.digits_between' => 'Invalid mobile number.',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $validator->errors()->first(),
-    //         ], 201);
-    //     }
-
-    //     $otp = rand(100000, 999999);
-
-    //     $user = User::updateOrCreate(
-    //         ['mobile' => $request->phone_number],
-    //         [
-    //             'is_mobile_verified' => 0,
-    //             'device_type' => $request->device_type,
-    //             'device_token'   => $request->device_token,
-    //             'fcm_token'   => $request->fcm_token,
-    //         ]
-    //     );
-
-    //     $user->mobile_otp = $otp;
-    //     $user->mobile_otp_sent_at = now();
-    //     $user->save();
-
-    //     $phone = $request->phone_number;
-    //     $responseMessage = 'OTP sent to your mobile number.';
-    //     $responseOtp = null;
-
-    //     if (strlen($phone) === 9) {
-    //         // OSON SMS
-    //         $txnId = 'otp_' . time();
-    //         $hash = $this->generateSha256Hex(
-    //             "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
-    //         );
-
-    //         Http::get('https://api.osonsms.com/sendsms_v1.php', [
-    //             'login' => 'borafzo',
-    //             'from'  => 'BORAFZO',
-    //             'phone_number' => $phone,
-    //             'msg'   => "Your verification code: {$otp}",
-    //             'txn_id' => $txnId,
-    //             'str_hash' => $hash,
-    //         ]);
-    //     }
-
-    //     if (strlen($phone) === 10) {
-    //         // India testing
-    //         $responseMessage = 'Auto OTP generated (testing mode)';
-    //         $responseOtp = $otp;
-    //     }
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => $responseMessage,
-    //         'data' => [
-    //             'phone_number' => $phone,
-    //             'otp' => $responseOtp,
-    //         ]
-    //     ], 200);
-    // }
 
     public function sendEmailOtp(Request $request)
     {
@@ -243,10 +175,21 @@ class AuthController extends Controller
 
     public function verifyOtp(Request $request)
     {
+
+
+        // 🌐 Language detect
+        $lang = $request->header('lang') ?? 'tj';
+        app()->setLocale($lang);
+
         $validator = Validator::make($request->all(), [
             'otp' => 'required|digits:6',
             'phone_number' => 'nullable|digits_between:8,15',
             'email' => 'nullable|email',
+        ], [
+            'otp.required' => __('messages.vendor.verify_otp.validation.otp_required'),
+            'otp.digits'   => __('messages.vendor.verify_otp.validation.otp_digits'),
+            'phone_number.digits_between' => __('messages.vendor.vendor.verify_otp.validation.mobile_invalid'),
+            'email.email'  => __('messages.verify_otp.validation.email_invalid'),
         ]);
 
         if ($validator->fails()) {
@@ -273,14 +216,14 @@ class AuthController extends Controller
         if (!$user || $user->$otpCol != $request->otp) {
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid OTP.',
+                'message' => __('messages.vendor.verify_otp.invalid_otp'),
             ], 401);
         }
 
         if (Carbon::parse($user->$timeCol)->addMinutes(5)->isPast()) {
             return response()->json([
                 'status' => false,
-                'message' => 'OTP expired.',
+                'message' => __('messages.vendor.verify_otp.otp_expired'),
             ], 401);
         }
 
@@ -297,7 +240,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'OTP verified successfully.',
+            'message' => __('messages.vendor.verify_otp.otp_verified'),
             'api_token' => $user->api_token,
         ], 200);
         
@@ -321,9 +264,19 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json([
                 'status'  => false,
-                'message' => 'User is not authenticated.',
+                'message' => __('messages.vendor.completeprofile.user_not_authenticated'),
             ], 401);
         }
+
+
+         // 🌐 Language detect
+        $userLang = UserLang::where('user_id', $user->id)
+            ->where('device_token', $user->device_token)
+            ->where('device_type', $user->device_type)
+            ->first();
+
+        $lang = $userLang->language ?? 'tj';
+        app()->setLocale($lang);
 
          /* ===============================
         VERIFICATION CHECK
@@ -331,7 +284,7 @@ class AuthController extends Controller
         if (!$user->is_mobile_verified ) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Please verify mobile number.',
+               'message' => __('messages.vendor.completeprofile.mobile_not_verified'),
             ], 403);
         }
 
@@ -360,37 +313,15 @@ class AuthController extends Controller
             'device_type'     => 'nullable|string',
             'fcm_token'       => 'nullable|string',
         ];
-        // $rules = [
-        //     'name'            => 'required|string|max:255',
-        //     'email'           => 'required|email|unique:users,email',
-        //     // 'mobile'          => 'required|digits_between:8,15|unique:users,mobile',
-        //     'password'        => 'required|min:6|confirmed',
-        //     'gov_id_type'     => 'nullable|string',
-        //     'gov_id_number'   => 'nullable|string',
-        //     'gov_id_document' => 'nullable|array', // multiple files
-        //     'gov_id_document.*' => 'file|mimes:jpg,png,pdf',
-        //     'city'            => 'required|string',
-        //     'country'         => 'required|string',
-        //     'terms_accepted'  => 'required|in:1',
-
-        //     'profile_photo'   => 'nullable|image|mimes:jpg,png',
-        //     'alt_mobile'      => 'nullable|digits_between:8,15',
-
-        //     'device_id'       => 'nullable|string',
-        //     'device_type'     => 'nullable|string',
-        //     'fcm_token'       => 'nullable|string',
-        // ];
 
         $messages = [
-            'name.required'            => 'Full name is required.',
-            'email.required'           => 'Email address is required.',
-            'email.unique'             => 'This email is already registered.',
-            'mobile.required'          => 'Mobile number is required.',
-            'mobile.unique'            => 'This mobile number is already registered.',
-            'password.confirmed'       => 'Password and confirm password do not match.',
-            // 'gov_id_document.required' => 'At least one Government ID document is required.',
-            // 'gov_id_document.*.mimes'  => 'Government ID must be a file of type: jpg, png, pdf.',
-            'terms_accepted.in'        => 'You must accept terms & conditions.',
+            'name.required'      => __('messages.vendor.completeprofile.validation.name_required'),
+            'email.required'     => __('messages.vendor.completeprofile.validation.email_required'),
+            'email.unique'       => __('messages.vendor.completeprofile.validation.email_unique'),
+            'mobile.required'    => __('messages.vendor.completeprofile.validation.mobile_required'),
+            'mobile.unique'      => __('messages.vendor.completeprofile.validation.mobile_unique'),
+            'password.confirmed' => __('messages.vendor.completeprofile.validation.password_confirmed'),
+            'terms_accepted.in'  => __('messages.vendor.completeprofile.validation.terms_required'),
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -463,23 +394,30 @@ class AuthController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Vendor registered successfully. Waiting for admin approval.',
+            'message' => __('messages.vendor.completeprofile.register_success'),
             'data'    => $user,
         ], 200);
     }
 
     public function vendorLogin(Request $request)
     {
+        // 🌐 Language detect
+        $lang = $request->header('lang') ?? 'tj';
+        app()->setLocale($lang);
         /* ===============================
         VALIDATION
         =============================== */
         $validator = Validator::make($request->all(), [
-            'login'        => 'required|string', // email or mobile
+            'login'        => 'required|string',
             'password'     => 'required|string',
             'device_token' => 'nullable|string',
             'device_type'  => 'nullable|string',
             'fcm_token'    => 'nullable|string',
+        ], [
+            'login.required'    => __('messages.vendor.login.validation.login_required'),
+            'password.required' => __('messages.vendor.login.validation.password_required'),
         ]);
+
 
         if ($validator->fails()) {
             return response()->json([
@@ -500,7 +438,7 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Account not found. Please register first.',
+                'message' => __('messages.vendor.login.account_not_found'),
             ], 404);
         }
 
@@ -510,7 +448,7 @@ class AuthController extends Controller
         if (!Hash::check($request->password, $user->password)) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Invalid login credentials.',
+                 'message' => __('messages.vendor.login.invalid_credentials'),
             ], 401);
         }
 
@@ -520,7 +458,7 @@ class AuthController extends Controller
         if ($user->role != 2) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Only vendor accounts are allowed to login here.',
+                'message' => __('messages.vendor.login.only_vendor'),
             ], 403);
         }
 
@@ -537,14 +475,14 @@ class AuthController extends Controller
         if ($user->status_id == 3) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Your vendor account has been rejected.',
+               'message' => __('messages.vendor.login.rejected'),
             ], 403);
         }
 
         if ($user->status_id == 4) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Your vendor account has been blocked. Contact support.',
+                 'message' => __('messages.vendor.login.blocked'),
             ], 403);
         }
 
@@ -562,7 +500,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Login successful.',
+             'message' => __('messages.vendor.login.login_success'),
             'data'    => [
                 'id'        => $user->id,
                 'role'      => $user->role,
@@ -575,23 +513,21 @@ class AuthController extends Controller
 
     public function sendVendorLoginOtp(Request $request)
     {
+
+        // 🌐 Language detect (default = tj)
+        $lang = $request->header('lang') ?? 'tj';
+        app()->setLocale($lang);
        /* ===============================
         VALIDATION
         =============================== */
-        $validator = Validator::make($request->all(), [
+          $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
             'device_type'  => 'nullable|string|max:255',
             'device_token' => 'nullable|string|max:255',
             'fcm_token'    => 'nullable|string|max:255',
         ], [
-            'phone_number.required'       => 'Please enter your mobile number.',
-            'phone_number.digits_between' => 'Mobile number must be between 8 and 15 digits.',
-            'device_type.string'          => 'Device type must be a string.',
-            'device_type.max'             => 'Device type cannot exceed 255 characters.',
-            'device_token.string'         => 'Device token must be a string.',
-            'device_token.max'            => 'Device token cannot exceed 255 characters.',
-            'fcm_token.string'            => 'FCM token must be a string.',
-            'fcm_token.max'               => 'FCM token cannot exceed 255 characters.',
+            'phone_number.required'       => __('messages.vendor.login_otp.validation.mobile_required'),
+            'phone_number.digits_between' => __('messages.vendor.login_otp.validation.mobile_invalid'),
         ]);
 
         if ($validator->fails()) {
@@ -611,21 +547,21 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Account not found. Please register first.',
+                   'message' => __('messages.vendor.login_otp.account_not_found'),
             ], 404);
         }
 
         if ($user->role != 2) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Only vendor accounts can login here.',
+                 'message' => __('messages.vendor.login_otp.only_vendor'),
             ], 403);
         }
 
         if ($user->status_id != 1) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Your account is not active.',
+              'message' => __('messages.vendor.login_otp.not_active'),
             ], 403);
         }
 
@@ -642,7 +578,9 @@ class AuthController extends Controller
         SEND OTP
         =============================== */
         $phone = $request->phone_number;
-        $responseMessage = 'OTP sent to your mobile number.';
+        // ✅ Dynamic SMS
+       $smsMessage = __('messages.vendor.login_otp.sms.otp_message', ['otp' => $otp]);
+       $responseMessage = __('messages.vendor.login_otp.otp_sent');
         $responseOtp = null;
 
         if (strlen($phone) === 9) {
@@ -656,7 +594,7 @@ class AuthController extends Controller
                 'login'        => 'borafzo',
                 'from'         => 'BORAFZO',
                 'phone_number' => $phone,
-                'msg'          => "Your login OTP is {$otp}",
+                'msg'          => $smsMessage,
                 'txn_id'       => $txnId,
                 'str_hash'     => $hash,
             ]);
@@ -664,7 +602,7 @@ class AuthController extends Controller
 
         if (strlen($phone) === 10) {
             // India testing
-            $responseMessage = 'Auto OTP generated (testing mode).';
+           $responseMessage = __('messages.vendor.login_otp.otp_test');
             $responseOtp = $otp;
         }
 
@@ -680,15 +618,24 @@ class AuthController extends Controller
 
     public function verifyLoginOtp(Request $request)
     {
+
+        // 🌐 Language detect (default = tj)
+        $lang = $request->header('lang') ?? 'tj';
+        app()->setLocale($lang);
         /* ===============================
         VALIDATION
         =============================== */
-        $validator = Validator::make($request->all(), [
+          $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
             'otp'          => 'required|digits:6',
             'device_type'  => 'nullable|string|max:255',
             'device_token' => 'nullable|string|max:255',
             'fcm_token'    => 'nullable|string|max:255',
+        ], [
+            'phone_number.required'       => __('messages.vendor.verify_login_otp.validation.mobile_required'),
+            'phone_number.digits_between' => __('messages.vendor.verify_login_otp.validation.mobile_invalid'),
+            'otp.required'                => __('messages.vendor.verify_login_otp.validation.otp_required'),
+            'otp.digits'                  => __('messages.vendor.verify_login_otp.validation.otp_digits'),
         ]);
 
         if ($validator->fails()) {
@@ -706,7 +653,7 @@ class AuthController extends Controller
         if (!$user || $user->mobile_otp != $request->otp) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Invalid OTP or phone number.',
+              'message' => __('messages.vendor.verify_login_otp.invalid'),
             ], 401);
         }
 
@@ -716,7 +663,7 @@ class AuthController extends Controller
         if (Carbon::parse($user->mobile_otp_sent_at)->addMinutes(5)->isPast()) {
             return response()->json([
                 'status'  => false,
-                'message' => 'OTP expired. Please request a new one.',
+                 'message' => __('messages.vendor.verify_login_otp.expired'),
             ], 401);
         }
 
@@ -739,7 +686,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Login successful.',
+          'message' => __('messages.vendor.verify_login_otp.login_success'),
             'data'    => [
                 'id'        => $user->id,
                 'role'      => $user->role,
@@ -760,9 +707,14 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json([
                 'status'  => false,
-                'message' => 'User is not authenticated.',
+              'message' => __('messages.getProfile.user_not_authenticated'),
             ], 401);
         }
+
+        // 🌐 Language detect from DB (logged-in user)
+        $userLang = UserLang::where('user_id', $user->id)->first();
+        $lang = $userLang->language ?? 'tj';
+        app()->setLocale($lang);
 
         /* ===============================
         FORMAT OPTIONAL DATA
@@ -780,7 +732,7 @@ class AuthController extends Controller
         =============================== */
         return response()->json([
             'status'  => true,
-            'message' => 'User profile fetched successfully.',
+            'message' =>  __('messages.getProfile.success'),
             'data'    => [
                 'id' => $user->id,
 
@@ -843,10 +795,15 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json([
                 'status'  => false,
-                'message' => 'User is not authenticated.',
+                 'message' => __('messages.logout.user_not_authenticated'),
             ], 401);
         }
 
+
+        // 🌐 Language detect from DB (logged-in user)
+        $userLang = UserLang::where('user_id', $user->id)->first();
+        $lang = $userLang->language ?? 'tj';
+        app()->setLocale($lang);
         /* ===============================
         LOGOUT
         =============================== */
@@ -859,24 +816,27 @@ class AuthController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Logout successful.',
+           'message' =>  __('messages.logout.logout_success'),
         ], 200);
     }
 
 
     public function forgotPassword(Request $request)
     {
-        $rules = [
+         // 🌐 Language detect (default = tj)
+        $lang = $request->header('lang') ?? 'tj';
+        app()->setLocale($lang);
+
+        /* ===============================
+        VALIDATION
+        =============================== */
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
-        ];
-
-        $messages = [
-            'email.required' => 'Email is required',
-            'email.email'    => 'Enter valid email address',
-            'email.exists'   => 'Email not registered',
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $messages);
+        ], [
+            'email.required' => __('messages.vendor.forgot_password.validation.email_required'),
+            'email.email'    => __('messages.vendor.forgot_password.validation.email_invalid'),
+            'email.exists'   => __('messages.vendor.forgot_password.validation.email_exists'),
+        ]);
 
         if ($validator->fails()) {
             return response()->json([
@@ -906,13 +866,13 @@ class AuthController extends Controller
 
             return response()->json([
                 'status'  => true,
-                'message' => 'New password has been sent to your email address.',
+                 'message' => __('messages.vendor.forgot_password.success'),
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Failed to send email. Please try again later.',
+                'message' => __('messages.vendor.forgot_password.email_failed'),
             ], 500);
         }
     }
@@ -920,19 +880,27 @@ class AuthController extends Controller
 
     public function resetForgotPassword(Request $request)
     {
-        $rules = [
+
+        // 🌐 Flexible language detect (BEST 🔥)
+        $lang = $request->header('lang') 
+            ?? $request->lang 
+            ?? $request->query('lang') 
+            ?? 'tj';
+
+        app()->setLocale($lang);
+           $rules = [
             'email'    => 'required|email|exists:users,email',
             'password' => 'required|digits:6|confirmed',
         ];
 
         $messages = [
-            'email.required'     => 'Email is required',
-            'email.email'        => 'Enter valid email',
-            'email.exists'       => 'Email not found',
+            'email.required'     => __('messages.vendor.reset_password.validation.email_required'),
+            'email.email'        => __('messages.vendor.reset_password.validation.email_invalid'),
+            'email.exists'       => __('messages.vendor.reset_password.validation.email_exists'),
 
-            'password.required'  => 'Password is required',
-            'password.digits'    => 'Password must be 6 digits',
-            'password.confirmed' => 'Password and confirm password must match',
+            'password.required'  => __('messages.vendor.reset_password.validation.password_required'),
+            'password.digits'    => __('messages.vendor.reset_password.validation.password_digits'),
+            'password.confirmed' => __('messages.vendor.reset_password.validation.password_confirmed'),
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -952,14 +920,14 @@ class AuthController extends Controller
         ) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Password does not match the sent password',
+                'message' => __('messages.vendor.reset_password.invalid_password'),
             ], 201);
         }
 
         if (Carbon::parse($user->forgot_password_sent_at)->addMinutes(10)->isPast()) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Password expired, request again',
+                'message' => __('messages.vendor.reset_password.expired'),
             ], 201);
         }
 
@@ -970,24 +938,42 @@ class AuthController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Password updated successfully',
+             'message' => __('messages.vendor.reset_password.success'),
         ], 200);
     }
-
-
 
   
     public function VendorloginWithApple(Request $request)
     {
+
+        // 🌐 Language detect (default = tj)
+        $lang = $request->header('lang') 
+            ?? $request->lang 
+            ?? $request->query('lang') 
+            ?? 'tj';
+
+        app()->setLocale($lang);
         /* ===============================
            VALIDATION
         =============================== */
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'identity_token' => 'required',
-            'apple_id'       => 'required', // sub from apple
+            'apple_id'       => 'required',
             'email'          => 'nullable|email',
             'name'           => 'nullable|string',
+        ], [
+            'identity_token.required' => __('messages.vendor.apple_login.validation.identity_token_required'),
+            'apple_id.required'       => __('messages.vendor.apple_login.validation.apple_id_required'),
+            'email.email'             => __('messages.vendor.apple_login.validation.email_invalid'),
+            'name.string'             => __('messages.vendor.apple_login.validation.name_string'),
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
 
         try {
 
@@ -1005,7 +991,7 @@ class AuthController extends Controller
             if ($decoded->iss !== 'https://appleid.apple.com') {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Invalid Apple token',
+                 'message' => __('messages.vendor.apple_login.invalid_token'),
                 ], 401);
             }
 
@@ -1045,7 +1031,7 @@ class AuthController extends Controller
             if ($user->status_id == 4) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Account blocked by admin',
+                   'message' => __('messages.vendor.apple_login.blocked'),
                 ], 403);
             }
 
@@ -1056,7 +1042,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Apple login successful',
+                'message'    => __('messages.vendor.apple_login.success'),
                 'token' => $token,
                 'token_type' => 'Bearer',
                 'user' => $user,
@@ -1065,12 +1051,84 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Apple authentication failed',
+                'message' => __('messages.vendor.apple_login.failed'),
             ], 401);
         }
     }
 
 
+    public function updateLanguage(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not authenticated',
+            ], 401);
+        }
+
+        $request->validate([
+            'language'     => 'required|in:en,ru,tj',
+            'device_token' => 'required|string',
+            'device_type'  => 'required|string',
+        ]);
+
+        // ✅ Save in users table (your structure)
+        $user->update([
+            'device_token' => $request->device_token,
+            'device_type'  => $request->device_type,
+        ]);
+
+        // ✅ Save language
+        UserLang::updateOrCreate(
+            [
+                'user_id'      => $user->id,
+                'device_token' => $request->device_token,
+                'device_type'  => $request->device_type,
+            ],
+            [
+                'language' => $request->language,
+            ]
+        );
+
+        app()->setLocale($request->language);
+
+        return response()->json([
+            'status' => true,
+            'message' => __('messages.language.updated'),
+            'data' => ['language' => $request->language],
+        ]);
+    }
+
+
+
+
+
+    public function getLanguage()
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not authenticated',
+            ], 401);
+        }
+
+        $userLang = UserLang::where('user_id', $user->id)
+            ->where('device_token', $user->device_token)
+            ->where('device_type', $user->device_type)
+            ->first();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Language fetched successfully',
+            'data' => [
+                'language' => $userLang->language ?? 'ru'
+            ]
+        ]);
+    }
 
 
 
