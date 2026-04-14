@@ -817,7 +817,7 @@ class AuthController extends Controller
         }
 
 
-        // 🌐 Language detect from DB (logged-in user)
+        //  Language detect from DB (logged-in user)
         $userLang = UserLang::where('user_id', $user->id)->first();
         $lang = $userLang->language ?? 'ru';
         app()->setLocale($lang);

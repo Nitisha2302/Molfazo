@@ -24,10 +24,15 @@ class AuthController extends Controller
     public function login(Request $request)
     {
 
-        /* 🌐 Language detect (header → body → query → default) */
-        $lang = $request->header('lang') 
-            ?? $request->lang 
-            ?? $request->query('lang') 
+        $userLang = DB::table('user_langs')
+        ->where('device_token', $request->device_token)
+        ->where('device_type', $request->device_type)
+        ->value('language');
+
+        $lang = $request->header('lang')
+            ?? $request->lang
+            ?? $request->query('lang')
+            ?? $userLang
             ?? 'ru';
 
         app()->setLocale($lang);
@@ -158,11 +163,16 @@ class AuthController extends Controller
     public function verifyOtp(Request $request)
     {
 
-        /* 🌐 Language detect */
-        $lang = $request->header('lang') 
-            ?? $request->lang 
-            ?? $request->query('lang') 
-            ?? 'tj';
+         $userLang = DB::table('user_langs')
+        ->where('device_token', $request->device_token)
+        ->where('device_type', $request->device_type)
+        ->value('language');
+
+        $lang = $request->header('lang')
+            ?? $request->lang
+            ?? $request->query('lang')
+            ?? $userLang
+            ?? 'ru';
 
         app()->setLocale($lang);
         $validator = Validator::make($request->all(), [
