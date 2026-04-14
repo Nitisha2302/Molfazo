@@ -190,6 +190,41 @@ return [
     ],
 
     'customer' => [
+
+
+        'login' => [
+
+            'vendor_exists' => 'Этот номер уже зарегистрирован как продавец.',
+            'blocked'       => 'Ваш аккаунт заблокирован.',
+            'deleted'       => 'Ваш аккаунт удален.',
+            'otp_sent'      => 'OTP успешно отправлен.',
+
+            'validation' => [
+                'phone_required' => 'Требуется номер телефона.',
+                'phone_invalid'  => 'Неверный номер телефона.',
+            ],
+
+        ],
+
+
+        'sms' => [
+            'otp' => 'Ваш OTP код: :otp',
+        ],
+
+        'verify_otp' => [
+
+            'invalid' => 'Неверный OTP.',
+            'expired' => 'Срок OTP истек.',
+            'success' => 'OTP успешно подтвержден.',
+
+            'validation' => [
+                'phone_required' => 'Требуется номер телефона.',
+                'otp_required'   => 'Требуется OTP.',
+                'otp_digits'     => 'Неверный OTP.',
+            ],
+
+        ],
+
         'update_profile' => [
 
             'unauthenticated' => 'Пользователь не авторизован.',

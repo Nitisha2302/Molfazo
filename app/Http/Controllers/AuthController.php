@@ -29,7 +29,7 @@ class AuthController extends Controller
     {
 
             // 🌐 Language detect (from request OR default)
-        $lang = $request->header('lang') ?? 'tj';
+        $lang = $request->header('lang') ?? 'ru';
         app()->setLocale($lang);
 
         $validator = Validator::make($request->all(), [
@@ -78,16 +78,25 @@ class AuthController extends Controller
          $responseMessage = __('messages.vendor.send_otp.otp_sent');
         $responseOtp = null;
 
+        
+
         /** 🌍 OSON SMS (9-digit numbers) */
         if (strlen($phone) === 9) {
             $txnId = 'otp_' . time();
+            $login  = config('services.oson.login');
+            $from   = config('services.oson.sender');
+            $apiKey = config('services.oson.api_key');
+
             $hash = $this->generateSha256Hex(
-                "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
+                "{$login};{$from};{$phone};{$apiKey};{$txnId}"
             );
+            // $hash = $this->generateSha256Hex(
+            //     "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
+            // );
 
             Http::get('https://api.osonsms.com/sendsms_v1.php', [
-                'login' => 'borafzo',
-                'from'  => 'BORAFZO',
+                'login' => $login,
+                'from'  => $from,
                 'phone_number' => $phone,
                 'msg'   => $smsMessage,
                 'txn_id' => $txnId,
@@ -178,7 +187,7 @@ class AuthController extends Controller
 
 
         // 🌐 Language detect
-        $lang = $request->header('lang') ?? 'tj';
+        $lang = $request->header('lang') ?? 'ru';
         app()->setLocale($lang);
 
         $validator = Validator::make($request->all(), [
@@ -275,7 +284,7 @@ class AuthController extends Controller
             ->where('device_type', $user->device_type)
             ->first();
 
-        $lang = $userLang->language ?? 'tj';
+        $lang = $userLang->language ?? 'ru';
         app()->setLocale($lang);
 
          /* ===============================
@@ -402,7 +411,7 @@ class AuthController extends Controller
     public function vendorLogin(Request $request)
     {
         // 🌐 Language detect
-        $lang = $request->header('lang') ?? 'tj';
+        $lang = $request->header('lang') ?? 'ru';
         app()->setLocale($lang);
         /* ===============================
         VALIDATION
@@ -514,8 +523,8 @@ class AuthController extends Controller
     public function sendVendorLoginOtp(Request $request)
     {
 
-        // 🌐 Language detect (default = tj)
-        $lang = $request->header('lang') ?? 'tj';
+        // 🌐 Language detect (default = ru)
+        $lang = $request->header('lang') ?? 'ru';
         app()->setLocale($lang);
        /* ===============================
         VALIDATION
@@ -586,13 +595,20 @@ class AuthController extends Controller
         if (strlen($phone) === 9) {
             // OSON SMS
             $txnId = 'login_' . time();
+            $login  = config('services.oson.login');
+            $from   = config('services.oson.sender');
+            $apiKey = config('services.oson.api_key');
+
             $hash = $this->generateSha256Hex(
-                "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
+                "{$login};{$from};{$phone};{$apiKey};{$txnId}"
             );
+            // $hash = $this->generateSha256Hex(
+            //     "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
+            // );
 
             Http::get('https://api.osonsms.com/sendsms_v1.php', [
-                'login'        => 'borafzo',
-                'from'         => 'BORAFZO',
+                'login'        =>  $login,
+                'from'         => $from,
                 'phone_number' => $phone,
                 'msg'          => $smsMessage,
                 'txn_id'       => $txnId,
@@ -619,8 +635,8 @@ class AuthController extends Controller
     public function verifyLoginOtp(Request $request)
     {
 
-        // 🌐 Language detect (default = tj)
-        $lang = $request->header('lang') ?? 'tj';
+        // 🌐 Language detect (default = ru)
+        $lang = $request->header('lang') ?? 'ru';
         app()->setLocale($lang);
         /* ===============================
         VALIDATION
@@ -713,7 +729,7 @@ class AuthController extends Controller
 
         // 🌐 Language detect from DB (logged-in user)
         $userLang = UserLang::where('user_id', $user->id)->first();
-        $lang = $userLang->language ?? 'tj';
+        $lang = $userLang->language ?? 'ru';
         app()->setLocale($lang);
 
         /* ===============================
@@ -802,7 +818,7 @@ class AuthController extends Controller
 
         // 🌐 Language detect from DB (logged-in user)
         $userLang = UserLang::where('user_id', $user->id)->first();
-        $lang = $userLang->language ?? 'tj';
+        $lang = $userLang->language ?? 'ru';
         app()->setLocale($lang);
         /* ===============================
         LOGOUT
@@ -823,8 +839,8 @@ class AuthController extends Controller
 
     public function forgotPassword(Request $request)
     {
-         // 🌐 Language detect (default = tj)
-        $lang = $request->header('lang') ?? 'tj';
+         // 🌐 Language detect (default = ru)
+        $lang = $request->header('lang') ?? 'ru';
         app()->setLocale($lang);
 
         /* ===============================
@@ -885,7 +901,7 @@ class AuthController extends Controller
         $lang = $request->header('lang') 
             ?? $request->lang 
             ?? $request->query('lang') 
-            ?? 'tj';
+            ?? 'ru';
 
         app()->setLocale($lang);
            $rules = [
@@ -946,11 +962,11 @@ class AuthController extends Controller
     public function VendorloginWithApple(Request $request)
     {
 
-        // 🌐 Language detect (default = tj)
+        // 🌐 Language detect (default = ru)
         $lang = $request->header('lang') 
             ?? $request->lang 
             ?? $request->query('lang') 
-            ?? 'tj';
+            ?? 'ru';
 
         app()->setLocale($lang);
         /* ===============================
@@ -1069,7 +1085,7 @@ class AuthController extends Controller
         }
 
         $request->validate([
-            'language'     => 'required|in:en,ru,tj',
+            'language'     => 'required|in:en,ru,ru',
             'device_token' => 'required|string',
             'device_type'  => 'required|string',
         ]);
