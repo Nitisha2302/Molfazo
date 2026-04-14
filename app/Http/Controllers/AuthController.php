@@ -72,6 +72,7 @@ class AuthController extends Controller
             'device_token' => $request->device_token,
             'fcm_token' => $request->fcm_token,
             'mobile_otp' => $otp,
+            'role' => 2,
             'mobile_otp_sent_at' => now(),
         ]);
         $smsMessage = __('messages.vendor.send_otp.sms.otp_message', ['otp' => $otp]);
