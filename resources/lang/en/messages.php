@@ -53,7 +53,7 @@ return [
             ],
 
             'sms' => [
-                'otp_message' => 'Your verification code is :otp',
+                'otp_message' => 'Your verification code is :otp for login to inBozor.',
             ],
 
         ],
@@ -106,7 +106,7 @@ return [
             ],
 
             'sms' => [
-                'otp_message' => 'Your login OTP is :otp',
+                'otp_message' => 'Your verification code is :otp for login to inBozor',
             ],
 
         ],
@@ -204,7 +204,7 @@ return [
         ],
 
         'sms' => [
-            'otp' => 'Your OTP is :otp',
+            'otp' => 'Your verification code is :otp for login to inBozor',
         ],
 
         'verify_otp' => [
