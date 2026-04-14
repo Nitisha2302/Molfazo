@@ -37,5 +37,11 @@ return [
         'workflow_id' => env('DIDIT_WORKFLOW_ID'),
     ],
 
+    'oson' => [
+        'login'   => env('OSON_LOGIN'),
+        'sender'  => env('OSON_SENDER'),
+        'api_key' => env('OSON_API_KEY'),
+    ],
+
 
 ];

@@ -190,6 +190,39 @@ return [
     ],
 
     'customer' => [
+
+        'login' => [
+
+            'vendor_exists' => 'Ин рақам аллакай ҳамчун фурӯшанда сабт шудааст.',
+            'blocked'       => 'Ҳисоби шумо баста шудааст.',
+            'deleted'       => 'Ҳисоби шумо ҳазф шудааст.',
+            'otp_sent'      => 'OTP бомуваффақият фиристода шуд.',
+
+            'validation' => [
+                'phone_required' => 'Рақами телефон лозим аст.',
+                'phone_invalid'  => 'Рақами телефон нодуруст аст.',
+            ],
+
+        ],
+
+        'sms' => [
+            'otp' => 'Рамзи OTP шумо: :otp',
+        ],
+
+        'verify_otp' => [
+
+            'invalid' => 'OTP нодуруст аст.',
+            'expired' => 'Мӯҳлати OTP гузаштааст.',
+            'success' => 'OTP бомуваффақият тасдиқ шуд.',
+
+            'validation' => [
+                'phone_required' => 'Рақами телефон лозим аст.',
+                'otp_required'   => 'OTP лозим аст.',
+                'otp_digits'     => 'OTP нодуруст аст.',
+            ],
+
+        ],
+
         'update_profile' => [
 
             'unauthenticated' => 'Корбар тасдиқ нашудааст.',

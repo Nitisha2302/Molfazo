@@ -188,6 +188,39 @@ return [
 
     'customer' => [
 
+
+        'login' => [
+
+            'vendor_exists' => 'This number is already registered as a Vendor.',
+            'blocked'       => 'Your account is blocked.',
+            'deleted'       => 'Your account is deleted.',
+            'otp_sent'      => 'OTP sent successfully.',
+
+            'validation' => [
+                'phone_required' => 'Mobile number is required.',
+                'phone_invalid'  => 'Invalid mobile number.',
+            ],
+
+        ],
+
+        'sms' => [
+            'otp' => 'Your OTP is :otp',
+        ],
+
+        'verify_otp' => [
+
+            'invalid' => 'Invalid OTP.',
+            'expired' => 'OTP expired.',
+            'success' => 'OTP verified successfully.',
+
+            'validation' => [
+                'phone_required' => 'Mobile number is required.',
+                'otp_required'   => 'OTP is required.',
+                'otp_digits'     => 'Invalid OTP.',
+            ],
+
+        ],
+
         'update_profile' => [
 
             'unauthenticated' => 'User not authenticated.',
@@ -208,6 +241,8 @@ return [
             ],
 
         ],
+
+
 
 
 

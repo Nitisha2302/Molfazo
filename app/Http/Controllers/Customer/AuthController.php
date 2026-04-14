@@ -23,14 +23,22 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+
+        /* 🌐 Language detect (header → body → query → default) */
+        $lang = $request->header('lang') 
+            ?? $request->lang 
+            ?? $request->query('lang') 
+            ?? 'ru';
+
+        app()->setLocale($lang);
         $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
             'device_type'  => 'nullable|string|max:255',
             'device_id'    => 'nullable|string|max:255',
             'fcm_token'    => 'nullable|string|max:255',
         ], [
-            'phone_number.required' => 'Mobile number is required.',
-            'phone_number.digits_between' => 'Invalid mobile number.',
+            'phone_number.required' => __('messages.customer.login.validation.phone_required'),
+             'phone_number.digits_between' => __('messages.customer.login.validation.phone_invalid'),
         ]);
 
         if ($validator->fails()) {
@@ -57,7 +65,7 @@ class AuthController extends Controller
         if ($user && $user->role != 3) {
             return response()->json([
                 'status'  => false,
-                'message' => 'This number is already register with us as a Vendor.',
+                 'message' => __('messages.customer.login.vendor_exists'),
             ], 403);
         }
 
@@ -74,14 +82,15 @@ class AuthController extends Controller
         if (!empty($user->is_blocked)) {
             return response()->json([
                 'status' => false,
-                'message'=> 'Your account is blocked.',
+                'message' => __('messages.customer.login.blocked'),
             ], 403);
         }
 
         if (!empty($user->is_deleted)) {
             return response()->json([
                 'status' => false,
-                'message'=> 'Your account is deleted.',
+                'message' => __('messages.customer.login.deleted'),
+
             ], 403);
         }
 
@@ -90,7 +99,7 @@ class AuthController extends Controller
             'mobile_otp'         => $otp,
             'mobile_otp_sent_at' => now(),
             'device_type'        => $request->device_type,
-            'device_id'          => $request->device_id,
+            'device_token'          => $request->device_id,
             'fcm_token'          => $request->fcm_token,
         ]);
 
@@ -101,7 +110,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status' => true,
-            'message'=> 'OTP sent successfully.',
+            'message' => __('messages.customer.login.otp_sent'),
             'data'   => [
                 'user_id' => $user->id,
                 'mobile'  => $user->mobile,
@@ -116,13 +125,21 @@ class AuthController extends Controller
      */
     public function verifyOtp(Request $request)
     {
+
+        /* 🌐 Language detect */
+        $lang = $request->header('lang') 
+            ?? $request->lang 
+            ?? $request->query('lang') 
+            ?? 'tj';
+
+        app()->setLocale($lang);
         $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
             'otp'          => 'required|digits:6',
         ], [
-            'phone_number.required' => 'Mobile number is required.',
-            'otp.required'          => 'OTP is required.',
-            'otp.digits'            => 'Invalid OTP.',
+            'phone_number.required' => __('messages.customer.verify_otp.validation.phone_required'),
+            'otp.required'          => __('messages.customer.verify_otp.validation.otp_required'),
+            'otp.digits'            => __('messages.customer.verify_otp.validation.otp_digits'),
         ]);
 
         if ($validator->fails()) {
@@ -137,14 +154,14 @@ class AuthController extends Controller
         if (!$user || $user->mobile_otp != $request->otp) {
             return response()->json([
                 'status'=> false,
-                'message'=> 'Invalid OTP.',
+               'message' => __('messages.customer.verify_otp.invalid'),
             ], 401);
         }
 
         if (Carbon::parse($user->mobile_otp_sent_at)->addMinutes(5)->isPast()) {
             return response()->json([
                 'status'=> false,
-                'message'=> 'OTP expired.',
+                'message' => __('messages.customer.verify_otp.expired'),
             ], 401);
         }
 
@@ -161,7 +178,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status'=> true,
-            'message'=> 'OTP verified successfully.',
+          'message' => __('messages.customer.verify_otp.success'),
             'data'=> [
                 'id'        => $user->id,
                 'role'      => $user->role,
@@ -174,12 +191,18 @@ class AuthController extends Controller
     /**
      * OSON SMS
      */
-    private function sendOsonSms($phone, $otp)
+    private function sendOsonSms($phone, $otp,$lang = 'tj')
     {
-        $login  = 'borafzo';
-        $from   = 'BORAFZO';
-        $apiKey = 'c3cdbb3f1171320d49f2bf1da20f53fc';
+        /* 🌐 Set language */
+        app()->setLocale($lang);
+
+        /* 🔐 ENV CONFIG */
+        $login  = config('services.oson.login');
+        $from   = config('services.oson.sender');
+        $apiKey = config('services.oson.api_key');
         $txnId  = 'otp_' . time();
+
+          $message = __('messages.sms.otp', ['otp' => $otp]);
 
         $hashInput = "$txnId;$login;$from;$phone;$apiKey";
         $hash = hash('sha256', mb_convert_encoding($hashInput, 'UTF-8'));
@@ -188,7 +211,7 @@ class AuthController extends Controller
             'login'        => $login,
             'from'         => $from,
             'phone_number' => $phone,
-            'msg'          => "Your OTP is {$otp}",
+            'msg'          =>  $message,
             'txn_id'       => $txnId,
             'str_hash'     => $hash,
         ]);
@@ -215,7 +238,7 @@ class AuthController extends Controller
             ->where('device_type', $user->device_type)
             ->first();
 
-        $lang = $userLang ? $userLang->language : 'tj';
+        $lang = $userLang ? $userLang->language : 'ru';
         app()->setLocale($lang);
 
         // Custom validation messages
