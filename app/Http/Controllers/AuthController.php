@@ -893,7 +893,7 @@ class AuthController extends Controller
     public function forgotPassword(Request $request)
     {
         $userLang = DB::table('user_langs')
-        ->where('device_token', $request->device_id)
+        ->where('device_token', $request->device_token)
         ->where('device_type', $request->device_type)
         ->value('language');
 
@@ -910,7 +910,7 @@ class AuthController extends Controller
         =============================== */
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
-                'device_id'    => 'nullable|string|max:255',
+                'device_token'    => 'nullable|string|max:255',
             'device_type'  => 'nullable|string|max:255',
             'fcm_token'    => 'nullable|string|max:255',
         ], [
@@ -932,7 +932,7 @@ class AuthController extends Controller
 
         $user->forgot_password_new = Hash::make($newPassword);
         $user->forgot_password_sent_at = now();
-       $user->device_token = $request->device_id;
+       $user->device_token = $request->device_token;
         $user->device_type  = $request->device_type;
         $user->fcm_token    = $request->fcm_token;
         $user->save();
@@ -965,17 +965,22 @@ class AuthController extends Controller
     public function resetForgotPassword(Request $request)
     {
 
-        // 🌐 Flexible language detect (BEST 🔥)
-        $lang = $request->header('lang') 
-            ?? $request->lang 
-            ?? $request->query('lang') 
+        $userLang = DB::table('user_langs')
+        ->where('device_token', $request->device_token)
+        ->where('device_type', $request->device_type)
+        ->value('language');
+
+        $lang = $request->header('lang')
+            ?? $request->lang
+            ?? $request->query('lang')
+            ?? $userLang
             ?? 'ru';
 
         app()->setLocale($lang);
         $rules = [
             'email'    => 'required|email|exists:users,email',
             'password' => 'required|digits:6|confirmed',
-            'device_id'    => 'nullable|string|max:255',
+            'device_token'    => 'nullable|string|max:255',
             'device_type'  => 'nullable|string|max:255',
             'fcm_token'    => 'nullable|string|max:255',
         ];
@@ -1021,7 +1026,7 @@ class AuthController extends Controller
         $user->password = Hash::make($request->password);
         $user->forgot_password_new = null;
         $user->forgot_password_sent_at = null;
-         $user->device_token = $request->device_id;
+         $user->device_token = $request->device_token;
         $user->device_type  = $request->device_type;
         $user->fcm_token    = $request->fcm_token;
         $user->save();
