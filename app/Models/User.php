@@ -107,6 +107,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\VendorBank::class, 'user_id');
     }
+
+
+    public function languages()
+    {
+        return $this->hasMany(UserLang::class);
+    }
     
 }
 

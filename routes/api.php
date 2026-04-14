@@ -48,6 +48,9 @@ Route::middleware('auth:sanctum', 'throttle.auth')->get('/user', function (Reque
     return $request->user();
 });
 
+Route::post('update-language', [AuthController::class, 'updateLanguage']);
+Route::get('get-language', [AuthController::class, 'getLanguage']);
+
 Route::get('privacy-policy', [ContentController::class, 'privacyPolicy']);
 Route::get('terms-conditions', [ContentController::class, 'termsConditions']);
 
