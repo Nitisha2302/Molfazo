@@ -53,6 +53,7 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'role:1']], function () {
 
 
+    
       Route::get('edit-privacy-policy', [EnquiryController::class, 'editPrivacyPolicy'])->name('privacy-policy.edit');
         Route::post('update-privacy-policy', [EnquiryController::class, 'updatePrvacyPolicy'])->name('privacy-policy.update');
         Route::get('edit-terms-conditions', [EnquiryController::class, 'editTermsConditions'])->name('terms-comditions-edit');

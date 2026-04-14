@@ -314,7 +314,7 @@ class CartController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Cart fetched successfully',
+            'message' => 'Cart fetched successfully.',
             'data' => [
                 'items' => $cartItems,
                 'cart_total_amount' => $total
