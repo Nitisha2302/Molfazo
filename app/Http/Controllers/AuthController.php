@@ -582,7 +582,6 @@ class AuthController extends Controller
 
         $user->mobile_otp = $otp;
         $user->mobile_otp_sent_at = now();
-        $user->role= 2;
         $user->save();
 
         /* ===============================
