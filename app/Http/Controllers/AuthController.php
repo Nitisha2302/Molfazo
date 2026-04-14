@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use App\Models\UserLang;
+use Illuminate\Support\Facades\DB;
 
 
 

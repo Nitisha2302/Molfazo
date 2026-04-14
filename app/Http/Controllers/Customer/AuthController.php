@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\UserLang;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
