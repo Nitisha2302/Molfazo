@@ -29,8 +29,17 @@ class AuthController extends Controller
     public function sendMobileOtp(Request $request)
     {
 
-            // 🌐 Language detect (from request OR default)
-        $lang = $request->header('lang') ?? 'ru';
+       $userLang = DB::table('user_langs')
+        ->where('device_token', $request->device_token)
+        ->where('device_type', $request->device_type)
+        ->value('language');
+
+        $lang = $request->header('lang')
+            ?? $request->lang
+            ?? $request->query('lang')
+            ?? $userLang
+            ?? 'ru';
+
         app()->setLocale($lang);
 
         $validator = Validator::make($request->all(), [
@@ -188,14 +197,26 @@ class AuthController extends Controller
     {
 
 
-        // 🌐 Language detect
-        $lang = $request->header('lang') ?? 'ru';
+        $userLang = DB::table('user_langs')
+        ->where('device_token', $request->device_token)
+        ->where('device_type', $request->device_type)
+        ->value('language');
+
+        $lang = $request->header('lang')
+            ?? $request->lang
+            ?? $request->query('lang')
+            ?? $userLang
+            ?? 'ru';
+
         app()->setLocale($lang);
 
         $validator = Validator::make($request->all(), [
             'otp' => 'required|digits:6',
             'phone_number' => 'nullable|digits_between:8,15',
             'email' => 'nullable|email',
+            'device_token'    => 'nullable|string|max:255',
+            'device_type'  => 'nullable|string|max:255',
+            'fcm_token'    => 'nullable|string|max:255',
         ], [
             'otp.required' => __('messages.vendor.verify_otp.validation.otp_required'),
             'otp.digits'   => __('messages.vendor.verify_otp.validation.otp_digits'),
@@ -246,6 +267,9 @@ class AuthController extends Controller
         $user->$verifyAt = now();
         $user->$otpCol = null;
         $user->$timeCol = null;
+        $user->device_token = $request->device_token;
+        $user->device_type  = $request->device_type;
+        $user->fcm_token    = $request->fcm_token;
         $user->role = 2;
         $user->save();
 
@@ -412,8 +436,17 @@ class AuthController extends Controller
 
     public function vendorLogin(Request $request)
     {
-        // 🌐 Language detect
-        $lang = $request->header('lang') ?? 'ru';
+       $userLang = DB::table('user_langs')
+        ->where('device_token', $request->device_token)
+        ->where('device_type', $request->device_type)
+        ->value('language');
+
+        $lang = $request->header('lang')
+            ?? $request->lang
+            ?? $request->query('lang')
+            ?? $userLang
+            ?? 'ru';
+
         app()->setLocale($lang);
         /* ===============================
         VALIDATION
@@ -525,8 +558,17 @@ class AuthController extends Controller
     public function sendVendorLoginOtp(Request $request)
     {
 
-        // 🌐 Language detect (default = ru)
-        $lang = $request->header('lang') ?? 'ru';
+        $userLang = DB::table('user_langs')
+        ->where('device_token', $request->device_token)
+        ->where('device_type', $request->device_type)
+        ->value('language');
+
+        $lang = $request->header('lang')
+            ?? $request->lang
+            ?? $request->query('lang')
+            ?? $userLang
+            ?? 'ru';
+
         app()->setLocale($lang);
        /* ===============================
         VALIDATION
@@ -637,8 +679,17 @@ class AuthController extends Controller
     public function verifyLoginOtp(Request $request)
     {
 
-        // 🌐 Language detect (default = ru)
-        $lang = $request->header('lang') ?? 'ru';
+        $userLang = DB::table('user_langs')
+        ->where('device_token', $request->device_token)
+        ->where('device_type', $request->device_type)
+        ->value('language');
+
+        $lang = $request->header('lang')
+            ?? $request->lang
+            ?? $request->query('lang')
+            ?? $userLang
+            ?? 'ru';
+
         app()->setLocale($lang);
         /* ===============================
         VALIDATION
@@ -841,8 +892,17 @@ class AuthController extends Controller
 
     public function forgotPassword(Request $request)
     {
-         // 🌐 Language detect (default = ru)
-        $lang = $request->header('lang') ?? 'ru';
+        $userLang = DB::table('user_langs')
+        ->where('device_token', $request->device_id)
+        ->where('device_type', $request->device_type)
+        ->value('language');
+
+        $lang = $request->header('lang')
+            ?? $request->lang
+            ?? $request->query('lang')
+            ?? $userLang
+            ?? 'ru';
+
         app()->setLocale($lang);
 
         /* ===============================
@@ -850,6 +910,9 @@ class AuthController extends Controller
         =============================== */
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
+                'device_id'    => 'nullable|string|max:255',
+            'device_type'  => 'nullable|string|max:255',
+            'fcm_token'    => 'nullable|string|max:255',
         ], [
             'email.required' => __('messages.vendor.forgot_password.validation.email_required'),
             'email.email'    => __('messages.vendor.forgot_password.validation.email_invalid'),
@@ -869,6 +932,9 @@ class AuthController extends Controller
 
         $user->forgot_password_new = Hash::make($newPassword);
         $user->forgot_password_sent_at = now();
+       $user->device_token = $request->device_id;
+        $user->device_type  = $request->device_type;
+        $user->fcm_token    = $request->fcm_token;
         $user->save();
 
         try {
@@ -906,9 +972,12 @@ class AuthController extends Controller
             ?? 'ru';
 
         app()->setLocale($lang);
-           $rules = [
+        $rules = [
             'email'    => 'required|email|exists:users,email',
             'password' => 'required|digits:6|confirmed',
+            'device_id'    => 'nullable|string|max:255',
+            'device_type'  => 'nullable|string|max:255',
+            'fcm_token'    => 'nullable|string|max:255',
         ];
 
         $messages = [
@@ -952,6 +1021,9 @@ class AuthController extends Controller
         $user->password = Hash::make($request->password);
         $user->forgot_password_new = null;
         $user->forgot_password_sent_at = null;
+         $user->device_token = $request->device_id;
+        $user->device_type  = $request->device_type;
+        $user->fcm_token    = $request->fcm_token;
         $user->save();
 
         return response()->json([

@@ -26,7 +26,7 @@ class AuthController extends Controller
     {
 
         $userLang = DB::table('user_langs')
-        ->where('device_token', $request->device_token)
+        ->where('device_token', $request->device_id)
         ->where('device_type', $request->device_type)
         ->value('language');
 
@@ -166,7 +166,7 @@ class AuthController extends Controller
     {
 
          $userLang = DB::table('user_langs')
-        ->where('device_token', $request->device_token)
+        ->where('device_token', $request->device_id)
         ->where('device_type', $request->device_type)
         ->value('language');
 
@@ -180,6 +180,9 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
             'otp'          => 'required|digits:6',
+             'device_id'    => 'nullable|string|max:255',
+            'device_type'  => 'nullable|string|max:255',
+            'fcm_token'    => 'nullable|string|max:255',
         ], [
             'phone_number.required' => __('messages.customer.verify_otp.validation.phone_required'),
             'otp.required'          => __('messages.customer.verify_otp.validation.otp_required'),
@@ -218,6 +221,9 @@ class AuthController extends Controller
             'mobile_verified_at' => now(),
             'mobile_otp'         => null,
             'mobile_otp_sent_at' => null,
+                'device_token'      => $request->device_id,
+            'device_type'       => $request->device_type,
+            'fcm_token'         => $request->fcm_token,
         ]);
 
         return response()->json([
