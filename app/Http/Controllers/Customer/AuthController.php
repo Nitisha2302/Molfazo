@@ -104,9 +104,9 @@ class AuthController extends Controller
         ]);
 
         // 📩 Send SMS (real numbers only)
-        if (app()->environment('production')) {
+        // if (app()->environment('production')) {
             $this->sendOsonSms($phone, $otp);
-        }
+        // }
 
         return response()->json([
             'status' => true,
@@ -117,6 +117,38 @@ class AuthController extends Controller
                 'otp'     => app()->environment('local') ? $otp : null, // show only in local
             ],
         ], 200);
+    }
+
+
+       /**
+     * OSON SMS
+     */
+    private function sendOsonSms($phone, $otp,$lang = 'tj')
+    {
+        /* 🌐 Set language */
+        app()->setLocale($lang);
+
+        /* 🔐 ENV CONFIG */
+        $login  = config('services.oson.login');
+        $from   = config('services.oson.sender');
+        $apiKey = config('services.oson.api_key');
+        $txnId  = 'otp_' . time();
+
+          $message = __('messages.sms.otp', ['otp' => $otp]);
+
+        $hashInput = "$txnId;$login;$from;$phone;$apiKey";
+        $hash = hash('sha256', mb_convert_encoding($hashInput, 'UTF-8'));
+
+        Http::get('https://api.osonsms.com/sendsms_v1.php', [
+            'login'        => $login,
+            'from'         => $from,
+            'phone_number' => $phone,
+            'msg'          =>  $message,
+            'txn_id'       => $txnId,
+            'str_hash'     => $hash,
+        ]);
+
+        Log::info('OTP sent via OSON SMS', ['phone' => $phone]);
     }
 
 
@@ -188,36 +220,7 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /**
-     * OSON SMS
-     */
-    private function sendOsonSms($phone, $otp,$lang = 'tj')
-    {
-        /* 🌐 Set language */
-        app()->setLocale($lang);
-
-        /* 🔐 ENV CONFIG */
-        $login  = config('services.oson.login');
-        $from   = config('services.oson.sender');
-        $apiKey = config('services.oson.api_key');
-        $txnId  = 'otp_' . time();
-
-          $message = __('messages.sms.otp', ['otp' => $otp]);
-
-        $hashInput = "$txnId;$login;$from;$phone;$apiKey";
-        $hash = hash('sha256', mb_convert_encoding($hashInput, 'UTF-8'));
-
-        Http::get('https://api.osonsms.com/sendsms_v1.php', [
-            'login'        => $login,
-            'from'         => $from,
-            'phone_number' => $phone,
-            'msg'          =>  $message,
-            'txn_id'       => $txnId,
-            'str_hash'     => $hash,
-        ]);
-
-        Log::info('OTP sent via OSON SMS', ['phone' => $phone]);
-    }
+ 
 
     public function updateProfile(Request $request)
     {
