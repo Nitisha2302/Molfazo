@@ -10,10 +10,13 @@ use App\Models\TermsCondition;
 class EnquiryController extends Controller
 {
 
-    public function editPrivacyPolicy()
+    public function editPrivacyPolicy(Request $request)
     {
-        $privacyPolicy = PrivacyPolicy::first(); // Assume only 1 policy exists
-        return view('admin.PrivacyPolicy.edit', compact('privacyPolicy'));
+        $type = $request->type ?? 'customer';
+
+        $privacyPolicy = PrivacyPolicy::where('type', $type)->first();
+
+        return view('admin.PrivacyPolicy.edit', compact('privacyPolicy', 'type'));
     }
 
     public function updatePrvacyPolicy(Request $request)
@@ -21,20 +24,23 @@ class EnquiryController extends Controller
         $request->validate([
             'title' => 'required|string',
            'content' => 'required|string',
+            'type' => 'required|in:vendor,customer',
         ], [
             'title.required' => 'Please enter the privacy policy title.',
             'content.required' => 'Please enter the privacy policy content.',
+              'type.required' => 'Please enter the privacy policy type.',
         ]);
         // Clean HTML before saving
         $cleanedTitle = $this->cleanHtml($request->title);
         $cleanedContent = $this->cleanHtml($request->content);
 
         // check if record exists
-        $policy = PrivacyPolicy::first();
+        $policy = PrivacyPolicy::where('type', $request->type)->first();
 
         $data = [
             'title'   => $cleanedTitle,
             'content' => $cleanedContent,
+            'type'    => $request->type,
         ];
 
         if ($policy) {
@@ -48,32 +54,37 @@ class EnquiryController extends Controller
     
 
 
-    public function editTermsConditions()
+    public function editTermsConditions(Request $request)
     {
-        $privacyPolicy = TermsCondition::first(); // Assume only 1 policy exists
-        return view('admin.PrivacyPolicy.editTermCondition', compact('privacyPolicy'));
-    }
+        $type = $request->type ?? 'customer';
 
+        $privacyPolicy = TermsCondition::where('type', $type)->first();
+
+        return view('admin.PrivacyPolicy.editTermCondition', compact('privacyPolicy', 'type'));
+    }
 
     public function updateTermsConditions(Request $request)
     {
         $request->validate([
             'title'   => 'required|string',
             'content' => 'required|string',
+              'type'    => 'required|in:vendor,customer',
         ], [
             'title.required'   => 'Please enter the title.',
             'content.required' => 'Please enter the content.',
+            'content.required' => 'Please enter the type.',
         ]);
 
         // Clean HTML before saving
         $cleanedTitle = $this->cleanHtml($request->title);
         $cleanedContent = $this->cleanHtml($request->content);
 
-        $policy = TermsCondition::first();
+        $policy = TermsCondition::where('type', $request->type)->first();
 
         $data = [
             'title'   => $cleanedTitle,
             'content' => $cleanedContent,
+            'type'    => $request->type,
         ];
 
         if ($policy) {
@@ -119,6 +130,61 @@ class EnquiryController extends Controller
         }
 
         return trim($innerHTML);
+    }
+
+
+   public function allQueries(Request $request)
+    {
+        $query = Enquiry::with('user');
+
+        // 🔍 Search by mobile
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->whereHas('user', function($q) use ($search) {
+                $q->where('mobile', 'like', "%{$search}%");
+            });
+        }
+
+        // 🔽 Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        $enquiries = $query->latest()->paginate(10);
+
+        return view('admin.enquiry.index', compact('enquiries'));
+    }
+
+    public function answerQuery(Request $request)
+    {
+        $request->validate([
+            'query_id' => 'required|exists:enquiries,id',
+            'answer'   => 'required|string',
+        ]);
+
+        $enquiry = Enquiry::findOrFail($request->query_id);
+
+        $enquiry->update([
+            'answer' => $request->answer,
+            'status' => 'answered',
+            'answered_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => 'Answer submitted successfully.'
+        ]);
+    }
+
+    public function deleteQuery(Request $request)
+    {
+        $request->validate([
+            'query_id' => 'required|exists:enquiries,id',
+        ]);
+
+        Enquiry::findOrFail($request->query_id)->delete();
+
+        return response()->json(['success' => true]);
     }
 
 

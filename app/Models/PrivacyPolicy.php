@@ -11,7 +11,7 @@ class PrivacyPolicy extends Model
 
     protected $table = 'privacy_policies';
     public $timestamps = false; // Set true if your table uses timestamps accordingly
-    protected $fillable = ['title', 'content', 'created_at', 'updated_at'];
+    protected $fillable = ['title', 'content','type', 'created_at', 'updated_at'];
 
     //code by anukool
     // protected $fillable = [
