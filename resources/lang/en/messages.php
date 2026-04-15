@@ -242,6 +242,24 @@ return [
 
         ],
 
+        'address' => [
+
+            'saved' => 'Address saved successfully.',
+
+            'validation' => [
+                'name_required'      => 'Address type is required (Home / Office).',
+                'full_name_required' => 'Full name is required.',
+                'mobile_required'    => 'Mobile number is required.',
+                'mobile_digits'      => 'Mobile number must be 10 digits.',
+                'address_required'   => 'Address field cannot be empty.',
+                'city_required'      => 'City is required.',
+                'state_required'     => 'State is required.',
+                'pincode_required'   => 'Pincode is required.',
+                'pincode_digits'     => 'Pincode must be 6 digits.',
+            ],
+
+        ],
+
 
 
 

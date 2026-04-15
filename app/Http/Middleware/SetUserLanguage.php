@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -9,19 +10,27 @@ class SetUserLanguage
 {
     public function handle(Request $request, Closure $next)
     {
-        $user = auth('api')->user();
         $lang = 'ru';
 
-        if ($user && $user->device_token && $user->device_type) {
+        // ✅ 1. Check logged-in user
+        $user = auth('api')->user();
 
-            $userLang = UserLang::where('user_id', $user->id)
+        if ($user && $user->device_token && $user->device_type) {
+            $lang = UserLang::where('user_id', $user->id)
                 ->where('device_token', $user->device_token)
                 ->where('device_type', $user->device_type)
-                ->first();
+                ->value('language') ?? $lang;
+        }
 
-            if ($userLang) {
-                $lang = $userLang->language;
-            }
+        // ✅ 2. Guest user (login, verify OTP, etc.)
+        else {
+            $lang = $request->header('lang')
+                ?? $request->lang
+                ?? $request->query('lang')
+                ?? UserLang::where('device_token', $request->device_id)
+                    ->where('device_type', $request->device_type)
+                    ->value('language')
+                ?? $lang;
         }
 
         app()->setLocale($lang);

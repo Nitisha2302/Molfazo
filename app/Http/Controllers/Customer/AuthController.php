@@ -25,18 +25,18 @@ class AuthController extends Controller
     public function login(Request $request)
     {
 
-        $userLang = DB::table('user_langs')
-        ->where('device_token', $request->device_id)
-        ->where('device_type', $request->device_type)
-        ->value('language');
+        // $userLang = DB::table('user_langs')
+        // ->where('device_token', $request->device_id)
+        // ->where('device_type', $request->device_type)
+        // ->value('language');
 
-        $lang = $request->header('lang')
-            ?? $request->lang
-            ?? $request->query('lang')
-            ?? $userLang
-            ?? 'ru';
+        // $lang = $request->header('lang')
+        //     ?? $request->lang
+        //     ?? $request->query('lang')
+        //     ?? $userLang
+        //     ?? 'ru';
 
-        app()->setLocale($lang);
+        // app()->setLocale($lang);
         $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
             'device_type'  => 'nullable|string|max:255',
@@ -133,7 +133,7 @@ class AuthController extends Controller
     private function sendOsonSms($phone, $otp,$lang)
     {
         /* 🌐 Set language */
-        app()->setLocale($lang);
+        // app()->setLocale($lang);
 
         /* 🔐 ENV CONFIG */
         $login  = config('services.oson.login');
@@ -165,18 +165,18 @@ class AuthController extends Controller
     public function verifyOtp(Request $request)
     {
 
-         $userLang = DB::table('user_langs')
-        ->where('device_token', $request->device_id)
-        ->where('device_type', $request->device_type)
-        ->value('language');
+        //  $userLang = DB::table('user_langs')
+        // ->where('device_token', $request->device_id)
+        // ->where('device_type', $request->device_type)
+        // ->value('language');
 
-        $lang = $request->header('lang')
-            ?? $request->lang
-            ?? $request->query('lang')
-            ?? $userLang
-            ?? 'ru';
+        // $lang = $request->header('lang')
+        //     ?? $request->lang
+        //     ?? $request->query('lang')
+        //     ?? $userLang
+        //     ?? 'ru';
 
-        app()->setLocale($lang);
+        // app()->setLocale($lang);
         $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
             'otp'          => 'required|digits:6',
@@ -253,14 +253,14 @@ class AuthController extends Controller
         }
 
 
-         // 🌐 Language detect
-        $userLang = UserLang::where('user_id', $user->id)
-            ->where('device_token', $user->device_token)
-            ->where('device_type', $user->device_type)
-            ->first();
+        //  // 🌐 Language detect
+        // $userLang = UserLang::where('user_id', $user->id)
+        //     ->where('device_token', $user->device_token)
+        //     ->where('device_type', $user->device_type)
+        //     ->first();
 
-        $lang = $userLang ? $userLang->language : 'ru';
-        app()->setLocale($lang);
+        // $lang = $userLang ? $userLang->language : 'ru';
+        // app()->setLocale($lang);
 
         // Custom validation messages
        $messages = [
@@ -334,6 +334,16 @@ class AuthController extends Controller
     public function storeAddress(Request $request)
     {
         $user = Auth::guard('api')->user();
+
+        //  // 🌐 Language detect
+        // $userLang = UserLang::where('user_id', $user->id)
+        //     ->where('device_token', $user->device_token)
+        //     ->where('device_type', $user->device_type)
+        //     ->first();
+
+        // $lang = $userLang ? $userLang->language : 'ru';
+        // app()->setLocale($lang);
+
 
         $validator = Validator::make($request->all(), [
             'name'      => 'required|string|max:50',
