@@ -24,6 +24,7 @@ class StoreController extends Controller
             $query->where('type', $request->type);
         }
 
+        
          // 🔥 NO PAGINATION
         // $stores = $query->get();
         
