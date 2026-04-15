@@ -60,7 +60,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'status' => true,
-              'message' => 'Category successfully fetched.',
+             'message' => __('messages.vendor.category.list.success'),
             'data'   => $data,
         ], 200);
     }
@@ -78,7 +78,7 @@ class CategoryController extends Controller
         if ($subCategories->isEmpty()) {
             return response()->json([
                 'status' => false,
-                'message' => 'No subcategories found.',
+              'message' => __('messages.vendor.category.subcategory.empty'),
             ], 404);
         }
 
@@ -101,7 +101,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Sub categories fetched successfully.',
+           'message' => __('messages.vendor.category.subcategory.success'),
             'data'    => $data,
         ], 200);
     }
@@ -116,7 +116,7 @@ class CategoryController extends Controller
         if ($childCategories->isEmpty()) {
             return response()->json([
                 'status' => false,
-                'message' => 'No child categories found.',
+               'message' => __('messages.vendor.category.child_category.empty'),
             ], 404);
         }
 
@@ -131,7 +131,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Child categories fetched successfully.',
+          'message' => __('messages.vendor.category.child_category.success'),
             'data'    => $data,
         ], 200);
     }
@@ -146,13 +146,13 @@ class CategoryController extends Controller
             return response()->json([
                 'status' => true,
                 'data' => [],
-                'message' => 'No attributes found for this category.'
+               'message' => __('messages.vendor.category.attributes.empty')
             ]);
         }
 
         return response()->json([
             'status' => true,
-            'message' => 'Attributes fetched successfully.',
+          'message' => __('messages.vendor.category.attributes.success'),
             'data' => $this->formatAttributes($record->attributes_json),
         ]);
     }
@@ -184,7 +184,7 @@ class CategoryController extends Controller
             if (!$city) {
                 return response()->json([
                     'status' => true,
-                    'message' => 'No banners found for this city',
+                   'message' => __('messages.vendor.banner.empty_city'),
                     'data' => []
                 ]);
             }
@@ -223,7 +223,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Banners fetched successfully',
+            'message' => __('messages.vendor.banner.success'),
             'data' => $banners
         ]);
     }
@@ -236,7 +236,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Cities fetched successfully',
+            'message' => __('messages.vendor.city.success'),
             'data' => $cities
         ]);
     }

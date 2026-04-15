@@ -198,6 +198,190 @@ return [
 
         ],
 
+
+         'category' => [
+
+            'list' => [
+                'success' => 'Category successfully fetched.',
+                'empty'   => 'No categories found.',
+            ],
+
+            'subcategory' => [
+                'success' => 'Sub categories fetched successfully.',
+                'empty'   => 'No subcategories found.',
+            ],
+
+            'child_category' => [
+                'success' => 'Child categories fetched successfully.',
+                'empty'   => 'No child categories found.',
+            ],
+
+            'attributes' => [
+                'success' => 'Attributes fetched successfully.',
+                'empty'   => 'No attributes found for this category.',
+            ],
+        ],
+
+        'banner' => [
+            'success' => 'Banners fetched successfully',
+            'empty_city' => 'No banners found for this city',
+        ],
+
+        'city' => [
+            'success' => 'Cities fetched successfully',
+        ],
+
+         'chat' => [
+
+            'list' => [
+                'success' => 'Chats fetched successfully.',
+                'empty'   => 'No chats found.',
+            ],
+
+            'send' => [
+                'success' => 'Message sent successfully.',
+            ],
+
+            'validation' => [
+                'receiver_required' => 'Receiver is required.',
+                'receiver_exists'   => 'Selected user does not exist.',
+                'message_string'    => 'Message must be valid text.',
+            ],
+
+            'unauthorized' => 'User not authenticated.',
+        ],
+
+        'notification' => [
+            'delete' => [
+                'success' => 'Deleted successfully',
+                'not_found' => 'Notification not found',
+                'unauthorized' => 'User not authenticated.',
+            ],
+        ],
+
+        'order' => [
+
+            'unauthorized' => 'Vendor account not approved or unauthenticated.',
+
+            'list' => [
+                'success' => 'Orders fetched successfully.',
+                'empty'   => 'No orders found.',
+            ],
+
+            'details' => [
+                'not_found' => 'Order not found.',
+            ],
+
+            'update_status' => [
+
+                'success' => 'Order status updated successfully to :status.',
+
+                'already_completed' => 'Order is already completed. Status cannot be changed.',
+                'already_cancelled' => 'Order is already cancelled. Status cannot be changed.',
+                'accept_first'      => 'Order must be accepted before completing.',
+
+                'validation' => [
+                    'status_required' => 'Status is required.',
+                    'status_invalid'  => 'Invalid status. Allowed values: 2=Accepted, 3=Completed, 4=Cancelled.',
+                ],
+
+                'status_text' => [
+                    'accepted'  => 'Accepted',
+                    'completed' => 'Completed',
+                    'cancelled' => 'Cancelled',
+                    'unknown'   => 'Unknown',
+                ],
+            ],
+
+            'notification' => [
+                'title' => '📦 Order Status Update',
+
+                'accepted'  => '✅ Your order for :products has been accepted.',
+                'completed' => '🎉 Your order for :products has been completed successfully.',
+                'cancelled' => '❌ Your order for :products has been cancelled.',
+                'default'   => 'Your order for :products status updated.',
+            ],
+        ],
+
+         'product' => [
+
+         
+
+            'copy' => [
+                 'only_approved' => 'Only approved products can be copied.',
+                'success' => 'Product copied & updated successfully.',
+            ],
+
+            /* ===============================
+            CREATE PRODUCT
+            =============================== */
+            'create' => [
+
+                'unauthorized' => 'Vendor account is not approved or authenticated.',
+                'invalid_store' => 'Invalid or unapproved store.',
+                'child_category_invalid' => 'Child category does not belong to selected sub-category.',
+
+                'success' => 'Product added successfully.',
+
+                'validation' => [
+                    'store_required' => 'Please select a store.',
+                    'store_exists'   => 'The selected store does not exist.',
+
+                    'name_required'  => 'Product name is required.',
+
+                    'price_required' => 'Product price is required.',
+                    'price_numeric'  => 'Price must be a valid number.',
+
+                    'discount_numeric' => 'Discount price must be a valid number.',
+
+                    'quantity_required' => 'Available quantity is required.',
+                    'quantity_integer'  => 'Available quantity must be an integer.',
+
+                    'images_required' => 'At least one image is required.',
+                    'images_array'    => 'Images must be sent as an array.',
+                    'images_mimes'    => 'Each image must be jpeg, jpg, png, or gif.',
+                ],
+            ],
+
+            /* ===============================
+            LIST PRODUCTS
+            =============================== */
+            'list' => [
+
+                'unauthorized' => 'Vendor account is not approved or authenticated.',
+                'success'      => 'Products fetched successfully.',
+                'empty'        => 'No products found.',
+            ],
+
+            'details' => [
+
+                'unauthorized' => 'Vendor account is not approved or authenticated.',
+                'not_found'    => 'Product not found.',
+                'success'      => 'Product details fetched successfully.',
+
+            ],
+
+
+            'update' => [
+
+                'unauthorized' => 'Vendor not authenticated.',
+                'not_found' => 'Product not found.',
+                'success' => 'Product updated successfully.',
+
+            ],
+
+        ],
+
+        'bank' => [
+            'list_success' => 'Bank list fetched successfully.',
+        ],
+
+        'combination' => [
+            'combination_upadted' => 'Combination updated successfully.',
+            'combination_delete' => 'Combination deleted successfully.',
+        ],
+
+
       
 
 
