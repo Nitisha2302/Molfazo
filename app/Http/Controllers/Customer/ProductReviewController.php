@@ -21,7 +21,7 @@ class ProductReviewController extends Controller
         if (!$user) {
             return response()->json([
                 'status'  => false,
-                'message' => 'unauthorized.'
+             'message' => __('messages.customer.review.unauthorized')
             ], 401);
         }
 
@@ -37,17 +37,17 @@ class ProductReviewController extends Controller
             ],
             // ⭐ Custom Messages
             [
-                'product_id.required' => 'Product ID is required.',
-                'product_id.exists'   => 'The selected product does not exist.',
-                'rating.required'     => 'Rating is required.',
-                'rating.integer'      => 'Rating must be a number.',
-                'rating.min'          => 'Rating must be at least 1 star.',
-                'rating.max'          => 'Rating cannot be more than 5 stars.',
-                'review.string'       => 'Review must be valid text.',
-                'review.max'          => 'Review cannot exceed 1000 characters.',
-                'images.*.image'      => 'Each file must be an image.',
-                'images.*.mimes'      => 'Images must be jpg, jpeg or png.',
-                'images.*.max'        => 'Each image must not exceed 2MB.'
+                'product_id.required' => __('messages.customer.review.validation.product_required'),
+                'product_id.exists'   => __('messages.customer.review.validation.product_exists'),
+                'rating.required'     => __('messages.customer.review.validation.rating_required'),
+                'rating.integer'      => __('messages.customer.review.validation.rating_integer'),
+                'rating.min'          => __('messages.customer.review.validation.rating_min'),
+                'rating.max'          => __('messages.customer.review.validation.rating_max'),
+                'review.string'       => __('messages.customer.review.validation.review_string'),
+                'review.max'          => __('messages.customer.review.validation.review_max'),
+                'images.*.image'      => __('messages.customer.review.validation.image_invalid'),
+                'images.*.mimes'      => __('messages.customer.review.validation.image_mimes'),
+                'images.*.max'        => __('messages.customer.review.validation.image_max'),
             ]
         );
 
@@ -66,7 +66,7 @@ class ProductReviewController extends Controller
         if (!$product) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Product not found.'
+               'message' => __('messages.customer.review.not_found')
             ], 404);
         }
 
@@ -100,37 +100,12 @@ class ProductReviewController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Review submitted successfully.',
+           'message' => __('messages.customer.review.submitted'),
             'data'    => $review
         ], 200);
     }
 
 
-    // ⭐ Get Product Reviews
-    // public function list($productId)
-    // {
-    //     $product = Product::with(['reviews.user', 'reviews.images'])
-    //     ->find($productId);
-
-    //     if (!$product) {
-    //         return response()->json([
-    //             'status'  => false,
-    //             'message' => 'Product not found.'
-    //         ], 404);
-    //     }
-
-    //     $average = $product->reviews()->avg('rating');
-    //     $count   = $product->reviews()->count();
-
-    //     return response()->json([
-    //         'status'         => true,
-    //         'average_rating' => $average ? round($average, 1) : 0,
-    //         'total_reviews'  => $count,
-    //         'reviews'        => $product->reviews
-    //     ], 200);
-    // }
-
-    
     public function list($productId)
     {
         $product = Product::with(['reviews.user', 'reviews.images'])
@@ -168,6 +143,7 @@ class ProductReviewController extends Controller
 
         return response()->json([
             'status'         => true,
+            'message' => __('messages.customer.review.list_success'),
             'average_rating' => $average ? round($average, 1) : 0,
             'total_reviews'  => $count,
             'reviews'        => $reviews

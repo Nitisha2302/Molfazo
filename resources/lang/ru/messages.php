@@ -20,6 +20,27 @@ return [
         'user_not_authenticated' => 'User not authenticated.',
     ],
 
+    'enquiry' => [
+
+        'unauthorized' => 'Unauthorized',
+
+        'store' => [
+            'success' => 'Query submitted successfully',
+
+            'validation' => [
+                'title_required'       => 'Please enter enquiry title.',
+                'title_string'        => 'Title must be valid text.',
+                'description_required'=> 'Please enter enquiry description.',
+                'description_string'  => 'Description must be valid text.',
+            ],
+        ],
+
+        'list' => [
+            'success' => 'Query fetched successfully',
+            'empty'   => 'No enquiries found',
+        ],
+    ],
+
 
     'vendor' => [
 
@@ -330,6 +351,134 @@ return [
 
             'not_participant' => 'You are not a participant in this conversation.',
             'not_found'       => 'Conversation not found.',
+        ],
+
+        'order' => [
+
+            // ✅ PLACE ORDER
+            'place' => [
+
+                // ✅ GENERAL
+                'unauthorized' => 'User not authenticated.',
+                'success'      => 'Order placed successfully.',
+                'failed'       => 'Failed to place order.',
+
+                // ✅ CART
+                'empty_cart' => 'Your cart is empty.',
+                'multi_store' => 'Multiple store products not allowed in one order.',
+
+                // ✅ ADDRESS
+                'invalid_address' => 'Invalid address selected.',
+
+                // ✅ PAYMENT
+                'bank_not_supported' => 'This vendor does not support bank payment.',
+                'bank_not_available' => 'Selected bank is not available for this vendor.',
+
+                // ✅ STOCK
+                'stock' => [
+                    'variant_out' => 'Variant of :product is out of stock.',
+                    'product_out' => 'Product :product does not have enough stock.',
+                ],
+
+                // ✅ VALIDATION
+                'validation' => [
+                    'address_required' => 'Delivery address is required for home delivery.',
+                    'address_invalid'  => 'Selected delivery address is invalid.',
+                    'payment_required' => 'Payment type is required.',
+                    'payment_invalid'  => 'Payment type must be COD or Online.',
+                    'bank_required'    => 'Please select a bank for online payment.',
+                    'bank_invalid'     => 'Selected bank is invalid.',
+                ],
+
+                // ✅ NOTIFICATION
+                'notification' => [
+                    'title' => '🛒 New Order',
+                    'body'  => ':user placed a new order for :product',
+                ],
+
+            ],
+
+
+            // ✅ ORDER LIST
+            'list' => [
+                'success' => 'Orders fetched successfully.',
+                'empty'   => 'No orders found.',
+            ],
+
+            // ✅ ORDER DETAILS
+            'details' => [
+                'not_found' => 'Order not found.',
+                'success'   => 'Order details fetched successfully.',
+            ],
+
+            // ✅ STATUS TEXTS
+            'status' => [
+                'new'       => 'New',
+                'accepted'  => 'Accepted',
+                'completed' => 'Completed',
+                'cancelled' => 'Cancelled',
+                'unknown'   => 'Unknown',
+            ],
+
+        ],
+
+        'product' => [
+            'list' => [
+                'success' => 'Products fetched successfully',
+                'empty'   => 'No products available',
+            ],
+
+            'details' => [
+                'success'   => 'Product details fetched successfully',
+                'not_found' => 'Product not found',
+            ],
+
+            'search' => [
+                'success' => 'Search results fetched successfully',
+                'empty'   => 'No products found',
+            ],
+        ],
+
+        'review' => [
+
+            'unauthorized' => 'User not authenticated.',
+
+            'submitted' => 'Review submitted successfully.',
+            'validation_error' => 'Validation Error',
+
+            'not_found' => 'Product not found.',
+
+            'list_success' => 'Reviews fetched successfully.',
+
+            'validation' => [
+                'product_required' => 'Product ID is required.',
+                'product_exists'   => 'The selected product does not exist.',
+                'rating_required'  => 'Rating is required.',
+                'rating_integer'   => 'Rating must be a number.',
+                'rating_min'       => 'Rating must be at least 1 star.',
+                'rating_max'       => 'Rating cannot be more than 5 stars.',
+                'review_string'    => 'Review must be valid text.',
+                'review_max'       => 'Review cannot exceed 1000 characters.',
+                'image_invalid'    => 'Each file must be an image.',
+                'image_mimes'      => 'Images must be jpg, jpeg or png.',
+                'image_max'        => 'Each image must not exceed 2MB.',
+            ],
+
+        ],
+
+        'store' => [
+
+            'list' => [
+                'success' => 'Stores fetched successfully',
+                'empty'   => 'No stores found',
+            ],
+
+            'details' => [
+                'success' => 'Store details fetched successfully',
+                'not_found' => 'Store not found',
+                'no_products' => 'No products found for this store',
+            ],
+
         ],
 
         
