@@ -771,6 +771,7 @@ class OrderController extends Controller
 
     // with combination 
 
+    
      public function orderDetails($id)
     {
         $user = Auth::guard('api')->user();
@@ -848,6 +849,7 @@ class OrderController extends Controller
             default => 'Unknown',
         };
     }
+
 
 
 }
