@@ -13,7 +13,7 @@ class CategoryController extends Controller
     /* =========================
        GET ALL CATEGORIES
     ========================= */
-   public function categories()
+    public function categories()
     {
         $categories = Category::where('status_id', 1)
             ->with([
@@ -33,7 +33,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Categories retrieved successfully.',
+            'message' => __('messages.customer.category.list_success'),
             'data'    => $categories
         ], 200);
     }
@@ -43,7 +43,7 @@ class CategoryController extends Controller
     /* =========================
        GET SUBCATEGORIES BY CATEGORY
     ========================= */
-   public function subCategories($categoryId)
+    public function subCategories($categoryId)
     {
         $subCategories = SubCategory::where('category_id', $categoryId)
             ->where('status_id', 1)
@@ -56,7 +56,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Subcategories retrieved successfully.',
+              'message' => __('messages.customer.category.sub_list_success'),
             'data'    => $subCategories
         ], 200);
     }
@@ -74,7 +74,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Child categories retrieved successfully.',
+            'message' => __('messages.customer.category.child_list_success'),
             'data'    => $childCategories
         ], 200);
     }

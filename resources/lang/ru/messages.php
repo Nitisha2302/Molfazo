@@ -247,9 +247,16 @@ return [
         ],
 
 
-        'address' => [
+       'address' => [
 
             'saved' => 'Address saved successfully.',
+            'list_success' => 'Address list fetched successfully.',
+            'deleted'   => 'Address removed successfully.',
+            'not_found' => 'Address not found.',
+
+            'not_belongs'      => 'This address does not belong to your account.',
+            'already_default'  => 'This address is already set as default.',
+            'default_updated'  => 'Default address updated successfully.',
 
             'validation' => [
                 'name_required'      => 'Address type is required (Home / Office).',
@@ -261,9 +268,71 @@ return [
                 'state_required'     => 'State is required.',
                 'pincode_required'   => 'Pincode is required.',
                 'pincode_digits'     => 'Pincode must be 6 digits.',
+
+                'address_required' => 'Please select an address.',
+                'address_exists'   => 'Selected address does not exist.',
             ],
 
         ],
+
+
+        'cart' => [
+            'unauthorized' => 'Unauthorized access.',
+            'product_not_available' => 'Product not available.',
+            'invalid_combination' => 'Invalid product combination.',
+            'insufficient_stock' => 'Insufficient stock available.',
+            'added_successfully' => 'Product added to cart successfully.',
+
+            'list_success' => 'Cart fetched successfully.',
+           'empty'        => 'Cart is empty.',
+            'updated'      => 'Cart updated successfully.',
+             'removed'      => 'Item removed from cart.',
+              'not_found' => 'Cart item not found.',
+
+           'validation' => [
+                'unauthorized' => 'User not authenticated.',
+                 'cart_id_required' => 'Cart ID is required.',
+                'cart_id_invalid'  => 'Invalid cart item.',
+                'quantity_required'=> 'Quantity is required.',
+                'quantity_integer' => 'Quantity must be a number.',
+                'quantity_min'     => 'Quantity must be at least 1.',
+            ],
+
+
+        ],
+
+        'category' => [
+
+            'list_success' => 'Categories retrieved successfully.',
+            'sub_list_success'    => 'Subcategories retrieved successfully.',
+            'child_list_success'  => 'Child categories retrieved successfully.',
+
+        ],
+
+
+        'chat' => [
+
+            'unauthorized' => 'User not authenticated.',
+            'conversation_started' => 'Conversation started successfully.',
+            'conversation_list' => 'Conversation list fetched successfully.',
+            'messages_fetched' => 'Messages fetched successfully.',
+            'message_sent' => 'Message sent successfully.',
+
+            'validation' => [
+                'other_user_required' => 'Other user id is required.',
+                'other_user_invalid'  => 'Other user does not exist.',
+                'self_chat'           => 'You cannot chat with yourself.',
+                'conversation_required'=> 'Conversation id is required.',
+                'conversation_invalid' => 'Conversation not found.',
+                'message_required'     => 'Message is required.',
+                'image_invalid'       => 'Invalid image file.',
+            ],
+
+            'not_participant' => 'You are not a participant in this conversation.',
+            'not_found'       => 'Conversation not found.',
+        ],
+
+        
 
 
 
