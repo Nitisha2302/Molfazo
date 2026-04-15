@@ -157,6 +157,9 @@ class PromotionController extends Controller
                     ->where('status','pending')
                     ->exists();
 
+                    
+
+
         if($exists){
             return response()->json([
                 'status'=>false,
