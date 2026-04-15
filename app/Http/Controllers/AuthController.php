@@ -29,18 +29,18 @@ class AuthController extends Controller
     public function sendMobileOtp(Request $request)
     {
 
-       $userLang = DB::table('user_langs')
-        ->where('device_token', $request->device_token)
-        ->where('device_type', $request->device_type)
-        ->value('language');
+           $userLang = DB::table('user_langs')
+            ->where('device_token', $request->device_token)
+            ->where('device_type', $request->device_type)
+            ->value('language');
 
-        $lang = $request->header('lang')
-            ?? $request->lang
-            ?? $request->query('lang')
-            ?? $userLang
-            ?? 'ru';
+            $lang = $request->header('lang')
+                ?? $request->lang
+                ?? $request->query('lang')
+                ?? $userLang
+                ?? 'ru';
 
-        app()->setLocale($lang);
+            app()->setLocale($lang);
 
         $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
@@ -197,18 +197,18 @@ class AuthController extends Controller
     {
 
 
-        $userLang = DB::table('user_langs')
-        ->where('device_token', $request->device_token)
-        ->where('device_type', $request->device_type)
-        ->value('language');
+            $userLang = DB::table('user_langs')
+            ->where('device_token', $request->device_token)
+            ->where('device_type', $request->device_type)
+            ->value('language');
 
-        $lang = $request->header('lang')
-            ?? $request->lang
-            ?? $request->query('lang')
-            ?? $userLang
-            ?? 'ru';
+            $lang = $request->header('lang')
+                ?? $request->lang
+                ?? $request->query('lang')
+                ?? $userLang
+                ?? 'ru';
 
-        app()->setLocale($lang);
+            app()->setLocale($lang);
 
         $validator = Validator::make($request->all(), [
             'otp' => 'required|digits:6',
@@ -305,13 +305,13 @@ class AuthController extends Controller
 
 
          // 🌐 Language detect
-        $userLang = UserLang::where('user_id', $user->id)
-            ->where('device_token', $user->device_token)
-            ->where('device_type', $user->device_type)
-            ->first();
+        // $userLang = UserLang::where('user_id', $user->id)
+        //     ->where('device_token', $user->device_token)
+        //     ->where('device_type', $user->device_type)
+        //     ->first();
 
-        $lang = $userLang->language ?? 'ru';
-        app()->setLocale($lang);
+        // $lang = $userLang->language ?? 'ru';
+        // app()->setLocale($lang);
 
          /* ===============================
         VERIFICATION CHECK
@@ -436,18 +436,18 @@ class AuthController extends Controller
 
     public function vendorLogin(Request $request)
     {
-       $userLang = DB::table('user_langs')
-        ->where('device_token', $request->device_token)
-        ->where('device_type', $request->device_type)
-        ->value('language');
+           $userLang = DB::table('user_langs')
+            ->where('device_token', $request->device_token)
+            ->where('device_type', $request->device_type)
+            ->value('language');
 
-        $lang = $request->header('lang')
-            ?? $request->lang
-            ?? $request->query('lang')
-            ?? $userLang
-            ?? 'ru';
+            $lang = $request->header('lang')
+                ?? $request->lang
+                ?? $request->query('lang')
+                ?? $userLang
+                ?? 'ru';
 
-        app()->setLocale($lang);
+            app()->setLocale($lang);
         /* ===============================
         VALIDATION
         =============================== */
@@ -558,18 +558,18 @@ class AuthController extends Controller
     public function sendVendorLoginOtp(Request $request)
     {
 
-        $userLang = DB::table('user_langs')
-        ->where('device_token', $request->device_token)
-        ->where('device_type', $request->device_type)
-        ->value('language');
+            $userLang = DB::table('user_langs')
+            ->where('device_token', $request->device_token)
+            ->where('device_type', $request->device_type)
+            ->value('language');
 
-        $lang = $request->header('lang')
-            ?? $request->lang
-            ?? $request->query('lang')
-            ?? $userLang
-            ?? 'ru';
+            $lang = $request->header('lang')
+                ?? $request->lang
+                ?? $request->query('lang')
+                ?? $userLang
+                ?? 'ru';
 
-        app()->setLocale($lang);
+            app()->setLocale($lang);
        /* ===============================
         VALIDATION
         =============================== */
@@ -679,18 +679,18 @@ class AuthController extends Controller
     public function verifyLoginOtp(Request $request)
     {
 
-        $userLang = DB::table('user_langs')
-        ->where('device_token', $request->device_token)
-        ->where('device_type', $request->device_type)
-        ->value('language');
+            $userLang = DB::table('user_langs')
+            ->where('device_token', $request->device_token)
+            ->where('device_type', $request->device_type)
+            ->value('language');
 
-        $lang = $request->header('lang')
-            ?? $request->lang
-            ?? $request->query('lang')
-            ?? $userLang
-            ?? 'ru';
+            $lang = $request->header('lang')
+                ?? $request->lang
+                ?? $request->query('lang')
+                ?? $userLang
+                ?? 'ru';
 
-        app()->setLocale($lang);
+            app()->setLocale($lang);
         /* ===============================
         VALIDATION
         =============================== */
@@ -1042,12 +1042,12 @@ class AuthController extends Controller
     {
 
         // 🌐 Language detect (default = ru)
-        $lang = $request->header('lang') 
-            ?? $request->lang 
-            ?? $request->query('lang') 
-            ?? 'ru';
+        // $lang = $request->header('lang') 
+        //     ?? $request->lang 
+        //     ?? $request->query('lang') 
+        //     ?? 'ru';
 
-        app()->setLocale($lang);
+        // app()->setLocale($lang);
         /* ===============================
            VALIDATION
         =============================== */
