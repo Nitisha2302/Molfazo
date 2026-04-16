@@ -12,26 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 class PromotionController extends Controller
 {
-    // ✅ GET PACKAGES
-    // public function packages()
-    // {
-    //     $user = Auth::guard('api')->user();
-
-    //     if (!$user) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Unauthorized'
-    //         ], 401);
-    //     }
-
-    //     $packages = PromotionPackage::select('id','title','review_count','price')->get();
-
-    //     return response()->json([
-    //         'status' => true,
-    //           'message' => 'packages fetched successfully',
-    //         'data' => $packages
-    //     ]);
-    // }
+    //  GET PACKAGES
 
     public function packages(Request $request)
     {
@@ -52,7 +33,7 @@ class PromotionController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'packages fetched successfully',
+               'message' => __('messages.vendor.promotion.packages.success'),
                 'data' => $packages
             ]);
         }
@@ -95,12 +76,12 @@ class PromotionController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'packages with status fetched successfully',
+           'message' => __('messages.vendor.promotion.packages.with_status_success'),
             'data' => $data
         ]);
     }
 
-    // ✅ GET PAYMENT DETAILS
+    //  GET PAYMENT DETAILS
     public function paymentDetails()
     {
         $user = Auth::guard('api')->user();
@@ -116,12 +97,12 @@ class PromotionController extends Controller
 
         return response()->json([
             'status' => true,
-             'message' => 'payment details fetched successfully',
+             'message' => __('messages.vendor.promotion.payment.success'),
             'data' => $data
         ]);
     }
 
-    // ✅ STORE PROMOTION REQUEST
+    //  STORE PROMOTION REQUEST
     public function store(Request $request)
     {
         $user = Auth::guard('api')->user();
@@ -139,9 +120,9 @@ class PromotionController extends Controller
             'package_id' => 'required|exists:promotion_packages,id',
             'image' => 'required|image|max:2048'
         ],[
-            'product_id.required' => 'Product id is required',
-            'package_id.required' => 'Package id is required',
-            'image.required' => 'Payment screenshot is required'
+            'product_id.required' => __('messages.vendor.promotion.validation.product_required'),
+            'package_id.required' => __('messages.vendor.promotion.validation.package_required'),
+            'image.required' => __('messages.vendor.promotion.validation.image_required'),
         ]);
 
         if ($validator->fails()) {
@@ -163,7 +144,7 @@ class PromotionController extends Controller
         if($exists){
             return response()->json([
                 'status'=>false,
-                'message'=>'Request already pending for this product'
+               'message' => __('messages.vendor.promotion.store.duplicate')
             ]);
         }
 
@@ -187,7 +168,7 @@ class PromotionController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Promotion request submitted successfully'
+             'message' => __('messages.vendor.promotion.store.success')
         ]);
     }
 }

@@ -379,6 +379,231 @@ return [
         ],
 
 
+        'promotion' => [
+
+            'unauthorized' => 'Unauthorized',
+
+            'packages' => [
+                'success' => 'Packages fetched successfully',
+                'with_status_success' => 'Packages with status fetched successfully',
+            ],
+
+            'payment' => [
+                'success' => 'Payment details fetched successfully',
+            ],
+
+            'store' => [
+                'success' => 'Promotion request submitted successfully',
+                'duplicate' => 'Request already pending for this product',
+            ],
+
+            'validation' => [
+                'product_required' => 'Product id is required',
+                'package_required' => 'Package id is required',
+                'image_required' => 'Payment screenshot is required',
+            ],
+
+        ],
+
+        'review' => [
+
+            'unauthorized' => 'Unauthorized',
+
+            'validation' => [
+                'title_required' => 'Title is required',
+                'review_required' => 'Review is required',
+                'rating_required' => 'Rating is required',
+                'username_required' => 'Username is required',
+            ],
+
+            'promotion' => [
+                'not_approved' => 'Promotion not approved',
+            ],
+
+            'limit' => [
+                'reached' => 'Review limit reached',
+            ],
+
+            'store' => [
+                'success' => 'Review submitted successfully',
+            ],
+
+        ],
+
+
+        'store' => [
+
+            // ================= AUTH =================
+            'auth' => [
+                'not_vendor' => 'You are not a vendor.',
+                'not_approved' => 'Your vendor account is not approved yet. Please wait for admin approval.',
+                'unauthorized' => 'User is not authenticated.',
+                'not_found' => 'Store not found.',
+                'not_owner' => 'You do not have permission to access this store.',
+            ],
+
+            // ================= CREATE =================
+            'create' => [
+                'success' => 'Store created successfully. Waiting for admin approval.',
+            ],
+
+            // ================= LIST =================
+            'list' => [
+                'success' => 'Store fetched successfully.',
+            ],
+
+            // ================= DETAILS =================
+            'details' => [
+                'success' => 'Store details fetched successfully.',
+            ],
+
+            // ================= UPDATE =================
+            'update' => [
+                'success' => 'Store updated successfully. Waiting for admin approval.',
+            ],
+
+            // ================= VALIDATION =================
+            'validation' => [
+
+                'name_required' => 'Store Name is required.',
+                'mobile_required' => 'Store Mobile Number is required.',
+                'email_required' => 'Store Email Address is required.',
+                'email_invalid' => 'Store Email must be a valid email address.',
+                'country_required' => 'Country is required.',
+                'city_required' => 'City is required.',
+                'address_required' => 'Complete Address is required.',
+
+                'type_required' => 'Store Type is required.',
+                'type_array' => 'Store Type must be an array.',
+                'type_invalid' => 'Store Type must be one of: Retail, Online, Wholesale, Offline.',
+
+                'logo_image' => 'Logo must be an image file.',
+                'logo_mimes' => 'Logo must be jpeg, png, jpg, gif, or webp.',
+                'logo_max' => 'Logo size cannot exceed 2MB.',
+
+                'background_image' => 'Store background must be an image file.',
+                'background_mimes' => 'Store background must be jpeg, png, jpg, gif, or webp.',
+                'background_max' => 'Store background image size cannot exceed 4MB.',
+
+                'document_array' => 'Documents must be an array.',
+                'document_mimes' => 'Documents must be jpg, png or pdf.',
+                'document_max' => 'Each document must not exceed 4MB.',
+
+                'social_invalid' => 'Invalid social link format.',
+                'color_string' => 'Background color must be text.',
+            ],
+
+            // ================= VIDEO =================
+            'video' => [
+
+                // ================= AUTH =================
+                'auth' => [
+                    'unauthorized' => 'Unauthorized user.',
+                    'invalid_store' => 'Store not found or not owned by user.',
+                ],
+
+                // ================= PLANS =================
+                'plans' => [
+                    'success' => 'Plans fetched successfully.',
+                    'with_status_success' => 'Plans with status fetched successfully.',
+                ],
+
+                // ================= VIDEO REQUEST =================
+                'request' => [
+                    'success' => 'Request sent to admin.',
+                    'duplicate' => 'You already have a pending request for this plan.',
+                    'invalid_store' => 'Invalid store or not owned by user.',
+                ],
+
+                // ================= UPLOAD =================
+                'upload' => [
+                    'unauthorized' => 'Unauthorized user.',
+                    'permission_denied' => 'You do not have permission to upload video for this store.',
+                    'no_plan' => 'No approved video plan found. Please purchase and get approval first.',
+                    'expired' => 'Your previous video plan has expired. Please renew your plan.',
+                    'success' => 'Video uploaded successfully.',
+                    'failed' => 'Upload failed.',
+                    'missing_chunk' => 'Missing chunk at index :index',
+                ],
+
+                // ================= VALIDATION =================
+                'validation' => [
+
+                    // store
+                    'store_required' => 'Store ID is required.',
+                    'store_exists' => 'Store not found.',
+
+                    // plan
+                    'plan_required' => 'Please select a plan.',
+                    'plan_exists' => 'Selected plan is invalid.',
+
+                    // payment
+                    'payment_required' => 'Payment screenshot is required.',
+                    'payment_image' => 'File must be an image.',
+                    'payment_mimes' => 'Only JPG, JPEG, PNG allowed.',
+                    'payment_max' => 'Image size must be less than 2MB.',
+
+                    // chunk upload
+                    'chunk_required' => 'Video chunk is required.',
+                    'chunk_file' => 'Invalid chunk file.',
+                    'chunk_mimes' => 'Only MP4, MOV, AVI formats allowed.',
+
+                    'chunk_index_required' => 'Chunk index is required.',
+                    'chunk_index_integer' => 'Chunk index must be a number.',
+                    'chunk_index_min' => 'Chunk index must be 0 or greater.',
+
+                    'total_chunks_required' => 'Total chunks is required.',
+                    'total_chunks_integer' => 'Total chunks must be a number.',
+                    'total_chunks_min' => 'Total chunks must be at least 1.',
+
+                    'upload_id_required' => 'Upload ID is required.',
+                ],
+
+                // ================= LOGIC ERRORS =================
+                'error' => [
+                    'store_not_found' => 'Store not found or not owned by user.',
+                    'plan_invalid' => 'Invalid plan configuration.',
+                    'no_approved_plan' => 'No approved video plan found. Please purchase and get approval first.',
+                    'expired_plan' => 'Your previous video plan has expired. Please renew your plan.',
+                ],
+            ],
+        ],
+
+
+        'bank' => [
+
+            // ================= AUTH =================
+            'auth' => [
+                'unauthorized' => 'Unauthorized vendor.',
+            ],
+
+            // ================= SUCCESS =================
+            'success' => [
+                'updated' => 'Payment modes updated successfully.',
+                'fetched' => 'Payment details fetched successfully.',
+            ],
+
+            // ================= VALIDATION =================
+            'validation' => [
+
+                'payment_modes_required' => 'Payment mode is required.',
+                'payment_modes_array' => 'Payment mode must be an array.',
+                'payment_modes_invalid' => 'Payment mode must be COD or Bank.',
+
+                'banks_required' => 'Bank details are required when payment mode includes Bank.',
+
+                'bank_id_required' => 'Bank ID is required.',
+                'bank_id_exists' => 'Selected bank does not exist.',
+
+                'account_holder_required' => 'Account holder name is required.',
+                'account_number_required' => 'Account number is required.',
+            ],
+        ],
+
+
+        
+
+
 
 
 
