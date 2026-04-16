@@ -200,233 +200,216 @@ return [
         ],
 
 
-         'category' => [
+        'category' => [
 
             'list' => [
-                'success' => 'Category successfully fetched.',
-                'empty'   => 'No categories found.',
+                'success' => 'Категории успешно получены.',
+                'empty'   => 'Категории не найдены.',
             ],
 
             'subcategory' => [
-                'success' => 'Sub categories fetched successfully.',
-                'empty'   => 'No subcategories found.',
+                'success' => 'Подкатегории успешно получены.',
+                'empty'   => 'Подкатегории не найдены.',
             ],
 
             'child_category' => [
-                'success' => 'Child categories fetched successfully.',
-                'empty'   => 'No child categories found.',
+                'success' => 'Дочерние категории успешно получены.',
+                'empty'   => 'Дочерние категории не найдены.',
             ],
 
             'attributes' => [
-                'success' => 'Attributes fetched successfully.',
-                'empty'   => 'No attributes found for this category.',
+                'success' => 'Атрибуты успешно получены.',
+                'empty'   => 'Для этой категории атрибуты не найдены.',
             ],
         ],
 
         'banner' => [
-            'success' => 'Banners fetched successfully',
-            'empty_city' => 'No banners found for this city',
+            'success' => 'Баннеры успешно получены.',
+            'empty_city' => 'Для этого города баннеры не найдены.',
         ],
 
         'city' => [
-            'success' => 'Cities fetched successfully',
+            'success' => 'Список городов успешно получен.',
         ],
 
         'chat' => [
 
             'list' => [
-                'success' => 'Chats fetched successfully.',
-                'empty'   => 'No chats found.',
+                'success' => 'Чаты успешно получены.',
+                'empty'   => 'Чаты не найдены.',
             ],
 
             'send' => [
-                'success' => 'Message sent successfully.',
+                'success' => 'Сообщение успешно отправлено.',
             ],
 
             'validation' => [
-                'receiver_required' => 'Receiver is required.',
-                'receiver_exists'   => 'Selected user does not exist.',
-                'message_string'    => 'Message must be valid text.',
+                'receiver_required' => 'Получатель обязателен.',
+                'receiver_exists'   => 'Выбранный пользователь не существует.',
+                'message_string'    => 'Сообщение должно быть корректным текстом.',
             ],
 
-            'unauthorized' => 'User not authenticated.',
+            'unauthorized' => 'Пользователь не авторизован.',
         ],
 
         'notification' => [
             'delete' => [
-                'success' => 'Deleted successfully',
-                'not_found' => 'Notification not found',
-                'unauthorized' => 'User not authenticated.',
+                'success' => 'Успешно удалено.',
+                'not_found' => 'Уведомление не найдено.',
+                'unauthorized' => 'Пользователь не авторизован.',
             ],
         ],
 
         'order' => [
 
-            'unauthorized' => 'Vendor account not approved or unauthenticated.',
+            'unauthorized' => 'Аккаунт продавца не подтверждён или пользователь не авторизован.',
 
             'list' => [
-                'success' => 'Orders fetched successfully.',
-                'empty'   => 'No orders found.',
+                'success' => 'Список заказов успешно получен.',
+                'empty'   => 'Заказы не найдены.',
             ],
 
             'details' => [
-                'not_found' => 'Order not found.',
+                'not_found' => 'Заказ не найден.',
             ],
 
             'update_status' => [
 
-                'success' => 'Order status updated successfully to :status.',
+                'success' => 'Статус заказа успешно обновлён на :status.',
 
-                'already_completed' => 'Order is already completed. Status cannot be changed.',
-                'already_cancelled' => 'Order is already cancelled. Status cannot be changed.',
-                'accept_first'      => 'Order must be accepted before completing.',
+                'already_completed' => 'Заказ уже завершён. Статус нельзя изменить.',
+                'already_cancelled' => 'Заказ уже отменён. Статус нельзя изменить.',
+                'accept_first'      => 'Сначала необходимо принять заказ.',
 
                 'validation' => [
-                    'status_required' => 'Status is required.',
-                    'status_invalid'  => 'Invalid status. Allowed values: 2=Accepted, 3=Completed, 4=Cancelled.',
+                    'status_required' => 'Статус обязателен.',
+                    'status_invalid'  => 'Неверный статус. Допустимые значения: 2=Принят, 3=Завершён, 4=Отменён.',
                 ],
 
                 'status_text' => [
-                    'accepted'  => 'Accepted',
-                    'completed' => 'Completed',
-                    'cancelled' => 'Cancelled',
-                    'unknown'   => 'Unknown',
+                    'accepted'  => 'Принят',
+                    'completed' => 'Завершён',
+                    'cancelled' => 'Отменён',
+                    'unknown'   => 'Неизвестно',
                 ],
             ],
 
             'notification' => [
-                'title' => '📦 Order Status Update',
+                'title' => '📦 Обновление статуса заказа',
 
-                'accepted'  => '✅ Your order for :products has been accepted.',
-                'completed' => '🎉 Your order for :products has been completed successfully.',
-                'cancelled' => '❌ Your order for :products has been cancelled.',
-                'default'   => 'Your order for :products status updated.',
+                'accepted'  => '✅ Ваш заказ на :products принят.',
+                'completed' => '🎉 Ваш заказ на :products успешно завершён.',
+                'cancelled' => '❌ Ваш заказ на :products отменён.',
+                'default'   => 'Статус вашего заказа на :products обновлён.',
             ],
         ],
 
-         'product' => [
+        'product' => [
 
             'copy' => [
-                 'only_approved' => 'Only approved products can be copied.',
-                'success' => 'Product copied & updated successfully.',
+                'only_approved' => 'Копировать можно только одобренные товары.',
+                'success' => 'Товар успешно скопирован и обновлён.',
             ],
 
-            /* ===============================
-            CREATE PRODUCT
-            =============================== */
             'create' => [
+                'unauthorized' => 'Аккаунт продавца не подтверждён или пользователь не авторизован.',
+                'invalid_store' => 'Неверный или неутверждённый магазин.',
+                'child_category_invalid' => 'Дочерняя категория не относится к выбранной подкатегории.',
 
-                'unauthorized' => 'Vendor account is not approved or authenticated.',
-                'invalid_store' => 'Invalid or unapproved store.',
-                'child_category_invalid' => 'Child category does not belong to selected sub-category.',
-
-                'success' => 'Product added successfully.',
+                'success' => 'Товар успешно добавлен.',
 
                 'validation' => [
-                    'store_required' => 'Please select a store.',
-                    'store_exists'   => 'The selected store does not exist.',
+                    'store_required' => 'Пожалуйста, выберите магазин.',
+                    'store_exists'   => 'Выбранный магазин не существует.',
 
-                    'name_required'  => 'Product name is required.',
+                    'name_required'  => 'Название товара обязательно.',
 
-                    'price_required' => 'Product price is required.',
-                    'price_numeric'  => 'Price must be a valid number.',
+                    'price_required' => 'Цена товара обязательна.',
+                    'price_numeric'  => 'Цена должна быть числом.',
 
-                    'discount_numeric' => 'Discount price must be a valid number.',
+                    'discount_numeric' => 'Цена со скидкой должна быть числом.',
 
-                    'quantity_required' => 'Available quantity is required.',
-                    'quantity_integer'  => 'Available quantity must be an integer.',
+                    'quantity_required' => 'Количество обязательно.',
+                    'quantity_integer'  => 'Количество должно быть целым числом.',
 
-                    'images_required' => 'At least one image is required.',
-                    'images_array'    => 'Images must be sent as an array.',
-                    'images_mimes'    => 'Each image must be jpeg, jpg, png, or gif.',
+                    'images_required' => 'Необходимо добавить хотя бы одно изображение.',
+                    'images_array'    => 'Изображения должны быть переданы в виде массива.',
+                    'images_mimes'    => 'Каждое изображение должно быть в формате JPEG, JPG, PNG или GIF.',
                 ],
             ],
 
-            /* ===============================
-            LIST PRODUCTS
-            =============================== */
             'list' => [
-
-                'unauthorized' => 'Vendor account is not approved or authenticated.',
-                'success'      => 'Products fetched successfully.',
-                'empty'        => 'No products found.',
+                'unauthorized' => 'Аккаунт продавца не подтверждён или пользователь не авторизован.',
+                'success'      => 'Товары успешно получены.',
+                'empty'        => 'Товары не найдены.',
             ],
 
             'details' => [
-
-                'unauthorized' => 'Vendor account is not approved or authenticated.',
-                'not_found'    => 'Product not found.',
-                'success'      => 'Product details fetched successfully.',
-
+                'unauthorized' => 'Аккаунт продавца не подтверждён или пользователь не авторизован.',
+                'not_found'    => 'Товар не найден.',
+                'success'      => 'Детали товара успешно получены.',
             ],
-
 
             'update' => [
-
-                'unauthorized' => 'Vendor not authenticated.',
-                'not_found' => 'Product not found.',
-                'success' => 'Product updated successfully.',
-
+                'unauthorized' => 'Продавец не авторизован.',
+                'not_found'    => 'Товар не найден.',
+                'success'      => 'Товар успешно обновлён.',
             ],
-
         ],
 
-        'bank' => [
-            'list_success' => 'Bank list fetched successfully.',
-        ],
 
-        'combination' => [
-            'combination_upadted' => 'Combination updated successfully.',
-            'combination_delete' => 'Combination deleted successfully.',
+       'combination' => [
+            'combination_updated' => 'Комбинация успешно обновлена.',
+            'combination_deleted' => 'Комбинация успешно удалена.',
         ],
 
         'promotion' => [
 
-            'unauthorized' => 'Unauthorized',
+            'unauthorized' => 'Дастрасӣ иҷозат дода нашудааст.',
 
             'packages' => [
-                'success' => 'Packages fetched successfully',
-                'with_status_success' => 'Packages with status fetched successfully',
+                'success' => 'Пакетҳо бомуваффақият гирифта шуданд.',
+                'with_status_success' => 'Пакетҳо бо статус бомуваффақият гирифта шуданд.',
             ],
 
             'payment' => [
-                'success' => 'Payment details fetched successfully',
+                'success' => 'Маълумоти пардохт бомуваффақият гирифта шуд.',
             ],
 
             'store' => [
-                'success' => 'Promotion request submitted successfully',
-                'duplicate' => 'Request already pending for this product',
+                'success' => 'Дархости таблиғ бомуваффақият ирсол шуд.',
+                'duplicate' => 'Барои ин маҳсулот аллакай дархост дар интизор аст.',
             ],
 
             'validation' => [
-                'product_required' => 'Product id is required',
-                'package_required' => 'Package id is required',
-                'image_required' => 'Payment screenshot is required',
+                'product_required' => 'ID-и маҳсулот ҳатмист.',
+                'package_required' => 'ID-и пакет ҳатмист.',
+                'image_required' => 'Скриншоти пардохт ҳатмист.',
             ],
 
         ],
 
         'review' => [
 
-            'unauthorized' => 'Unauthorized',
+            'unauthorized' => 'Доступ запрещён.',
 
             'validation' => [
-                'title_required' => 'Title is required',
-                'review_required' => 'Review is required',
-                'rating_required' => 'Rating is required',
-                'username_required' => 'Username is required',
+                'title_required'    => 'Заголовок обязателен.',
+                'review_required'   => 'Отзыв обязателен.',
+                'rating_required'   => 'Оценка обязательна.',
+                'username_required' => 'Имя пользователя обязательно.',
             ],
 
             'promotion' => [
-                'not_approved' => 'Promotion not approved',
+                'not_approved' => 'Продвижение не одобрено.',
             ],
 
             'limit' => [
-                'reached' => 'Review limit reached',
+                'reached' => 'Достигнут лимит отзывов.',
             ],
 
             'store' => [
-                'success' => 'Review submitted successfully',
+                'success' => 'Отзыв успешно отправлен.',
             ],
 
         ],
@@ -435,137 +418,130 @@ return [
 
             // ================= AUTH =================
             'auth' => [
-                'not_vendor' => 'You are not a vendor.',
-                'not_approved' => 'Your vendor account is not approved yet. Please wait for admin approval.',
-                'unauthorized' => 'User is not authenticated.',
-                'not_found' => 'Store not found.',
-                'not_owner' => 'You do not have permission to access this store.',
+                'not_vendor'   => 'Вы не являетесь продавцом.',
+                'not_approved' => 'Ваш аккаунт продавца ещё не подтверждён. Пожалуйста, дождитесь одобрения администратора.',
+                'unauthorized' => 'Пользователь не авторизован.',
+                'not_found'    => 'Магазин не найден.',
+                'not_owner'    => 'У вас нет прав доступа к этому магазину.',
             ],
 
-            // ================= CREATE =================
             'create' => [
-                'success' => 'Store created successfully. Waiting for admin approval.',
+                'success' => 'Магазин успешно создан. Ожидайте подтверждения администратора.',
             ],
 
-            // ================= LIST =================
             'list' => [
-                'success' => 'Store fetched successfully.',
+                'success' => 'Магазин успешно получен.',
             ],
 
-            // ================= DETAILS =================
             'details' => [
-                'success' => 'Store details fetched successfully.',
+                'success' => 'Данные магазина успешно получены.',
             ],
 
-            // ================= UPDATE =================
             'update' => [
-                'success' => 'Store updated successfully. Waiting for admin approval.',
+                'success' => 'Магазин успешно обновлён. Ожидайте подтверждения администратора.',
             ],
 
             // ================= VALIDATION =================
             'validation' => [
 
-                'name_required' => 'Store Name is required.',
-                'mobile_required' => 'Store Mobile Number is required.',
-                'email_required' => 'Store Email Address is required.',
-                'email_invalid' => 'Store Email must be a valid email address.',
-                'country_required' => 'Country is required.',
-                'city_required' => 'City is required.',
-                'address_required' => 'Complete Address is required.',
+                'name_required'    => 'Название магазина обязательно.',
+                'mobile_required'  => 'Номер телефона магазина обязателен.',
+                'email_required'   => 'Email магазина обязателен.',
+                'email_invalid'    => 'Email должен быть корректным.',
+                'country_required' => 'Страна обязательна.',
+                'city_required'    => 'Город обязателен.',
+                'address_required' => 'Полный адрес обязателен.',
 
-                'type_required' => 'Store Type is required.',
-                'type_array' => 'Store Type must be an array.',
-                'type_invalid' => 'Store Type must be one of: Retail, Online, Wholesale, Offline.',
+                'type_required' => 'Тип магазина обязателен.',
+                'type_array'    => 'Тип магазина должен быть массивом.',
+                'type_invalid'  => 'Тип магазина должен быть одним из: Retail, Online, Wholesale, Offline.',
 
-                'logo_image' => 'Logo must be an image file.',
-                'logo_mimes' => 'Logo must be jpeg, png, jpg, gif, or webp.',
-                'logo_max' => 'Logo size cannot exceed 2MB.',
+                'logo_image' => 'Логотип должен быть изображением.',
+                'logo_mimes' => 'Логотип должен быть в формате jpeg, png, jpg, gif или webp.',
+                'logo_max'   => 'Размер логотипа не должен превышать 2MB.',
 
-                'background_image' => 'Store background must be an image file.',
-                'background_mimes' => 'Store background must be jpeg, png, jpg, gif, or webp.',
-                'background_max' => 'Store background image size cannot exceed 4MB.',
+                'background_image' => 'Фон магазина должен быть изображением.',
+                'background_mimes' => 'Фон должен быть в формате jpeg, png, jpg, gif или webp.',
+                'background_max'   => 'Размер фонового изображения не должен превышать 4MB.',
 
-                'document_array' => 'Documents must be an array.',
-                'document_mimes' => 'Documents must be jpg, png or pdf.',
-                'document_max' => 'Each document must not exceed 4MB.',
+                'document_array' => 'Документы должны быть массивом.',
+                'document_mimes' => 'Документы должны быть в формате jpg, png или pdf.',
+                'document_max'   => 'Каждый документ не должен превышать 4MB.',
 
-                'social_invalid' => 'Invalid social link format.',
-                'color_string' => 'Background color must be text.',
+                'social_invalid' => 'Неверный формат ссылки.',
+                'color_string'   => 'Цвет фона должен быть текстом.',
             ],
 
             // ================= VIDEO =================
             'video' => [
 
-                // ================= AUTH =================
                 'auth' => [
-                    'unauthorized' => 'Unauthorized user.',
-                    'invalid_store' => 'Store not found or not owned by user.',
+                    'unauthorized' => 'Пользователь не авторизован.',
+                    'invalid_store' => 'Магазин не найден или не принадлежит пользователю.',
                 ],
 
-                // ================= PLANS =================
                 'plans' => [
-                    'success' => 'Plans fetched successfully.',
-                    'with_status_success' => 'Plans with status fetched successfully.',
+                    'success' => 'Планы успешно получены.',
+                    'with_status_success' => 'Планы со статусом успешно получены.',
                 ],
 
-                // ================= VIDEO REQUEST =================
                 'request' => [
-                    'success' => 'Request sent to admin.',
-                    'duplicate' => 'You already have a pending request for this plan.',
-                    'invalid_store' => 'Invalid store or not owned by user.',
+                    'success' => 'Запрос отправлен администратору.',
+                    'duplicate' => 'У вас уже есть ожидающий запрос для этого плана.',
+                    'invalid_store' => 'Неверный магазин или не принадлежит пользователю.',
                 ],
 
-                // ================= UPLOAD =================
                 'upload' => [
-                    'unauthorized' => 'Unauthorized user.',
-                    'permission_denied' => 'You do not have permission to upload video for this store.',
-                    'no_plan' => 'No approved video plan found. Please purchase and get approval first.',
-                    'expired' => 'Your previous video plan has expired. Please renew your plan.',
-                    'success' => 'Video uploaded successfully.',
-                    'failed' => 'Upload failed.',
-                    'missing_chunk' => 'Missing chunk at index :index',
+                    'unauthorized'      => 'Пользователь не авторизован.',
+                    'permission_denied' => 'У вас нет прав для загрузки видео в этот магазин.',
+                    'no_plan'           => 'Нет одобренного видеоплана. Пожалуйста, сначала приобретите и получите одобрение.',
+                    'expired'           => 'Ваш предыдущий видеоплан истёк. Пожалуйста, продлите его.',
+                    'success'           => 'Видео успешно загружено.',
+                    'failed'            => 'Ошибка загрузки.',
+                    'missing_chunk'     => 'Отсутствует часть с индексом :index',
                 ],
 
                 // ================= VALIDATION =================
                 'validation' => [
 
                     // store
-                    'store_required' => 'Store ID is required.',
-                    'store_exists' => 'Store not found.',
+                    'store_required' => 'ID магазина обязателен.',
+                    'store_exists'   => 'Магазин не найден.',
 
                     // plan
-                    'plan_required' => 'Please select a plan.',
-                    'plan_exists' => 'Selected plan is invalid.',
+                    'plan_required' => 'Пожалуйста, выберите план.',
+                    'plan_exists'   => 'Выбранный план недействителен.',
 
                     // payment
-                    'payment_required' => 'Payment screenshot is required.',
-                    'payment_image' => 'File must be an image.',
-                    'payment_mimes' => 'Only JPG, JPEG, PNG allowed.',
-                    'payment_max' => 'Image size must be less than 2MB.',
+                    'payment_required' => 'Скриншот оплаты обязателен.',
+                    'payment_image'    => 'Файл должен быть изображением.',
+                    'payment_mimes'    => 'Разрешены только JPG, JPEG, PNG.',
+                    'payment_max'      => 'Размер изображения должен быть меньше 2MB.',
 
                     // chunk upload
-                    'chunk_required' => 'Video chunk is required.',
-                    'chunk_file' => 'Invalid chunk file.',
-                    'chunk_mimes' => 'Only MP4, MOV, AVI formats allowed.',
+                    'chunk_required' => 'Часть видео (chunk) обязательна.',
+                    'chunk_file'     => 'Неверный файл chunk.',
+                    'chunk_mimes'    => 'Разрешены только MP4, MOV, AVI.',
 
-                    'chunk_index_required' => 'Chunk index is required.',
-                    'chunk_index_integer' => 'Chunk index must be a number.',
-                    'chunk_index_min' => 'Chunk index must be 0 or greater.',
+                    'chunk_index_required' => 'Индекс chunk обязателен.',
+                    'chunk_index_integer'  => 'Индекс chunk должен быть числом.',
+                    'chunk_index_min'      => 'Индекс chunk должен быть 0 или больше.',
 
-                    'total_chunks_required' => 'Total chunks is required.',
-                    'total_chunks_integer' => 'Total chunks must be a number.',
-                    'total_chunks_min' => 'Total chunks must be at least 1.',
+                    'total_chunks_required' => 'Общее количество chunk обязательно.',
+                    'total_chunks_integer'  => 'Количество chunk должно быть числом.',
+                    'total_chunks_min'      => 'Количество chunk должно быть не менее 1.',
 
-                    'upload_id_required' => 'Upload ID is required.',
+                    'upload_id_required' => 'Upload ID обязателен.',
                 ],
 
                 // ================= LOGIC ERRORS =================
                 'error' => [
-                    'store_not_found' => 'Store not found or not owned by user.',
-                    'plan_invalid' => 'Invalid plan configuration.',
-                    'no_approved_plan' => 'No approved video plan found. Please purchase and get approval first.',
-                    'expired_plan' => 'Your previous video plan has expired. Please renew your plan.',
+                    'store_not_found' => 'Магазин не найден или не принадлежит пользователю.',
+                    'plan_invalid'    => 'Неверная конфигурация плана.',
+                    'no_approved_plan'=> 'Нет одобренного видеоплана. Пожалуйста, сначала приобретите и получите одобрение.',
+                    'expired_plan'    => 'Ваш предыдущий видеоплан истёк. Пожалуйста, продлите его.',
                 ],
+
             ],
         ],
 
@@ -573,29 +549,29 @@ return [
 
             // ================= AUTH =================
             'auth' => [
-                'unauthorized' => 'Unauthorized vendor.',
+                'unauthorized' => 'Продавец не авторизован.',
             ],
 
             // ================= SUCCESS =================
             'success' => [
-                'updated' => 'Payment modes updated successfully.',
-                'fetched' => 'Payment details fetched successfully.',
+                'updated' => 'Способы оплаты успешно обновлены.',
+                'fetched' => 'Данные оплаты успешно получены.',
             ],
 
             // ================= VALIDATION =================
             'validation' => [
 
-                'payment_modes_required' => 'Payment mode is required.',
-                'payment_modes_array' => 'Payment mode must be an array.',
-                'payment_modes_invalid' => 'Payment mode must be COD or Bank.',
+                'payment_modes_required' => 'Способ оплаты обязателен.',
+                'payment_modes_array'    => 'Способ оплаты должен быть массивом.',
+                'payment_modes_invalid'  => 'Способ оплаты должен быть COD или Bank.',
 
-                'banks_required' => 'Bank details are required when payment mode includes Bank.',
+                'banks_required' => 'Банковские данные обязательны, если выбран способ Bank.',
 
-                'bank_id_required' => 'Bank ID is required.',
-                'bank_id_exists' => 'Selected bank does not exist.',
+                'bank_id_required' => 'ID банка обязателен.',
+                'bank_id_exists'   => 'Выбранный банк не существует.',
 
-                'account_holder_required' => 'Account holder name is required.',
-                'account_number_required' => 'Account number is required.',
+                'account_holder_required' => 'Имя владельца счета обязательно.',
+                'account_number_required' => 'Номер счета обязателен.',
             ],
         ],
 

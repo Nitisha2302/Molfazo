@@ -192,16 +192,7 @@ class CategoryController extends Controller
     // Store sub-category
     public function storeSubCategory(Request $request)
     {
-        // $request->validate([
-        //     'category_id' => 'required|exists:categories,id',
-        //     'name' => 'required|string|max:255|unique:sub_categories,name,NULL,id,category_id,' . $request->category_id,
-        //        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:1024',
-        // ], [
-        //     'category_id.required' => 'Please select a category.',
-        //     'category_id.exists' => 'Selected category is invalid.',
-        //     'name.required' => 'Sub-category name is required.',
-        //     'name.unique' => 'This sub-category already exists in the selected category.',
-        // ]);
+
 
         $request->validate([
             'category_id' => 'required|exists:categories,id',
@@ -257,12 +248,6 @@ class CategoryController extends Controller
     {
         $subCategory = SubCategory::findOrFail($id);
 
-        // $request->validate([
-        //     'category_id' => 'required|exists:categories,id',
-        //     'name' => 'required|string|max:255|unique:sub_categories,name,' . $id . ',id,category_id,' . $request->category_id,
-        //     'status_id' => 'required|in:1,2',
-        //      'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:1024',
-        // ]);
 
         $request->validate([
             'category_id' => 'required|exists:categories,id',
@@ -393,18 +378,6 @@ class CategoryController extends Controller
 
     public function storeChildCategory(Request $request)
     {
-        // $request->validate([
-        //     'sub_category_id' => 'required|exists:sub_categories,id',
-        //     'name' => 'required|string|max:255|unique:child_categories,name,NULL,id,sub_category_id,' . $request->sub_category_id,
-        //     'status_id' => 'required|in:1,2',
-        //     'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        // ], [
-        //     'sub_category_id.required' => 'Please select a sub category.',
-        //     'sub_category_id.exists'   => 'Selected sub category is invalid.',
-        //     'name.required'            => 'Child category name is required.',
-        //     'name.unique'              => 'This child category already exists under the selected sub category.',
-        //     'status_id.required'       => 'Please select status.',
-        // ]);
 
         $request->validate([
             'sub_category_id' => 'required|exists:sub_categories,id',

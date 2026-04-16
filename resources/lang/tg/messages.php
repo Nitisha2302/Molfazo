@@ -199,233 +199,215 @@ return [
         ],
 
 
-         'category' => [
+        'category' => [
 
             'list' => [
-                'success' => 'Category successfully fetched.',
-                'empty'   => 'No categories found.',
+                'success' => 'Категорияҳо бомуваффақият гирифта шуданд.',
+                'empty'   => 'Ягон категория ёфт нашуд.',
             ],
 
             'subcategory' => [
-                'success' => 'Sub categories fetched successfully.',
-                'empty'   => 'No subcategories found.',
+                'success' => 'Зеркатегорияҳо бомуваффақият гирифта шуданд.',
+                'empty'   => 'Ягон зеркатегория ёфт нашуд.',
             ],
 
             'child_category' => [
-                'success' => 'Child categories fetched successfully.',
-                'empty'   => 'No child categories found.',
+                'success' => 'Категорияҳои поёнӣ бомуваффақият гирифта шуданд.',
+                'empty'   => 'Ягон категорияи поёнӣ ёфт нашуд.',
             ],
 
             'attributes' => [
-                'success' => 'Attributes fetched successfully.',
-                'empty'   => 'No attributes found for this category.',
+                'success' => 'Хусусиятҳо бомуваффақият гирифта шуданд.',
+                'empty'   => 'Барои ин категория ягон хусусият ёфт нашуд.',
             ],
         ],
 
         'banner' => [
-            'success' => 'Banners fetched successfully',
-            'empty_city' => 'No banners found for this city',
+            'success' => 'Баннерҳо бомуваффақият гирифта шуданд.',
+            'empty_city' => 'Барои ин шаҳр ягон баннер ёфт нашуд.',
         ],
 
         'city' => [
-            'success' => 'Cities fetched successfully',
+            'success' => 'Шаҳрҳо бомуваффақият гирифта шуданд.',
         ],
 
-         'chat' => [
+        'chat' => [
 
             'list' => [
-                'success' => 'Chats fetched successfully.',
-                'empty'   => 'No chats found.',
+                'success' => 'Чатҳо бомуваффақият гирифта шуданд.',
+                'empty'   => 'Ягон чат ёфт нашуд.',
             ],
 
             'send' => [
-                'success' => 'Message sent successfully.',
+                'success' => 'Паём бомуваффақият фиристода шуд.',
             ],
 
             'validation' => [
-                'receiver_required' => 'Receiver is required.',
-                'receiver_exists'   => 'Selected user does not exist.',
-                'message_string'    => 'Message must be valid text.',
+                'receiver_required' => 'Қабулкунанда ҳатмист.',
+                'receiver_exists'   => 'Корбари интихобшуда вуҷуд надорад.',
+                'message_string'    => 'Паём бояд матни дуруст бошад.',
             ],
 
-            'unauthorized' => 'User not authenticated.',
+            'unauthorized' => 'Корбар тасдиқ нашудааст.',
         ],
 
         'notification' => [
             'delete' => [
-                'success' => 'Deleted successfully',
-                'not_found' => 'Notification not found',
-                'unauthorized' => 'User not authenticated.',
+                'success' => 'Бомуваффақият нест карда шуд.',
+                'not_found' => 'Огоҳинома ёфт нашуд.',
+                'unauthorized' => 'Корбар тасдиқ нашудааст.',
             ],
         ],
 
         'order' => [
 
-            'unauthorized' => 'Vendor account not approved or unauthenticated.',
+            'unauthorized' => 'Ҳисоби фурӯшанда тасдиқ нашудааст ё дастрасӣ вуҷуд надорад.',
 
             'list' => [
-                'success' => 'Orders fetched successfully.',
-                'empty'   => 'No orders found.',
+                'success' => 'Фармоишҳо бомуваффақият гирифта шуданд.',
+                'empty'   => 'Ягон фармоиш ёфт нашуд.',
             ],
 
             'details' => [
-                'not_found' => 'Order not found.',
+                'not_found' => 'Фармоиш ёфт нашуд.',
             ],
 
             'update_status' => [
 
-                'success' => 'Order status updated successfully to :status.',
+                'success' => 'Статуси фармоиш бомуваффақият ба :status тағйир дода шуд.',
 
-                'already_completed' => 'Order is already completed. Status cannot be changed.',
-                'already_cancelled' => 'Order is already cancelled. Status cannot be changed.',
-                'accept_first'      => 'Order must be accepted before completing.',
+                'already_completed' => 'Фармоиш аллакай анҷом шудааст. Статусро тағйир додан мумкин нест.',
+                'already_cancelled' => 'Фармоиш аллакай бекор шудааст. Статусро тағйир додан мумкин нест.',
+                'accept_first'      => 'Фармоиш бояд аввал қабул карда шавад.',
 
                 'validation' => [
-                    'status_required' => 'Status is required.',
-                    'status_invalid'  => 'Invalid status. Allowed values: 2=Accepted, 3=Completed, 4=Cancelled.',
+                    'status_required' => 'Статус ҳатмист.',
+                    'status_invalid'  => 'Статуси нодуруст. Арзишҳои иҷозатшуда: 2=Қабул шуд, 3=Анҷом шуд, 4=Бекор шуд.',
                 ],
 
                 'status_text' => [
-                    'accepted'  => 'Accepted',
-                    'completed' => 'Completed',
-                    'cancelled' => 'Cancelled',
-                    'unknown'   => 'Unknown',
+                    'accepted'  => 'Қабул шуд',
+                    'completed' => 'Анҷом шуд',
+                    'cancelled' => 'Бекор шуд',
+                    'unknown'   => 'Номаълум',
                 ],
             ],
 
             'notification' => [
-                'title' => '📦 Order Status Update',
+                'title' => '📦 Навсозии статуси фармоиш',
 
-                'accepted'  => '✅ Your order for :products has been accepted.',
-                'completed' => '🎉 Your order for :products has been completed successfully.',
-                'cancelled' => '❌ Your order for :products has been cancelled.',
-                'default'   => 'Your order for :products status updated.',
+                'accepted'  => '✅ Фармоиши шумо барои :products қабул шуд.',
+                'completed' => '🎉 Фармоиши шумо барои :products бомуваффақият анҷом шуд.',
+                'cancelled' => '❌ Фармоиши шумо барои :products бекор карда шуд.',
+                'default'   => 'Статуси фармоиши шумо барои :products навсозӣ шуд.',
             ],
         ],
 
         'product' => [
 
             'copy' => [
-                 'only_approved' => 'Only approved products can be copied.',
-                'success' => 'Product copied & updated successfully.',
+                'only_approved' => 'Танҳо маҳсулоти тасдиқшуда метавонанд нусхабардорӣ шаванд.',
+                'success' => 'Маҳсулот бомуваффақият нусхабардорӣ ва навсозӣ шуд.',
             ],
 
-            /* ===============================
-            CREATE PRODUCT
-            =============================== */
             'create' => [
+                'unauthorized' => 'Ҳисоби фурӯшанда тасдиқ нашудааст ё дастрасӣ вуҷуд надорад.',
+                'invalid_store' => 'Мағоза нодуруст ё тасдиқ нашудааст.',
+                'child_category_invalid' => 'Категорияи поёнӣ ба зеркатегорияи интихобшуда тааллуқ надорад.',
 
-                'unauthorized' => 'Vendor account is not approved or authenticated.',
-                'invalid_store' => 'Invalid or unapproved store.',
-                'child_category_invalid' => 'Child category does not belong to selected sub-category.',
-
-                'success' => 'Product added successfully.',
+                'success' => 'Маҳсулот бомуваффақият илова шуд.',
 
                 'validation' => [
-                    'store_required' => 'Please select a store.',
-                    'store_exists'   => 'The selected store does not exist.',
+                    'store_required' => 'Лутфан мағозаро интихоб кунед.',
+                    'store_exists'   => 'Мағозаи интихобшуда вуҷуд надорад.',
 
-                    'name_required'  => 'Product name is required.',
+                    'name_required'  => 'Номи маҳсулот ҳатмист.',
 
-                    'price_required' => 'Product price is required.',
-                    'price_numeric'  => 'Price must be a valid number.',
+                    'price_required' => 'Нархи маҳсулот ҳатмист.',
+                    'price_numeric'  => 'Нарх бояд рақами дуруст бошад.',
 
-                    'discount_numeric' => 'Discount price must be a valid number.',
+                    'discount_numeric' => 'Нархи тахфиф бояд рақами дуруст бошад.',
 
-                    'quantity_required' => 'Available quantity is required.',
-                    'quantity_integer'  => 'Available quantity must be an integer.',
+                    'quantity_required' => 'Миқдори дастрас ҳатмист.',
+                    'quantity_integer'  => 'Миқдор бояд адади бутун бошад.',
 
-                    'images_required' => 'At least one image is required.',
-                    'images_array'    => 'Images must be sent as an array.',
-                    'images_mimes'    => 'Each image must be jpeg, jpg, png, or gif.',
+                    'images_required' => 'Ҳадди ақал як тасвир лозим аст.',
+                    'images_array'    => 'Тасвирҳо бояд дар шакли массив бошанд.',
+                    'images_mimes'    => 'Ҳар тасвир бояд JPEG, JPG, PNG ё GIF бошад.',
                 ],
             ],
 
-            /* ===============================
-            LIST PRODUCTS
-            =============================== */
             'list' => [
-
-                'unauthorized' => 'Vendor account is not approved or authenticated.',
-                'success'      => 'Products fetched successfully.',
-                'empty'        => 'No products found.',
+                'unauthorized' => 'Ҳисоби фурӯшанда тасдиқ нашудааст ё дастрасӣ вуҷуд надорад.',
+                'success'      => 'Маҳсулотҳо бомуваффақият гирифта шуданд.',
+                'empty'        => 'Ягон маҳсулот ёфт нашуд.',
             ],
 
             'details' => [
-
-                'unauthorized' => 'Vendor account is not approved or authenticated.',
-                'not_found'    => 'Product not found.',
-                'success'      => 'Product details fetched successfully.',
-
+                'unauthorized' => 'Ҳисоби фурӯшанда тасдиқ нашудааст ё дастрасӣ вуҷуд надорад.',
+                'not_found'    => 'Маҳсулот ёфт нашуд.',
+                'success'      => 'Тафсилоти маҳсулот бомуваффақият гирифта шуд.',
             ],
-
 
             'update' => [
-
-                'unauthorized' => 'Vendor not authenticated.',
-                'not_found' => 'Product not found.',
-                'success' => 'Product updated successfully.',
-
+                'unauthorized' => 'Фурӯшанда тасдиқ нашудааст.',
+                'not_found'    => 'Маҳсулот ёфт нашуд.',
+                'success'      => 'Маҳсулот бомуваффақият навсозӣ шуд.',
             ],
-
-        ],
-
-        'bank' => [
-            'list_success' => 'Bank list fetched successfully.',
         ],
 
         'combination' => [
-            'combination_upadted' => 'Combination updated successfully.',
-            'combination_delete' => 'Combination deleted successfully.',
+            'combination_updated' => 'Комбинатсия бомуваффақият навсозӣ шуд.',
+            'combination_deleted' => 'Комбинатсия бомуваффақият нест карда шуд.',
         ],
 
         'promotion' => [
 
-            'unauthorized' => 'Unauthorized',
+            'unauthorized' => 'Дастрасӣ иҷозат дода нашудааст.',
 
             'packages' => [
-                'success' => 'Packages fetched successfully',
-                'with_status_success' => 'Packages with status fetched successfully',
+                'success' => 'Пакетҳо бомуваффақият гирифта шуданд.',
+                'with_status_success' => 'Пакетҳо бо статус бомуваффақият гирифта шуданд.',
             ],
 
             'payment' => [
-                'success' => 'Payment details fetched successfully',
+                'success' => 'Маълумоти пардохт бомуваффақият гирифта шуд.',
             ],
 
             'store' => [
-                'success' => 'Promotion request submitted successfully',
-                'duplicate' => 'Request already pending for this product',
+                'success' => 'Дархости таблиғ бомуваффақият ирсол шуд.',
+                'duplicate' => 'Барои ин маҳсулот аллакай дархост дар интизор аст.',
             ],
 
             'validation' => [
-                'product_required' => 'Product id is required',
-                'package_required' => 'Package id is required',
-                'image_required' => 'Payment screenshot is required',
+                'product_required' => 'ID-и маҳсулот ҳатмист.',
+                'package_required' => 'ID-и пакет ҳатмист.',
+                'image_required' => 'Скриншоти пардохт ҳатмист.',
             ],
 
         ],
 
         'review' => [
 
-            'unauthorized' => 'Unauthorized',
+            'unauthorized' => 'Дастрасӣ иҷозат дода нашудааст.',
 
             'validation' => [
-                'title_required' => 'Title is required',
-                'review_required' => 'Review is required',
-                'rating_required' => 'Rating is required',
-                'username_required' => 'Username is required',
+                'title_required'    => 'Сарлавҳа ҳатмист.',
+                'review_required'   => 'Шарҳ ҳатмист.',
+                'rating_required'   => 'Баҳо ҳатмист.',
+                'username_required' => 'Номи корбар ҳатмист.',
             ],
 
             'promotion' => [
-                'not_approved' => 'Promotion not approved',
+                'not_approved' => 'Таблиғ тасдиқ нашудааст.',
             ],
 
             'limit' => [
-                'reached' => 'Review limit reached',
+                'reached' => 'Ҳадди ниҳоии баррасиҳо расидааст.',
             ],
 
             'store' => [
-                'success' => 'Review submitted successfully',
+                'success' => 'Барраси бомуваффақият ирсол шуд.',
             ],
 
         ],
@@ -434,136 +416,129 @@ return [
 
             // ================= AUTH =================
             'auth' => [
-                'not_vendor' => 'You are not a vendor.',
-                'not_approved' => 'Your vendor account is not approved yet. Please wait for admin approval.',
-                'unauthorized' => 'User is not authenticated.',
-                'not_found' => 'Store not found.',
-                'not_owner' => 'You do not have permission to access this store.',
+                'not_vendor'   => 'Шумо фурӯшанда нестед.',
+                'not_approved' => 'Ҳисоби фурӯшандаи шумо ҳанӯз тасдиқ нашудааст. Лутфан интизори тасдиқи админ бошед.',
+                'unauthorized' => 'Корбар тасдиқ нашудааст.',
+                'not_found'    => 'Мағоза ёфт нашуд.',
+                'not_owner'    => 'Шумо иҷозати дастрасӣ ба ин мағозаро надоред.',
             ],
 
-            // ================= CREATE =================
             'create' => [
-                'success' => 'Store created successfully. Waiting for admin approval.',
+                'success' => 'Мағоза бомуваффақият сохта шуд. Интизори тасдиқи админ.',
             ],
 
-            // ================= LIST =================
             'list' => [
-                'success' => 'Store fetched successfully.',
+                'success' => 'Мағоза бомуваффақият гирифта шуд.',
             ],
 
-            // ================= DETAILS =================
             'details' => [
-                'success' => 'Store details fetched successfully.',
+                'success' => 'Тафсилоти мағоза бомуваффақият гирифта шуд.',
             ],
 
-            // ================= UPDATE =================
             'update' => [
-                'success' => 'Store updated successfully. Waiting for admin approval.',
+                'success' => 'Мағоза бомуваффақият навсозӣ шуд. Интизори тасдиқи админ.',
             ],
 
             // ================= VALIDATION =================
             'validation' => [
 
-                'name_required' => 'Store Name is required.',
-                'mobile_required' => 'Store Mobile Number is required.',
-                'email_required' => 'Store Email Address is required.',
-                'email_invalid' => 'Store Email must be a valid email address.',
-                'country_required' => 'Country is required.',
-                'city_required' => 'City is required.',
-                'address_required' => 'Complete Address is required.',
+                'name_required'    => 'Номи мағоза ҳатмист.',
+                'mobile_required'  => 'Рақами телефони мағоза ҳатмист.',
+                'email_required'   => 'Email-и мағоза ҳатмист.',
+                'email_invalid'    => 'Email бояд дуруст бошад.',
+                'country_required' => 'Кишвар ҳатмист.',
+                'city_required'    => 'Шаҳр ҳатмист.',
+                'address_required' => 'Суроғаи пурра ҳатмист.',
 
-                'type_required' => 'Store Type is required.',
-                'type_array' => 'Store Type must be an array.',
-                'type_invalid' => 'Store Type must be one of: Retail, Online, Wholesale, Offline.',
+                'type_required' => 'Навъи мағоза ҳатмист.',
+                'type_array'    => 'Навъи мағоза бояд массив бошад.',
+                'type_invalid'  => 'Навъи мағоза бояд яке аз инҳо бошад: Retail, Online, Wholesale, Offline.',
 
-                'logo_image' => 'Logo must be an image file.',
-                'logo_mimes' => 'Logo must be jpeg, png, jpg, gif, or webp.',
-                'logo_max' => 'Logo size cannot exceed 2MB.',
+                'logo_image' => 'Лого бояд файл тасвир бошад.',
+                'logo_mimes' => 'Лого бояд jpeg, png, jpg, gif ё webp бошад.',
+                'logo_max'   => 'Андозаи лого набояд аз 2MB зиёд бошад.',
 
-                'background_image' => 'Store background must be an image file.',
-                'background_mimes' => 'Store background must be jpeg, png, jpg, gif, or webp.',
-                'background_max' => 'Store background image size cannot exceed 4MB.',
+                'background_image' => 'Заминаи мағоза бояд тасвир бошад.',
+                'background_mimes' => 'Замина бояд jpeg, png, jpg, gif ё webp бошад.',
+                'background_max'   => 'Андозаи замина набояд аз 4MB зиёд бошад.',
 
-                'document_array' => 'Documents must be an array.',
-                'document_mimes' => 'Documents must be jpg, png or pdf.',
-                'document_max' => 'Each document must not exceed 4MB.',
+                'document_array' => 'Ҳуҷҷатҳо бояд массив бошанд.',
+                'document_mimes' => 'Ҳуҷҷатҳо бояд jpg, png ё pdf бошанд.',
+                'document_max'   => 'Ҳар ҳуҷҷат набояд аз 4MB зиёд бошад.',
 
-                'social_invalid' => 'Invalid social link format.',
-                'color_string' => 'Background color must be text.',
+                'social_invalid' => 'Формати линк нодуруст аст.',
+                'color_string'   => 'Ранги замина бояд матн бошад.',
             ],
 
             // ================= VIDEO =================
             'video' => [
 
                 // ================= AUTH =================
-                'auth' => [
-                    'unauthorized' => 'Unauthorized user.',
-                    'invalid_store' => 'Store not found or not owned by user.',
+               'auth' => [
+                    'unauthorized' => 'Корбари тасдиқнашуда.',
+                    'invalid_store' => 'Мағоза ёфт нашуд ё ба корбар тааллуқ надорад.',
                 ],
 
-                // ================= PLANS =================
                 'plans' => [
-                    'success' => 'Plans fetched successfully.',
-                    'with_status_success' => 'Plans with status fetched successfully.',
+                    'success' => 'Планҳо бомуваффақият гирифта шуданд.',
+                    'with_status_success' => 'Планҳо бо статус бомуваффақият гирифта шуданд.',
                 ],
 
-                // ================= VIDEO REQUEST =================
                 'request' => [
-                    'success' => 'Request sent to admin.',
-                    'duplicate' => 'You already have a pending request for this plan.',
-                    'invalid_store' => 'Invalid store or not owned by user.',
+                    'success' => 'Дархост ба админ фиристода шуд.',
+                    'duplicate' => 'Шумо аллакай барои ин план дархости интизор доред.',
+                    'invalid_store' => 'Мағозаи нодуруст ё ба корбар тааллуқ надорад.',
                 ],
 
-                // ================= UPLOAD =================
                 'upload' => [
-                    'unauthorized' => 'Unauthorized user.',
-                    'permission_denied' => 'You do not have permission to upload video for this store.',
-                    'no_plan' => 'No approved video plan found. Please purchase and get approval first.',
-                    'expired' => 'Your previous video plan has expired. Please renew your plan.',
-                    'success' => 'Video uploaded successfully.',
-                    'failed' => 'Upload failed.',
-                    'missing_chunk' => 'Missing chunk at index :index',
+                    'unauthorized'      => 'Корбари тасдиқнашуда.',
+                    'permission_denied' => 'Шумо иҷозати боргузории видео барои ин мағозаро надоред.',
+                    'no_plan'           => 'Плани тасдиқшуда ёфт нашуд. Лутфан аввал харидорӣ ва тасдиқ гиред.',
+                    'expired'           => 'Плани қаблии шумо ба охир расидааст. Лутфан нав кунед.',
+                    'success'           => 'Видео бомуваффақият боргузорӣ шуд.',
+                    'failed'            => 'Боргузорӣ ноком шуд.',
+                    'missing_chunk'     => 'Қисм (chunk) бо индекси :index ёфт нашуд',
                 ],
 
                 // ================= VALIDATION =================
                 'validation' => [
 
                     // store
-                    'store_required' => 'Store ID is required.',
-                    'store_exists' => 'Store not found.',
+                    'store_required' => 'ID-и мағоза ҳатмист.',
+                    'store_exists'   => 'Мағоза ёфт нашуд.',
 
                     // plan
-                    'plan_required' => 'Please select a plan.',
-                    'plan_exists' => 'Selected plan is invalid.',
+                    'plan_required' => 'Лутфан планро интихоб кунед.',
+                    'plan_exists'   => 'Плани интихобшуда нодуруст аст.',
 
                     // payment
-                    'payment_required' => 'Payment screenshot is required.',
-                    'payment_image' => 'File must be an image.',
-                    'payment_mimes' => 'Only JPG, JPEG, PNG allowed.',
-                    'payment_max' => 'Image size must be less than 2MB.',
+                    'payment_required' => 'Скриншоти пардохт ҳатмист.',
+                    'payment_image'    => 'Файл бояд тасвир бошад.',
+                    'payment_mimes'    => 'Танҳо JPG, JPEG, PNG иҷозат дода мешавад.',
+                    'payment_max'      => 'Андозаи тасвир бояд аз 2MB кам бошад.',
 
                     // chunk upload
-                    'chunk_required' => 'Video chunk is required.',
-                    'chunk_file' => 'Invalid chunk file.',
-                    'chunk_mimes' => 'Only MP4, MOV, AVI formats allowed.',
+                    'chunk_required' => 'Қисми видео (chunk) ҳатмист.',
+                    'chunk_file'     => 'Файли chunk нодуруст аст.',
+                    'chunk_mimes'    => 'Танҳо MP4, MOV, AVI иҷозат дода мешавад.',
 
-                    'chunk_index_required' => 'Chunk index is required.',
-                    'chunk_index_integer' => 'Chunk index must be a number.',
-                    'chunk_index_min' => 'Chunk index must be 0 or greater.',
+                    'chunk_index_required' => 'Индекси chunk ҳатмист.',
+                    'chunk_index_integer'  => 'Индекси chunk бояд рақам бошад.',
+                    'chunk_index_min'      => 'Индекси chunk бояд 0 ё бештар бошад.',
 
-                    'total_chunks_required' => 'Total chunks is required.',
-                    'total_chunks_integer' => 'Total chunks must be a number.',
-                    'total_chunks_min' => 'Total chunks must be at least 1.',
+                    'total_chunks_required' => 'Шумораи умумии chunkҳо ҳатмист.',
+                    'total_chunks_integer'  => 'Шумораи chunkҳо бояд рақам бошад.',
+                    'total_chunks_min'      => 'Шумораи chunkҳо бояд камаш 1 бошад.',
 
-                    'upload_id_required' => 'Upload ID is required.',
+                    'upload_id_required' => 'Upload ID ҳатмист.',
                 ],
 
                 // ================= LOGIC ERRORS =================
                 'error' => [
-                    'store_not_found' => 'Store not found or not owned by user.',
-                    'plan_invalid' => 'Invalid plan configuration.',
-                    'no_approved_plan' => 'No approved video plan found. Please purchase and get approval first.',
-                    'expired_plan' => 'Your previous video plan has expired. Please renew your plan.',
+                    'store_not_found' => 'Мағоза ёфт нашуд ё ба корбар тааллуқ надорад.',
+                    'plan_invalid'    => 'Танзимоти план нодуруст аст.',
+                    'no_approved_plan'=> 'Плани видеоии тасдиқшуда ёфт нашуд. Лутфан аввал харидорӣ ва тасдиқ гиред.',
+                    'expired_plan'    => 'Плани қаблии видеоии шумо ба охир расидааст. Лутфан онро нав кунед.',
                 ],
             ],
         ],
@@ -572,29 +547,29 @@ return [
 
             // ================= AUTH =================
             'auth' => [
-                'unauthorized' => 'Unauthorized vendor.',
+                'unauthorized' => 'Фурӯшандаи тасдиқнашуда.',
             ],
 
             // ================= SUCCESS =================
             'success' => [
-                'updated' => 'Payment modes updated successfully.',
-                'fetched' => 'Payment details fetched successfully.',
+                'updated' => 'Усулҳои пардохт бомуваффақият навсозӣ шуданд.',
+                'fetched' => 'Маълумоти пардохт бомуваффақият гирифта шуд.',
             ],
 
             // ================= VALIDATION =================
             'validation' => [
 
-                'payment_modes_required' => 'Payment mode is required.',
-                'payment_modes_array' => 'Payment mode must be an array.',
-                'payment_modes_invalid' => 'Payment mode must be COD or Bank.',
+                'payment_modes_required' => 'Усули пардохт ҳатмист.',
+                'payment_modes_array'    => 'Усули пардохт бояд массив бошад.',
+                'payment_modes_invalid'  => 'Усули пардохт бояд COD ё Bank бошад.',
 
-                'banks_required' => 'Bank details are required when payment mode includes Bank.',
+                'banks_required' => 'Маълумоти бонкӣ ҳангоми интихоби Bank ҳатмист.',
 
-                'bank_id_required' => 'Bank ID is required.',
-                'bank_id_exists' => 'Selected bank does not exist.',
+                'bank_id_required' => 'ID-и бонк ҳатмист.',
+                'bank_id_exists'   => 'Бонки интихобшуда вуҷуд надорад.',
 
-                'account_holder_required' => 'Account holder name is required.',
-                'account_number_required' => 'Account number is required.',
+                'account_holder_required' => 'Номи соҳиби ҳисоб ҳатмист.',
+                'account_number_required' => 'Рақами ҳисоб ҳатмист.',
             ],
         ],
 
