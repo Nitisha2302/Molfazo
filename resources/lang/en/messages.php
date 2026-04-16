@@ -369,9 +369,6 @@ return [
 
         ],
 
-        'bank' => [
-            'list_success' => 'Bank list fetched successfully.',
-        ],
 
         'combination' => [
             'combination_upadted' => 'Combination updated successfully.',

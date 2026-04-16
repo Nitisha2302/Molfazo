@@ -22,30 +22,30 @@ class PromotionRequestController extends Controller
         $req->status = 'approved';
         $req->save();
 
-         // 🔔 SEND NOTIFICATION TO VENDOR
-    $vendor = $req->vendor;
+            // 🔔 SEND NOTIFICATION TO VENDOR
+        $vendor = $req->vendor;
 
-    if ($vendor && $vendor->fcm_token) {
+        if ($vendor && $vendor->fcm_token) {
 
-        $tokens = [
-            [
-                'fcm_token' => $vendor->fcm_token,
-                'device_type' => $vendor->device_type ?? 'android',
-                'user_id' => $vendor->id,
-            ]
-        ];
+            $tokens = [
+                [
+                    'fcm_token' => $vendor->fcm_token,
+                    'device_type' => $vendor->device_type ?? 'android',
+                    'user_id' => $vendor->id,
+                ]
+            ];
 
-        $notificationData = [
-            'notification_type' => 4,
-            'title' => "✅ Promotion Approved",
-            'body'  => "Your promotion request has been approved by admin.",
-            'promotion_request_id' => $req->id,
-            'status' => 'approved'
-        ];
+            $notificationData = [
+                'notification_type' => 4,
+                'title' => "✅ Promotion Approved",
+                'body'  => "Your promotion request has been approved by admin.",
+                'promotion_request_id' => $req->id,
+                'status' => 'approved'
+            ];
 
-        $fcmService = new \App\Services\FCMService();
-        $fcmService->sendNotification($tokens, $notificationData, true);
-    }
+            $fcmService = new \App\Services\FCMService();
+            $fcmService->sendNotification($tokens, $notificationData, true);
+        }
 
 
         return back()->with('success','Request Approved Successfully');
@@ -58,29 +58,29 @@ class PromotionRequestController extends Controller
         $req->save();
 
            // 🔔 SEND NOTIFICATION TO VENDOR
-    $vendor = $req->vendor;
+        $vendor = $req->vendor;
 
-    if ($vendor && $vendor->fcm_token) {
+        if ($vendor && $vendor->fcm_token) {
 
-        $tokens = [
-            [
-                'fcm_token' => $vendor->fcm_token,
-                'device_type' => $vendor->device_type ?? 'android',
-                'user_id' => $vendor->id,
-            ]
-        ];
+            $tokens = [
+                [
+                    'fcm_token' => $vendor->fcm_token,
+                    'device_type' => $vendor->device_type ?? 'android',
+                    'user_id' => $vendor->id,
+                ]
+            ];
 
-        $notificationData = [
-            'notification_type' => 4,
-            'title' => "❌ Promotion Rejected",
-            'body'  => "Your promotion request has been rejected by admin.",
-            'promotion_request_id' => $req->id,
-            'status' => 'rejected'
-        ];
+            $notificationData = [
+                'notification_type' => 4,
+                'title' => "❌ Promotion Rejected",
+                'body'  => "Your promotion request has been rejected by admin.",
+                'promotion_request_id' => $req->id,
+                'status' => 'rejected'
+            ];
 
-        $fcmService = new \App\Services\FCMService();
-        $fcmService->sendNotification($tokens, $notificationData, true);
-    }
+            $fcmService = new \App\Services\FCMService();
+            $fcmService->sendNotification($tokens, $notificationData, true);
+        }
 
         return back()->with('success','Request Rejected');
     }

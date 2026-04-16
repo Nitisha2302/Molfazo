@@ -53,34 +53,6 @@ class StoreController extends Controller
         return back()->with('success', 'Store approved successfully.');
     }
 
-    // Reject store
-    // public function reject(Store $store)
-    // {
-    //     $store->status_id = 3; // Rejected
-    //     $store->save();
-
-    //     return back()->with('success', 'Store rejected successfully.');
-    // }
-
-    //with reason
-
-    // public function reject(Request $request, Store $store)
-    // {
-    //     $request->validate([
-    //         'reject_reason' => 'required|string|max:500'
-    //     ], [
-    //         'reject_reason.required' => 'Please provide a reason for rejection.',
-    //     ]);
-
-    //     $store->status_id = 3; // Rejected
-    //     $store->reject_reason = $request->reject_reason;
-    //     $store->save();
-
-    //     return back()->with('success', 'Store rejected successfully.');
-    // }
-
-
-    // with notification 
 
     public function reject(Request $request, Store $store)
     {
