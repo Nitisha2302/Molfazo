@@ -69,7 +69,10 @@ class StoreController extends Controller
          // 🔥 Get all products (NO PAGINATION)
         $products = Product::where('store_id', $store->id)
          ->where('approval_status', 'approved')
-            ->with('primaryImage')
+            ->with('primaryImage',
+             'category:id,name',
+            'subCategory:id,name',
+            'childCategory:id,name')
             ->get();
 
         // 🔥 Convert primaryImage object → value
