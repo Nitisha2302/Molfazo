@@ -698,7 +698,7 @@ return [
 
         ],
 
-        // ✅ CART ADDED HERE
+        //  CART ADDED HERE
         'cart' => [
             'unauthorized' => 'Unauthorized access.',
             'product_not_available' => 'Product not available.',
