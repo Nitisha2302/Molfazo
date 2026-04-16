@@ -210,7 +210,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Deleted successfully'
+             'message' => __('messages.vendor.notification.delete.success')
         ]);
     }
 

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\FCMService;
-
+use Illuminate\Support\Facades\App;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -36,7 +36,7 @@ class OrderController extends Controller
        if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized'
+                'message' => __('messages.customer.order.place.unauthorized')
             ], 401);
         }
 
@@ -53,12 +53,12 @@ class OrderController extends Controller
             ],
             [
                 // ✅ ADDRESS
-                'address_id.required_if' => 'Delivery address is required for home delivery.',
-               'address_id.exists' => 'Selected delivery address is invalid.',
-                'payment_type.required' => 'Payment type is required',
-                'payment_type.in'       => 'Payment type must be COD or Online',
-                 'bank_id.required_if' => 'Please select a bank for online payment.',
-                'bank_id.exists'      => 'Selected bank is invalid.',
+               'address_id.required_if' => __('messages.customer.order.place.validation.address_required'),
+                'address_id.exists'      => __('messages.customer.order.place.validation.address_invalid'),
+                'payment_type.required'  => __('messages.customer.order.place.validation.payment_required'),
+                'payment_type.in'        => __('messages.customer.order.place.validation.payment_invalid'),
+                'bank_id.required_if'    => __('messages.customer.order.place.validation.bank_required'),
+                'bank_id.exists'         => __('messages.customer.order.place.validation.bank_invalid'),
             ]
         );
         
@@ -78,7 +78,7 @@ class OrderController extends Controller
         if ($cartItems->isEmpty()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Your cart is empty.'
+                'message' => __('messages.customer.order.place.empty_cart')
             ], 400);
         }
 
@@ -87,7 +87,7 @@ class OrderController extends Controller
         if ($storeIds->count() > 1) {
             return response()->json([
                 'status' => false,
-                'message' => 'Multiple store products not allowed in one order.'
+                'message' => __('messages.customer.order.place.multi_store')
             ], 400);
         }
 
@@ -100,7 +100,7 @@ class OrderController extends Controller
         if ($request->payment_type == 'online' && !in_array('bank', $paymentModes)) {
             return response()->json([
                 'status' => false,
-                'message' => 'This vendor does not support bank payment.'
+                'message' => __('messages.customer.order.place.bank_not_supported')
             ], 400);
         }
 
@@ -127,7 +127,7 @@ class OrderController extends Controller
             if (!$address) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Invalid address selected.'
+                    'message' => __('messages.customer.order.place.invalid_address')
                 ], 400);
             }
 
@@ -150,7 +150,9 @@ class OrderController extends Controller
                 if ($item->quantity > $item->combination->stock) {
                     return response()->json([
                         'status' => false,
-                        'message' => "Variant of {$item->product->name} is out of stock."
+                        'message' => __('messages.customer.order.place.stock.variant_out', [
+                            'product' => $item->product->name
+                        ])
                     ], 400);
                 }
 
@@ -159,7 +161,9 @@ class OrderController extends Controller
                 if ($item->quantity > $item->product->available_quantity) {
                     return response()->json([
                         'status' => false,
-                        'message' => "Product {$item->product->name} does not have enough stock."
+                        'message' => __('messages.customer.order.place.stock.product_out', [
+                                'product' => $item->product->name
+                            ])
                     ], 400);
                 }
 
@@ -196,7 +200,7 @@ class OrderController extends Controller
                 if (!$vendorBank) {
                     return response()->json([
                         'status' => false,
-                        'message' => 'Selected bank is not available for this vendor.'
+                        'message' => __('messages.customer.order.place.bank_not_available')
                     ], 400);
                 }
 
@@ -264,8 +268,22 @@ class OrderController extends Controller
                         ? $firstProduct . " + " . ($productCount - 1) . " more"
                         : $firstProduct;
 
-                    $title = "🛒 New Order";
-                    $body  = $user->name . " placed a new order for " . $productText;
+                    // $title = "🛒 New Order";
+                    // $body  = $user->name . " placed a new order for " . $productText;
+                   $originalLocale = app()->getLocale(); // backup
+
+                    $lang = $vendor->language ?? 'en'; // fallback if null
+
+                    app()->setLocale($lang); // ✅ set vendor language
+
+                    $title = __('messages.customer.order.place.notification.title');
+
+                    $body = __('messages.customer.order.place.notification.body', [
+                        'user' => $user->name,
+                        'product' => $productText
+                    ]);
+
+                    app()->setLocale($originalLocale); // restore
 
                     $tokens = [
                         [
@@ -292,7 +310,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Order placed successfully.',
+                'message' => __('messages.customer.order.place.success'),
                 'order_id' => $order->id
             ]);
 
@@ -301,7 +319,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'status' => false,
-                'message' => 'Failed to place order.',
+                'message' => __('messages.customer.order.place.failed'),
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -704,6 +722,7 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => true,
+              'message' => __('messages.customer.order.list.success'),
             'data' => $orders
         ]);
     }
@@ -771,6 +790,7 @@ class OrderController extends Controller
 
     // with combination 
 
+    
      public function orderDetails($id)
     {
         $user = Auth::guard('api')->user();
@@ -784,13 +804,14 @@ class OrderController extends Controller
         if (!$order) {
             return response()->json([
                 'status' => false,
-                'message' => 'Order not found.'
+                'message' => __('messages.customer.order.details.not_found')
             ], 404);
         }
           $vendor = $order->store->vendor ?? null;
 
         return response()->json([
             'status' => true,
+              'message' => __('messages.customer.order.details.success'),
             'data' => [
                 'order_id' => $order->id,
                 'total_amount' => $order->total_amount,
@@ -848,6 +869,7 @@ class OrderController extends Controller
             default => 'Unknown',
         };
     }
+
 
 
 }

@@ -22,7 +22,7 @@ class OrderController extends Controller
         if (!$user || $user->role != 2 || $user->status_id != 1) {
             return response()->json([
                 'status' => false,
-                'message' => 'Vendor account not approved or unauthenticated.'
+               'message' => __('messages.vendor.order.unauthorized')
             ], 403);
         }
 
@@ -44,7 +44,7 @@ class OrderController extends Controller
         if ($orders->isEmpty()) {
             return response()->json([
                 'status' => false,
-                'message' => 'No orders found.',
+                  'message' => __('messages.vendor.order.list.empty'),
                 'data' => []
             ], 404);
         }
@@ -105,7 +105,7 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Orders fetched successfully.',
+           'message' => __('messages.vendor.order.list.success'),
             'data' => $orders
         ], 200);
     }
@@ -125,7 +125,7 @@ class OrderController extends Controller
         if (!$user || $user->role != 2 || $user->status_id != 1) {
             return response()->json([
                 'status' => false,
-                'message' => 'Vendor account not approved or unauthenticated.'
+                'message' => __('messages.vendor.order.unauthorized')
             ], 403);
         }
 
@@ -158,7 +158,7 @@ class OrderController extends Controller
         if (!$order) {
             return response()->json([
                 'status' => false,
-                'message' => 'Order not found.'
+               'message' => __('messages.vendor.order.details.not_found')
             ], 404);
         }
 
@@ -170,14 +170,14 @@ class OrderController extends Controller
         if ($order->status_id == 3) {
             return response()->json([
                 'status' => false,
-                'message' => 'Order is already completed. Status cannot be changed.'
+              'message' => __('messages.vendor.order.update_status.already_completed')
             ], 400);
         }
 
         if ($order->status_id == 4) {
             return response()->json([
                 'status' => false,
-                'message' => 'Order is already cancelled. Status cannot be changed.'
+                'message' => __('messages.vendor.order.update_status.already_cancelled')
             ], 400);
         }
 
@@ -185,7 +185,7 @@ class OrderController extends Controller
         if ($order->status_id == 1 && $request->status_id == 3) {
             return response()->json([
                 'status' => false,
-                'message' => 'Order must be accepted before completing.'
+                'message' => __('messages.vendor.order.update_status.accept_first')
             ], 400);
         }
 
@@ -222,14 +222,32 @@ class OrderController extends Controller
 
         if ($customer && $customer->fcm_token) {
 
-            $title = "📦 Order Status Update";
+         $originalLocale = app()->getLocale();
+
+        // ✅ SET RECEIVER LANGUAGE
+        $lang = $customer->language ?? 'en';
+        app()->setLocale($lang);
+
+
+          $title = __('messages.vendor.order.notification.title');
 
             $body = match ((int)$request->status_id) {
-                2 => "✅ Your order for {$productText} has been accepted.",
-                3 => "🎉 Your order for {$productText} has been completed successfully.",
-                4 => "❌ Your order for {$productText} has been cancelled.",
-                default => "Your order for {$productText} status updated."
+                2 => __('messages.vendor.order.notification.accepted', [
+                    'products' => $productText
+                ]),
+                3 => __('messages.vendor.order.notification.completed', [
+                    'products' => $productText
+                ]),
+                4 => __('messages.vendor.order.notification.cancelled', [
+                    'products' => $productText
+                ]),
+                default => __('messages.vendor.order.notification.default', [
+                    'products' => $productText
+                ]),
             };
+
+            // 🔁 restore language
+          app()->setLocale($originalLocale);
 
             $tokens = [
                 [

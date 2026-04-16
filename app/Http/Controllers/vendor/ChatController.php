@@ -12,6 +12,7 @@ class ChatController extends Controller
 {
     public function list()
     {
+        
         $chats = Chat::where('sender_id', Auth::id())
             ->orWhere('receiver_id', Auth::id())
             ->latest()
@@ -19,6 +20,7 @@ class ChatController extends Controller
 
         return response()->json([
             'status' => true,
+             'message' => __('messages.vendor.chat.list.success'),
             'data' => $chats,
         ]);
     }
@@ -38,7 +40,7 @@ class ChatController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Message sent successfully.',
+            'message' => __('messages.vendor.chat.send.success'),
             'data' => $chat,
         ]);
     }

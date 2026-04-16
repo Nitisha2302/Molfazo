@@ -7,6 +7,7 @@ use App\Models\Conversation;
 use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\App;
 
 class ChatController extends Controller
 {
@@ -18,7 +19,7 @@ class ChatController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'User not authenticated'
+                'message' => __('messages.customer.chat.unauthorized')
             ], 401);
         }
 
@@ -26,9 +27,9 @@ class ChatController extends Controller
             'other_user_id' => 'required|exists:users,id|not_in:' . $user->id,
              'product_id'    => 'required|exists:products,id',
         ], [
-            'other_user_id.required' => 'Other user id is required',
-            'other_user_id.exists'   => 'Other user does not exist',
-            'other_user_id.not_in'   => 'You cannot chat with yourself',
+            'other_user_id.required' => __('messages.customer.chat.validation.other_user_required'),
+            'other_user_id.exists'   => __('messages.customer.chat.validation.other_user_invalid'),
+            'other_user_id.not_in'   => __('messages.customer.chat.validation.self_chat'),
         ]);
 
         if ($validator->fails()) {
@@ -47,7 +48,7 @@ class ChatController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Conversation started successfully',
+               'message' => __('messages.customer.chat.conversation_started'),
             'conversation' => $conversation
         ], 200);
     }
@@ -61,7 +62,7 @@ class ChatController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'User not authenticated'
+               'message' => __('messages.customer.chat.unauthorized')
             ], 401);
         }
 
@@ -134,7 +135,7 @@ class ChatController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Conversation list fetched successfully',
+            'message' => __('messages.customer.chat.conversation_list'),
             'conversations' => $result
         ], 200);
     }
@@ -149,15 +150,15 @@ class ChatController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'User not authenticated'
+                'message' => __('messages.customer.chat.unauthorized')
             ], 401);
         }
 
         $validator = Validator::make($request->all(), [
             'conversation_id' => 'required|exists:conversations,id',
         ], [
-            'conversation_id.required' => 'Conversation id is required',
-            'conversation_id.exists'   => 'Conversation not found',
+           'conversation_id.required' => __('messages.customer.chat.validation.conversation_required'),
+           'conversation_id.exists'   => __('messages.customer.chat.validation.conversation_invalid'),
         ]);
 
         if ($validator->fails()) {
@@ -172,7 +173,7 @@ class ChatController extends Controller
         if (!in_array($user->id, [$conversation->user_one_id, $conversation->user_two_id])) {
             return response()->json([
                 'status' => false,
-                'message' => 'You are not participant of this conversation'
+                 'message' => __('messages.customer.chat.not_participant')
             ], 403);
         }
 
@@ -208,7 +209,7 @@ class ChatController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Messages fetched successfully',
+             'message' => __('messages.customer.chat.messages_fetched'),
             'messages' => $messages
         ], 200);
     }
@@ -222,7 +223,7 @@ class ChatController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'User not authenticated'
+                 'message' => __('messages.customer.chat.unauthorized')
             ], 401);
         }
 
@@ -235,15 +236,20 @@ class ChatController extends Controller
             'type'            => 'nullable|in:text,image,file,system',
             'meta'            => 'nullable'
         ], [
-            'conversation_id.exists' => 'Conversation not found',
-            'other_user_id.exists'   => 'User not found',
-            'message.required'       => 'Message is required',
-            'message.string'         => 'Message must be string',
-            'message.max'            => 'Message too long (max 5000)',
-             'image.image'            => 'Invalid image file',
-            'image.mimes'            => 'Image must be jpg,jpeg,png,webp',
-            'image.max'              => 'Image size must be max 2MB',
-            'type.in'                => 'Invalid message type',
+
+           'conversation_id.exists' => __('messages.customer.chat.validation.conversation_invalid'),
+            'other_user_id.exists'   => __('messages.customer.chat.validation.other_user_invalid'),
+            'message.string'         => __('messages.customer.chat.validation.message_required'),
+            'image.image'            => __('messages.customer.chat.validation.image_invalid'),
+            // 'conversation_id.exists' => 'Conversation not found',
+            // 'other_user_id.exists'   => 'User not found',
+            // 'message.required'       => 'Message is required',
+            // 'message.string'         => 'Message must be string',
+            // 'message.max'            => 'Message too long (max 5000)',
+            //  'image.image'            => 'Invalid image file',
+            // 'image.mimes'            => 'Image must be jpg,jpeg,png,webp',
+            // 'image.max'              => 'Image size must be max 2MB',
+            // 'type.in'                => 'Invalid message type',
         ]);
 
         if ($validator->fails()) {
@@ -260,7 +266,7 @@ class ChatController extends Controller
             if (!$request->other_user_id) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Other user id is required if conversation id not passed'
+                      'message' => __('messages.customer.chat.validation.other_user_required')
                 ], 201);
             }
 
@@ -271,7 +277,7 @@ class ChatController extends Controller
         if (!in_array($user->id, [$conversation->user_one_id, $conversation->user_two_id])) {
             return response()->json([
                 'status' => false,
-                'message' => 'You are not a participant in this conversation'
+               'message' => __('messages.customer.chat.not_participant')
             ], 403);
         }
 
@@ -328,10 +334,17 @@ class ChatController extends Controller
             ? $conversation->user_two_id
             : $conversation->user_one_id;
 
+        // $receiver = User::find($receiverId);
+
         $receiver = \App\Models\User::find($receiverId);
 
         // ✅ Send FCM Notification (English Only)
         if ($receiver && $receiver->fcm_token) {
+
+        // 🌍 Set receiver language
+        $lang = $receiver->language ?? 'ru';
+        App::setLocale($lang);
+
 
             $tokens = [
                 [
@@ -341,18 +354,27 @@ class ChatController extends Controller
                 ]
             ];
 
-            // Notification body based on type
-            $body = '';
+              // 📩 Message body
+            $body = match ($type) {
+                'text' => $request->message,
+                'image' => __('messages.customer.chat.image_sent'),
+                'text_image' => ($request->message ?? '') . " 📷",
+                default => __('messages.customer.chat.new_message'),
+            };
 
-            if ($type == 'text') {
-                $body = $request->message;
-            } elseif ($type == 'image') {
-                $body = "📷 Sent an image";
-            } elseif ($type == 'text_image') {
-                $body = ($request->message ?? '') . " 📷";
-            } else {
-                $body = "New message received";
-            }
+
+            // Notification body based on type
+            // $body = '';
+
+            // if ($type == 'text') {
+            //     $body = $request->message;
+            // } elseif ($type == 'image') {
+            //     $body = "📷 Sent an image";
+            // } elseif ($type == 'text_image') {
+            //     $body = ($request->message ?? '') . " 📷";
+            // } else {
+            //     $body = "New message received";
+            // }
 
             $product = $conversation->product;
             $store = $product ? $product->store : null;
@@ -365,7 +387,7 @@ class ChatController extends Controller
 
             $notificationData = [
                 'notification_type' => 2,
-                'title' => "💬 New Message",
+                'title' => __('messages.customer.chat.new_message_title', [], $lang),
                 'body'  => $user->name . ": " . $body,
                 'conversation_id' => $conversation->id,
                 'sender_id' => $user->id,
@@ -386,7 +408,7 @@ class ChatController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Message sent successfully',
+           'message' => __('messages.customer.chat.message_sent'),
             'message_data' => [
                 'id' => $message->id,
                 'conversation_id' => $message->conversation_id,

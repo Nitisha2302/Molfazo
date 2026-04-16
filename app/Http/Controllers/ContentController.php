@@ -66,7 +66,7 @@ class ContentController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized'
+                'message' => __('messages.enquiry.unauthorized')
             ], 401);
         }
 
@@ -77,12 +77,10 @@ class ContentController extends Controller
                 'description' => 'required|string',
             ],
             [
-                // ✅ Custom Messages
-                'title.required'       => 'Please enter enquiry title.',
-                'title.string'         => 'Title must be valid text.',
-
-                'description.required' => 'Please enter enquiry description.',
-                'description.string'   => 'Description must be valid text.',
+                'title.required'       => __('messages.enquiry.store.validation.title_required'),
+                'title.string'         => __('messages.enquiry.store.validation.title_string'),
+                'description.required' => __('messages.enquiry.store.validation.description_required'),
+                'description.string'   => __('messages.enquiry.store.validation.description_string'),
             ]
         );
 
@@ -102,7 +100,7 @@ class ContentController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Query submitted successfully',
+               'message' => __('messages.enquiry.store.success'),
             'data' => $enquiry
         ]);
     }
@@ -114,7 +112,7 @@ class ContentController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized'
+                'message' => __('messages.enquiry.unauthorized')
             ], 401);
         }
 
@@ -124,7 +122,7 @@ class ContentController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Query fetched successfully',
+              'message' => __('messages.enquiry.list.success'),
             'data' => $data
         ]);
     }

@@ -354,15 +354,15 @@ class AuthController extends Controller
             'state'     => 'nullable|string',
             'pincode'   => 'nullable|digits:6',
         ], [
-            'name.required'      => 'Address type is required (Home / Office).',
-            'full_name.required' => 'Full name is required.',
-            'mobile.required'    => 'Mobile number is required.',
-            'mobile.digits'      => 'Mobile number must be 10 digits.',
-            'address.required'   => 'Address field cannot be empty.',
-            'city.required'      => 'City is required.',
-            'state.required'     => 'State is required.',
-            'pincode.required'   => 'Pincode is required.',
-            'pincode.digits'     => 'Pincode must be 6 digits.',
+            'name.required'      => __('messages.customer.address.validation.name_required'),
+            'full_name.required' => __('messages.customer.address.validation.full_name_required'),
+            'mobile.required'    => __('messages.customer.address.validation.mobile_required'),
+            'mobile.digits'      => __('messages.customer.address.validation.mobile_digits'),
+            'address.required'   => __('messages.customer.address.validation.address_required'),
+            'city.required'      => __('messages.customer.address.validation.city_required'),
+            'state.required'     => __('messages.customer.address.validation.state_required'),
+            'pincode.required'   => __('messages.customer.address.validation.pincode_required'),
+            'pincode.digits'     => __('messages.customer.address.validation.pincode_digits'),
         ]);
 
         if ($validator->fails()) {
@@ -391,15 +391,23 @@ class AuthController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Address saved successfully.',
+             'message' => __('messages.customer.address.saved'),
             'data'    => $address,
         ]);
     }
 
 
-    public function addressList()
+   public function addressList()
     {
         $user = Auth::guard('api')->user();
+
+        // ❌ not authenticated
+        if (!$user) {
+            return response()->json([
+                'status'  => false,
+                'message' => __('messages.customer.update_profile.unauthenticated'),
+            ], 401);
+        }
 
         $addresses = UserAddress::where('user_id', $user->id)
             ->orderByDesc('is_default')
@@ -407,14 +415,22 @@ class AuthController extends Controller
 
         return response()->json([
             'status' => true,
+            'message' => __('messages.customer.address.list_success'),
             'data'   => $addresses,
-        ]);
+        ], 200);
     }
 
 
     public function destroyAddress($id)
     {
         $user = Auth::guard('api')->user();
+
+         if (!$user) {
+            return response()->json([
+                'status'  => false,
+                'message' => __('messages.customer.update_profile.unauthenticated'),
+            ], 401);
+        }
 
         $address = UserAddress::where('id', $id)
             ->where('user_id', $user->id)
@@ -423,7 +439,7 @@ class AuthController extends Controller
         if (!$address) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Address not found.',
+                'message' => __('messages.customer.address.not_found'),
             ], 404);
         }
 
@@ -442,7 +458,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Address removed successfully.',
+                'message' => __('messages.customer.address.deleted'),
         ]);
     }
 
@@ -451,14 +467,21 @@ class AuthController extends Controller
     {
         $user = Auth::guard('api')->user();
 
+         if (!$user) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => __('messages.customer.update_profile.unauthenticated'),
+                ], 401);
+            }
+
         $validator = Validator::make(
             $request->all(),
             [
                 'address_id' => 'required|exists:user_addresses,id',
             ],
             [
-                'address_id.required' => 'Please select an address.',
-                'address_id.exists'   => 'Selected address does not exist.',
+                'address_id.required' => __('messages.customer.address.validation.address_required'),
+                'address_id.exists'   => __('messages.customer.address.validation.address_exists'),
             ]
         );
 
@@ -477,7 +500,7 @@ class AuthController extends Controller
         if (!$address) {
             return response()->json([
                 'status'  => false,
-                'message' => 'This address does not belong to your account.',
+               'message' => __('messages.customer.address.not_belongs'),
             ], 403);
         }
 
@@ -485,7 +508,7 @@ class AuthController extends Controller
         if ($address->is_default == 1) {
             return response()->json([
                 'status'  => false,
-                'message' => 'This address is already set as default.',
+                 'message' => __('messages.customer.address.already_default'),
             ], 200);
         }
 
@@ -499,7 +522,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status'  => true,
-            'message' => 'Default address updated successfully.',
+           'message' => __('messages.customer.address.default_updated'),
             'data'    => $address,
         ], 200);
     }

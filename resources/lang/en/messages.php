@@ -21,6 +21,27 @@ return [
         'user_not_authenticated' => 'User not authenticated.',
     ],
 
+    'enquiry' => [
+
+        'unauthorized' => 'Unauthorized',
+
+        'store' => [
+            'success' => 'Query submitted successfully',
+
+            'validation' => [
+                'title_required'       => 'Please enter enquiry title.',
+                'title_string'        => 'Title must be valid text.',
+                'description_required'=> 'Please enter enquiry description.',
+                'description_string'  => 'Description must be valid text.',
+            ],
+        ],
+
+        'list' => [
+            'success' => 'Query fetched successfully',
+            'empty'   => 'No enquiries found',
+        ],
+    ],
+
 
     'vendor' => [
 
@@ -175,6 +196,188 @@ return [
 
         ],
 
+        'category' => [
+
+            'list' => [
+                'success' => 'Category successfully fetched.',
+                'empty'   => 'No categories found.',
+            ],
+
+            'subcategory' => [
+                'success' => 'Sub categories fetched successfully.',
+                'empty'   => 'No subcategories found.',
+            ],
+
+            'child_category' => [
+                'success' => 'Child categories fetched successfully.',
+                'empty'   => 'No child categories found.',
+            ],
+
+            'attributes' => [
+                'success' => 'Attributes fetched successfully.',
+                'empty'   => 'No attributes found for this category.',
+            ],
+        ],
+
+        'banner' => [
+            'success' => 'Banners fetched successfully',
+            'empty_city' => 'No banners found for this city',
+        ],
+
+        'city' => [
+            'success' => 'Cities fetched successfully',
+        ],
+
+        'chat' => [
+
+            'list' => [
+                'success' => 'Chats fetched successfully.',
+                'empty'   => 'No chats found.',
+            ],
+
+            'send' => [
+                'success' => 'Message sent successfully.',
+            ],
+
+            'validation' => [
+                'receiver_required' => 'Receiver is required.',
+                'receiver_exists'   => 'Selected user does not exist.',
+                'message_string'    => 'Message must be valid text.',
+            ],
+
+            'unauthorized' => 'User not authenticated.',
+        ],
+
+        'notification' => [
+            'delete' => [
+                'success' => 'Deleted successfully',
+                'not_found' => 'Notification not found',
+                'unauthorized' => 'User not authenticated.',
+            ],
+        ],
+
+        'order' => [
+
+            'unauthorized' => 'Vendor account not approved or unauthenticated.',
+
+            'list' => [
+                'success' => 'Orders fetched successfully.',
+                'empty'   => 'No orders found.',
+            ],
+
+            'details' => [
+                'not_found' => 'Order not found.',
+            ],
+
+            'update_status' => [
+
+                'success' => 'Order status updated successfully to :status.',
+
+                'already_completed' => 'Order is already completed. Status cannot be changed.',
+                'already_cancelled' => 'Order is already cancelled. Status cannot be changed.',
+                'accept_first'      => 'Order must be accepted before completing.',
+
+                'validation' => [
+                    'status_required' => 'Status is required.',
+                    'status_invalid'  => 'Invalid status. Allowed values: 2=Accepted, 3=Completed, 4=Cancelled.',
+                ],
+
+                'status_text' => [
+                    'accepted'  => 'Accepted',
+                    'completed' => 'Completed',
+                    'cancelled' => 'Cancelled',
+                    'unknown'   => 'Unknown',
+                ],
+            ],
+
+            'notification' => [
+                'title' => '📦 Order Status Update',
+
+                'accepted'  => '✅ Your order for :products has been accepted.',
+                'completed' => '🎉 Your order for :products has been completed successfully.',
+                'cancelled' => '❌ Your order for :products has been cancelled.',
+                'default'   => 'Your order for :products status updated.',
+            ],
+        ],
+
+        'product' => [
+
+         
+
+            'copy' => [
+                 'only_approved' => 'Only approved products can be copied.',
+                'success' => 'Product copied & updated successfully.',
+            ],
+
+            /* ===============================
+            CREATE PRODUCT
+            =============================== */
+            'create' => [
+
+                'unauthorized' => 'Vendor account is not approved or authenticated.',
+                'invalid_store' => 'Invalid or unapproved store.',
+                'child_category_invalid' => 'Child category does not belong to selected sub-category.',
+
+                'success' => 'Product added successfully.',
+
+                'validation' => [
+                    'store_required' => 'Please select a store.',
+                    'store_exists'   => 'The selected store does not exist.',
+
+                    'name_required'  => 'Product name is required.',
+
+                    'price_required' => 'Product price is required.',
+                    'price_numeric'  => 'Price must be a valid number.',
+
+                    'discount_numeric' => 'Discount price must be a valid number.',
+
+                    'quantity_required' => 'Available quantity is required.',
+                    'quantity_integer'  => 'Available quantity must be an integer.',
+
+                    'images_required' => 'At least one image is required.',
+                    'images_array'    => 'Images must be sent as an array.',
+                    'images_mimes'    => 'Each image must be jpeg, jpg, png, or gif.',
+                ],
+            ],
+
+            /* ===============================
+            LIST PRODUCTS
+            =============================== */
+            'list' => [
+
+                'unauthorized' => 'Vendor account is not approved or authenticated.',
+                'success'      => 'Products fetched successfully.',
+                'empty'        => 'No products found.',
+            ],
+
+            'details' => [
+
+                'unauthorized' => 'Vendor account is not approved or authenticated.',
+                'not_found'    => 'Product not found.',
+                'success'      => 'Product details fetched successfully.',
+
+            ],
+
+
+            'update' => [
+
+                'unauthorized' => 'Vendor not authenticated.',
+                'not_found' => 'Product not found.',
+                'success' => 'Product updated successfully.',
+
+            ],
+
+        ],
+
+        'bank' => [
+            'list_success' => 'Bank list fetched successfully.',
+        ],
+
+        'combination' => [
+            'combination_upadted' => 'Combination updated successfully.',
+            'combination_delete' => 'Combination deleted successfully.',
+        ],
+
 
 
 
@@ -245,6 +448,13 @@ return [
         'address' => [
 
             'saved' => 'Address saved successfully.',
+            'list_success' => 'Address list fetched successfully.',
+            'deleted'   => 'Address removed successfully.',
+            'not_found' => 'Address not found.',
+
+            'not_belongs'      => 'This address does not belong to your account.',
+            'already_default'  => 'This address is already set as default.',
+            'default_updated'  => 'Default address updated successfully.',
 
             'validation' => [
                 'name_required'      => 'Address type is required (Home / Office).',
@@ -256,6 +466,195 @@ return [
                 'state_required'     => 'State is required.',
                 'pincode_required'   => 'Pincode is required.',
                 'pincode_digits'     => 'Pincode must be 6 digits.',
+
+                 'address_required' => 'Please select an address.',
+                'address_exists'   => 'Selected address does not exist.',
+            ],
+
+        ],
+
+        // ✅ CART ADDED HERE
+        'cart' => [
+            'unauthorized' => 'Unauthorized access.',
+            'product_not_available' => 'Product not available.',
+            'invalid_combination' => 'Invalid product combination.',
+            'insufficient_stock' => 'Insufficient stock available.',
+            'added_successfully' => 'Product added to cart successfully.',
+
+            'list_success' => 'Cart fetched successfully.',
+           'empty'        => 'Cart is empty.',
+            'updated'      => 'Cart updated successfully.',
+             'removed'      => 'Item removed from cart.',
+              'not_found' => 'Cart item not found.',
+
+           'validation' => [
+                'unauthorized' => 'User not authenticated.',
+                 'cart_id_required' => 'Cart ID is required.',
+                'cart_id_invalid'  => 'Invalid cart item.',
+                'quantity_required'=> 'Quantity is required.',
+                'quantity_integer' => 'Quantity must be a number.',
+                'quantity_min'     => 'Quantity must be at least 1.',
+            ],
+
+        ],
+
+        'category' => [
+
+            'list_success' => 'Categories retrieved successfully.',
+            'sub_list_success'    => 'Subcategories retrieved successfully.',
+            'child_list_success'  => 'Child categories retrieved successfully.',
+
+        ],
+
+
+        'chat' => [
+
+            'unauthorized' => 'User not authenticated.',
+            'conversation_started' => 'Conversation started successfully.',
+            'conversation_list' => 'Conversation list fetched successfully.',
+            'messages_fetched' => 'Messages fetched successfully.',
+            'message_sent' => 'Message sent successfully.',
+
+            'validation' => [
+                'other_user_required' => 'Other user id is required.',
+                'other_user_invalid'  => 'Other user does not exist.',
+                'self_chat'           => 'You cannot chat with yourself.',
+                'conversation_required'=> 'Conversation id is required.',
+                'conversation_invalid' => 'Conversation not found.',
+                'message_required'     => 'Message is required.',
+                'image_invalid'       => 'Invalid image file.',
+            ],
+
+            'not_participant' => 'You are not a participant in this conversation.',
+            'not_found'       => 'Conversation not found.',
+        ],
+
+
+        'order' => [
+
+            // ✅ PLACE ORDER
+            'place' => [
+
+                // ✅ GENERAL
+                'unauthorized' => 'User not authenticated.',
+                'success'      => 'Order placed successfully.',
+                'failed'       => 'Failed to place order.',
+
+                // ✅ CART
+                'empty_cart' => 'Your cart is empty.',
+                'multi_store' => 'Multiple store products not allowed in one order.',
+
+                // ✅ ADDRESS
+                'invalid_address' => 'Invalid address selected.',
+
+                // ✅ PAYMENT
+                'bank_not_supported' => 'This vendor does not support bank payment.',
+                'bank_not_available' => 'Selected bank is not available for this vendor.',
+
+                // ✅ STOCK
+                'stock' => [
+                    'variant_out' => 'Variant of :product is out of stock.',
+                    'product_out' => 'Product :product does not have enough stock.',
+                ],
+
+                // ✅ VALIDATION
+                'validation' => [
+                    'address_required' => 'Delivery address is required for home delivery.',
+                    'address_invalid'  => 'Selected delivery address is invalid.',
+                    'payment_required' => 'Payment type is required.',
+                    'payment_invalid'  => 'Payment type must be COD or Online.',
+                    'bank_required'    => 'Please select a bank for online payment.',
+                    'bank_invalid'     => 'Selected bank is invalid.',
+                ],
+
+                // ✅ NOTIFICATION
+                'notification' => [
+                    'title' => '🛒 New Order',
+                    'body'  => ':user placed a new order for :product',
+                ],
+
+            ],
+
+
+            // ✅ ORDER LIST
+            'list' => [
+                'success' => 'Orders fetched successfully.',
+                'empty'   => 'No orders found.',
+            ],
+
+            // ✅ ORDER DETAILS
+            'details' => [
+                'not_found' => 'Order not found.',
+                'success'   => 'Order details fetched successfully.',
+            ],
+
+            // ✅ STATUS TEXTS
+            'status' => [
+                'new'       => 'New',
+                'accepted'  => 'Accepted',
+                'completed' => 'Completed',
+                'cancelled' => 'Cancelled',
+                'unknown'   => 'Unknown',
+            ],
+
+        ],
+
+        'product' => [
+            'list' => [
+                'success' => 'Products fetched successfully',
+                'empty'   => 'No products available',
+            ],
+
+            'details' => [
+                'success'   => 'Product details fetched successfully',
+                'not_found' => 'Product not found',
+            ],
+
+            'search' => [
+                'success' => 'Search results fetched successfully',
+                'empty'   => 'No products found',
+            ],
+        ],
+
+
+        'review' => [
+
+            'unauthorized' => 'User not authenticated.',
+
+            'submitted' => 'Review submitted successfully.',
+            'validation_error' => 'Validation Error',
+
+            'not_found' => 'Product not found.',
+
+            'list_success' => 'Reviews fetched successfully.',
+
+            'validation' => [
+                'product_required' => 'Product ID is required.',
+                'product_exists'   => 'The selected product does not exist.',
+                'rating_required'  => 'Rating is required.',
+                'rating_integer'   => 'Rating must be a number.',
+                'rating_min'       => 'Rating must be at least 1 star.',
+                'rating_max'       => 'Rating cannot be more than 5 stars.',
+                'review_string'    => 'Review must be valid text.',
+                'review_max'       => 'Review cannot exceed 1000 characters.',
+                'image_invalid'    => 'Each file must be an image.',
+                'image_mimes'      => 'Images must be jpg, jpeg or png.',
+                'image_max'        => 'Each image must not exceed 2MB.',
+            ],
+
+        ],
+
+        'store' => [
+
+            'list' => [
+                'success' => 'Stores fetched successfully',
+                'empty'   => 'No stores found',
+            ],
+
+            'details' => [
+                'success' => 'Store details fetched successfully',
+                'not_found' => 'Store not found',
+                'no_products' => 'No products found for this store',
             ],
 
         ],

@@ -24,6 +24,7 @@ class StoreController extends Controller
             $query->where('type', $request->type);
         }
 
+        
          // 🔥 NO PAGINATION
         // $stores = $query->get();
         
@@ -42,13 +43,13 @@ class StoreController extends Controller
         if ($stores->isEmpty()) {
             return response()->json([
                 'status' => false,
-                'message' => 'No stores found'
+              'message' => __('messages.customer.store.list.empty')
             ], 201);
         }
 
         return response()->json([
             'status' => true,
-            'message' => 'Stores fetched successfully',
+            'message' => __('messages.customer.store.list.success'),
             'data' => $stores
         ]);
     }
@@ -88,7 +89,7 @@ class StoreController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Store details fetched successfully',
+            'message' => __('messages.customer.store.details.success'),
             'data' => [
                 'store' => $store,
                 'products' => $products
