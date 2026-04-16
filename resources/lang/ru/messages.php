@@ -10,6 +10,7 @@ return [
         ],
     ],
 
+    
     'logout' => [
         'logout_success' => 'Вы успешно вышли из системы.',
          'user_not_authenticated' => 'Пользователь не авторизован',
