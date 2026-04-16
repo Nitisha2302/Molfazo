@@ -34,10 +34,10 @@ class ReviewController extends Controller
             'profile_image' => 'nullable|image|max:2048',
             'images.*' => 'image|max:2048'
         ], [
-            'title.required' => 'Title is required',
-            'review.required' => 'Review is required',
-            'rating.required' => ' rating is required',
-            'username.required' => 'Username is required'
+            'title.required' => __('messages.vendor.review.validation.title_required'),
+            'review.required' => __('messages.vendor.review.validation.review_required'),
+            'rating.required' => __('messages.vendor.review.validation.rating_required'),
+            'username.required' => __('messages.vendor.review.validation.username_required'),
         ]);
 
         if ($validator->fails()) {
@@ -56,7 +56,7 @@ class ReviewController extends Controller
         if (!$promo) {
             return response()->json([
                 'status' => false,
-                'message' => 'Promotion not approved'
+                'message' => __('messages.vendor.review.promotion.not_approved')
             ]);
         }
 
@@ -66,7 +66,7 @@ class ReviewController extends Controller
         if ($used >= $promo->package->review_count) {
             return response()->json([
                 'status' => false,
-                'message' => 'Review limit reached'
+                 'message' => __('messages.vendor.review.limit.reached')
             ]);
         }
 
@@ -108,7 +108,7 @@ class ReviewController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Review submitted successfully'
+           'message' => __('messages.vendor.review.store.success')
         ]);
     }
 }

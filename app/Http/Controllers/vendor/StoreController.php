@@ -29,14 +29,14 @@ class StoreController extends Controller
         if ($user->role != 2) {
             return response()->json([
                 'status' => false,
-                'message' => 'You are not a vendor.',
+                'message' => __('messages.vendor.store.auth.not_vendor'),
             ], 403);
         }
 
         if ($user->status_id != 1) {
             return response()->json([
                 'status' => false,
-                'message' => 'Your vendor account is not approved yet. Please wait for admin approval.',
+                'message' => __('messages.vendor.store.auth.not_approved'),
             ], 403);
         }
 
@@ -66,28 +66,24 @@ class StoreController extends Controller
             'delivery_days' => 'nullable|string',
 
         ], [
-            'name.required' => 'Store Name is required.',
-            'mobile.required' => 'Store Mobile Number is required.',
-            'email.required' => 'Store Email Address is required.',
-            'email.email' => 'Store Email must be a valid email address.',
-            'country.required' => 'Country is required.',
-            'city.required' => 'City is required.',
-            'address.required' => 'Complete Address is required.',
-            // UPDATED MESSAGE
-            'type.required' => 'Store Type is required.',
-            'type.array' => 'Store Type must be an array.',
-            'type.*.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale,4=Offline.',
-            // 'type.required' => 'Store Type is required.',
-            // 'type.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale.',
-            'logo.image' => 'Logo must be an image file.',
-            'logo.mimes' => 'Logo must be jpeg, png, jpg, gif, or webp.',
-            'logo.max' => 'Logo size cannot exceed 2MB.',
-            // 'government_id.required' => 'At least one store document is required.',
-            // 'government_id.*.mimes'  => 'Store documents must be jpg, png, or pdf.',
+              'name.required' => __('messages.vendor.store.validation.name_required'),
+            'mobile.required' => __('messages.vendor.store.validation.mobile_required'),
+            'email.email' => __('messages.vendor.store.validation.email_invalid'),
+            'country.required' => __('messages.vendor.store.validation.country_required'),
+            'city.required' => __('messages.vendor.store.validation.city_required'),
+            'address.required' => __('messages.vendor.store.validation.address_required'),
 
-            'store_background_image.image' => 'Store background must be an image file.',
-            'store_background_image.mimes' => 'Store background must be jpeg, png, jpg, gif, or webp.',
-            'store_background_image.max'   => 'Store background image size cannot exceed 4MB.',
+            'type.required' => __('messages.vendor.store.validation.type_required'),
+            'type.array' => __('messages.vendor.store.validation.type_array'),
+            'type.*.in' => __('messages.vendor.store.validation.type_invalid'),
+
+            'logo.image' => __('messages.vendor.store.validation.logo_image'),
+            'logo.mimes' => __('messages.vendor.store.validation.logo_mimes'),
+            'logo.max' => __('messages.vendor.store.validation.logo_max'),
+
+            'store_background_image.image' => __('messages.vendor.store.validation.background_image'),
+            'store_background_image.mimes' => __('messages.vendor.store.validation.background_mimes'),
+            'store_background_image.max' => __('messages.vendor.store.validation.background_max'),
 
 
         ]);
@@ -159,239 +155,11 @@ class StoreController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Store created successfully. Waiting for admin approval.',
+            'message' => __('messages.vendor.store.create.success'),
             'data' => $this->formatStore($store),
         ], 200);
     }
     
-
-    // with background video
-    // public function create(Request $request)
-    // {
-    //     $user = Auth::guard('api')->user();
-
-    //     if ($user->role != 2) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'You are not a vendor.',
-    //         ], 403);
-    //     }
-
-    //     if ($user->status_id != 1) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Your vendor account is not approved yet. Please wait for admin approval.',
-    //         ], 403);
-    //     }
-
-
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required|string',
-    //         'mobile' => 'required|string',
-    //         'email' => 'nullable|email',
-    //         'country' => 'required|string',
-    //         'city' => 'required|string',
-    //         'address' => 'required|string',
-    //         'type' => 'required|array',
-    //         'type.*' => 'in:1,2,3,4',
-    //         'delivery_by_seller' => 'nullable|boolean',
-    //         'self_pickup' => 'nullable|boolean',
-    //         'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-    //         'description' => 'nullable|string',
-    //         'working_hours' => 'nullable|string',
-    //         'government_id'     => 'nullable|array',
-    //         'government_id.*'   => 'file|mimes:jpg,jpeg,png,pdf|max:4096',
-    //         'store_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
-    //        'background_color' => 'nullable|string',
-    //         'social_links' => 'nullable|array',
-    //         'social_links.*.type' => 'required_with:social_links|string',
-    //         'social_links.*.url' => 'required_with:social_links|string',
-    //         'delivery_policy' => 'nullable|array',
-    //         'return_policy' => 'nullable|array',
-    //         'delivery_days' => 'nullable|string',
-
-    //                // Optional video chunk only if vendor wants to upload
-    //         'chunk' => 'nullable|file|mimes:mp4,mov,avi',
-    //         'chunk_index' => 'nullable|integer|min:0',
-    //         'total_chunks' => 'nullable|integer|min:1',
-    //         'upload_id' => 'nullable|string',
-
-    //     ], [
-    //         'name.required' => 'Store Name is required.',
-    //         'mobile.required' => 'Store Mobile Number is required.',
-    //         'email.required' => 'Store Email Address is required.',
-    //         'email.email' => 'Store Email must be a valid email address.',
-    //         'country.required' => 'Country is required.',
-    //         'city.required' => 'City is required.',
-    //         'address.required' => 'Complete Address is required.',
-    //         // UPDATED MESSAGE
-    //         'type.required' => 'Store Type is required.',
-    //         'type.array' => 'Store Type must be an array.',
-    //         'type.*.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale,4=Offline.',
-    //         // 'type.required' => 'Store Type is required.',
-    //         // 'type.in' => 'Store Type must be one of: 1=Retail, 2=Online, 3=Wholesale.',
-    //         'logo.image' => 'Logo must be an image file.',
-    //         'logo.mimes' => 'Logo must be jpeg, png, jpg, gif, or webp.',
-    //         'logo.max' => 'Logo size cannot exceed 2MB.',
-    //         // 'government_id.required' => 'At least one store document is required.',
-    //         // 'government_id.*.mimes'  => 'Store documents must be jpg, png, or pdf.',
-
-    //         'store_background_image.image' => 'Store background must be an image file.',
-    //         'store_background_image.mimes' => 'Store background must be jpeg, png, jpg, gif, or webp.',
-    //         'store_background_image.max'   => 'Store background image size cannot exceed 4MB.',
-
-
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $validator->errors()->first(),
-    //         ], 422);
-    //     }
-
-    //     // Handle logo upload
-    //     $logoPath = null;
-    //     if ($request->hasFile('logo')) {
-    //         $file = $request->file('logo');
-    //         $filename = time() . '_' . $file->getClientOriginalName();
-    //         $file->move(public_path('assets/store_logo'), $filename);
-    //         $logoPath =  $filename;
-    //     }
-
-    //     $backgroundImagePath = null;
-
-    //     if ($request->hasFile('store_background_image')) {
-    //         $file = $request->file('store_background_image');
-    //         $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-    //         $file->move(public_path('assets/store_background'), $filename);
-    //         $backgroundImagePath = $filename;
-    //     }
-
-
-    //     $uploadedGovIds = [];
-
-    //     if ($request->hasFile('government_id')) {
-    //         foreach ($request->file('government_id') as $file) {
-    //             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-    //             $file->move(public_path('assets/store_documents'), $filename);
-    //             $uploadedGovIds[] = $filename;
-    //         }
-    //     }
-
-    //     $govIdJson = json_encode($uploadedGovIds);
-    //     $socialLinksJson = json_encode($request->social_links ?? []);
-
-    //     $videoPath = null;
-    //     $videoExpiresAt = null;
-    //     $isChunkRequest = $request->hasFile('chunk');
-    //    $isFirstChunk = $isChunkRequest && $request->chunk_index == 0;
-
-    //    if (!$isChunkRequest || $isFirstChunk) {
-
-    //         $store = Store::create([
-    //             'user_id' => $user->id,
-    //             'name' => $request->name,
-    //             'mobile' => $request->mobile,
-    //             'email' => $request->email,
-    //             'country' => $request->country,
-    //             'city' => $request->city,
-    //             'address' => $request->address,
-    //             'type' => json_encode($request->type),
-    //             'delivery_by_seller' => $request->delivery_by_seller ?? false,
-    //             'self_pickup' => $request->self_pickup ?? false,
-    //             'logo' => $logoPath,
-    //             'description' => $request->description ?? null,
-    //             'working_hours' => $request->working_hours ?? null,
-    //             'government_id' => $govIdJson,
-    //             'status_id' => 2, // Pending admin approval
-    //             'store_background_image' => $backgroundImagePath,
-
-    //         'background_color' => $request->background_color,
-    //             'social_links' => $socialLinksJson,
-    //             'delivery_policy' => json_encode($request->delivery_policy ?? []),
-    //             'return_policy' => json_encode($request->return_policy ?? []),
-    //             'delivery_days' => $request->delivery_days ?? null,
-
-    //             'background_video' => $videoPath,         // nullable
-    //             'video_expires_at' => $videoExpiresAt,    // nullable
-    //             'video_plan_id' => $store->video_plan_id ?? null,
-
-    //         ]);
-
-    //     }else {
-    //         // next chunks → same store uthao
-    //         $store = Store::where('user_id', $user->id)->latest()->first();
-    //     }
-
-    //     // ---------------- VIDEO CHUNK UPLOAD ----------------
-       
-    //     // Only allow video if vendor has active plan
-    //     if ($request->hasFile('chunk') && $request->upload_id){
-    //        $uploadId = $request->upload_id;
-    //         $chunkIndex = $request->chunk_index;
-    //         $totalChunks = $request->total_chunks;
-    //         $chunk = $request->file('chunk');
-
-    //         $chunkDir = storage_path("app/video_chunks/{$uploadId}");
-    //         if (!file_exists($chunkDir)) mkdir($chunkDir, 0777, true);
-
-    //         $chunk->move($chunkDir, "chunk_{$chunkIndex}");
-
-    //         // LAST CHUNK → MERGE
-    //         if ($chunkIndex == $totalChunks - 1) {
-
-    //             $finalDir = public_path("assets/store_videos");
-    //             if (!file_exists($finalDir)) mkdir($finalDir, 0777, true);
-
-    //             $finalName = time() . '_' . uniqid() . '.mp4';
-    //             $finalPath = $finalDir . '/' . $finalName;
-
-    //             $output = fopen($finalPath, 'ab');
-
-    //             for ($i = 0; $i < $totalChunks; $i++) {
-    //                 $chunkFile = "{$chunkDir}/chunk_{$i}";
-
-    //                 if (!file_exists($chunkFile)) {
-    //                     fclose($output);
-    //                     return response()->json([
-    //                         'status'=>false,
-    //                         'message'=>'Missing chunk'
-    //                     ], 500);
-    //                 }
-
-    //                 fwrite($output, file_get_contents($chunkFile));
-    //                 @unlink($chunkFile);
-    //             }
-
-    //             fclose($output);
-    //             File::deleteDirectory($chunkDir);
-
-    //             // ✅ SAVE VIDEO IN STORE
-    //             $store->background_video = $finalName;
-    //             $store->video_expires_at = now()->addDays(30); // temp
-    //             $store->save();
-
-    //             return response()->json([
-    //                 'status'=>true,
-    //                 'message'=>'Store + Video uploaded successfully',
-    //                 'data'=>$this->formatStore($store),
-    //             ]);
-    //         }
-
-    //         return response()->json([
-    //             'status'=>true,
-    //             'message'=>'Chunk uploaded',
-    //         ]);
-    //     }
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Store created successfully. Waiting for admin approval.',
-    //         'data' => $this->formatStore($store),
-    //     ], 200);
-    // }
-
     /**
      * List all stores for the logged-in vendor
      */
@@ -405,7 +173,7 @@ class StoreController extends Controller
         if (!$user) {
             return response()->json([
                 'status'  => false,
-                'message' => 'User is not authenticated.',
+               'message' => __('messages.vendor.store.auth.unauthorized'),
             ], 401);
         }
 
@@ -418,7 +186,7 @@ class StoreController extends Controller
 
         return response()->json([
             'status' => true,
-              'message' => 'Store fetched successfully.',
+            'message' => __('messages.vendor.store.list.success'),
             'data' => $stores,
         ], 200);
     }
@@ -438,7 +206,7 @@ class StoreController extends Controller
         if (!$user) {
             return response()->json([
                 'status'  => false,
-                'message' => 'User is not authenticated.',
+                 'message' => __('messages.vendor.store.auth.unauthorized'),
             ], 401);
         }
 
@@ -449,13 +217,13 @@ class StoreController extends Controller
         if (!$store) {
             return response()->json([
                 'status' => false,
-                'message' => 'Store not found.',
+                'message' => __('messages.vendor.store.auth.not_found'),
             ], 404);
         }
 
         return response()->json([
             'status' => true,
-             'message' => 'Store details fetched successfully.',
+             'message' => __('messages.vendor.store.details.success'),
             'data' => $this->formatStore($store),
         ], 200);
     }
@@ -515,7 +283,7 @@ class StoreController extends Controller
             
             return response()->json([
                 'status' => false,
-                'message' => 'You are not a vendor.',
+                 'message' => __('messages.vendor.store.auth.not_vendor'),
             ], 403);
         }
         
@@ -526,7 +294,7 @@ class StoreController extends Controller
         if (!$store) {
             return response()->json([
                 'status' => false,
-                'message' => 'Store not found.',
+                 'message' => __('messages.vendor.store.auth.not_found'),
             ], 404);
         }
 
@@ -560,43 +328,21 @@ class StoreController extends Controller
 
             // 🔴 VALIDATION MESSAGES
 
-            'name.required' => 'Store name is required.',
-            'name.string' => 'Store name must be text.',
-
-            'mobile.required' => 'Mobile number is required.',
-            'mobile.string' => 'Mobile must be valid text.',
-
-            'email.email' => 'Please enter a valid email address.',
-
-            'country.required' => 'Country is required.',
-            'city.required' => 'City is required.',
-            'address.required' => 'Address is required.',
-
-            'type.required' => 'Store type is required.',
-            'type.in' => 'Store type must be Retail, Online or Wholesale.',
-
-            'logo.image' => 'Logo must be an image.',
-            'logo.mimes' => 'Logo must be jpeg, png, jpg, gif or webp.',
-            'logo.max' => 'Logo size must not exceed 2MB.',
-
-            'government_id.array' => 'Documents must be an array.',
-            'government_id.*.mimes' => 'Documents must be jpg, png or pdf.',
-            'government_id.*.max' => 'Each document must not exceed 4MB.',
-
-
-            'store_background_image.image' => 'Background must be an image.',
-            'store_background_image.mimes' => 'Background must be jpeg, png, jpg, gif or webp.',
-            'store_background_image.max' => 'Background image must not exceed 4MB.',
-
-            'background_color.string' => 'Background color must be text.',
-            'social_email.email' => 'Social email must be valid.',
-            'social_facebook.url' => 'Facebook URL must be valid.',
-            'social_instagram.url' => 'Instagram URL must be valid.',
-            'social_youtube.url' => 'YouTube URL must be valid.',
-            'social_twitter.url' => 'Twitter URL must be valid.',
-            'social_whatsapp.url' => 'WhatsApp URL must be valid.',
-            'social_linkedin.url' => 'LinkedIn URL must be valid.',
-            'social_website.url' => 'Website URL must be valid.',
+          'name.required' => __('messages.vendor.store.validation.name_required'),
+            'mobile.required' =>__('messages.vendor.store.validation.mobile_required'),
+            'email.email' => __('messages.vendor.store.validation.email_invalid'),
+            'country.required' => __('messages.vendor.store.validation.country_required'),
+            'city.required' => __('messages.vendor.store.validation.city_required'),
+            'address.required' => __('messages.vendor.store.validation.address_required'),
+            'type.required' => __('messages.vendor.store.validation.type_required'),
+            'type.array' => __('messages.vendor.store.validation.type_array'),
+            'type.*.in' => __('messages.vendor.store.validation.type_invalid'),
+            'logo.image' => __('messages.vendor.store.validation.logo_image'),
+            'logo.mimes' => __('messages.vendor.store.validation.logo_mimes'),
+            'logo.max' => __('messages.vendor.store.validation.logo_max'),
+            'store_background_image.image' => __('messages.vendor.store.validation.background_image'),
+            'store_background_image.mimes' => __('messages.vendor.store.validation.background_mimes'),
+            'store_background_image.max' => __('messages.vendor.store.validation.background_max'),
         ]);
 
 
@@ -680,6 +426,26 @@ class StoreController extends Controller
 
             if (!$admin->fcm_token) continue;
 
+             // ✅ language fallback = ru
+            $lang = in_array($admin->language, ['ru', 'en', 'tg'])
+                ? $admin->language
+                : 'ru';
+
+            // ================= TITLE =================
+            $titles = [
+                'en' => '🏪 Store Updated',
+                'ru' => '🏪 Магазин обновлён',
+                'tg' => '🏪 Дӯкон навсозӣ шуд',
+            ];
+
+            // ================= BODY =================
+            $bodies = [
+                'en' => $store->name . ' updated and needs approval',
+                'ru' => $store->name . ' обновлён и требует проверки',
+                'tg' => $store->name . ' навсозӣ шуд ва тасдиқ лозим аст',
+            ];
+
+
             $tokens = [
                 [
                     'fcm_token' => $admin->fcm_token,
@@ -689,8 +455,8 @@ class StoreController extends Controller
 
             $notificationData = [
                 'notification_type' => 12,
-                'title' => '🏪 Store Updated',
-                'body'  => $store->name . ' updated and needs approval',
+                 'title' => $titles[$lang],
+                'body' => $bodies[$lang],
                 'store_id' => $store->id,
             ];
 
@@ -700,7 +466,7 @@ class StoreController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Store updated successfully. Waiting for admin approval.',
+             'message' => __('messages.vendor.store.update.success'),
             'data' => $this->formatStore($store),
         ], 200);
     }
@@ -714,7 +480,7 @@ class StoreController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized'
+                 'message' => __('messages.vendor.store.video.auth.unauthorized')
             ], 401);
         }
 
@@ -727,7 +493,7 @@ class StoreController extends Controller
         if (!$request->filled('store_id')) {
             return response()->json([
                 'status' => true,
-                'message' => 'Plans fetched successfully',
+                 'message' => __('messages.vendor.store.video.plans.success'),
                 'data' => $plans
             ]);
         }
@@ -745,7 +511,7 @@ class StoreController extends Controller
         if (!$store) {
             return response()->json([
                 'status' => false,
-                'message' => 'Store not found or not owned by user'
+                  'message' => __('messages.vendor.store.video.error.store_not_found')
             ], 403);
         }
 
@@ -779,7 +545,7 @@ class StoreController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Plans with status fetched successfully',
+             'message' => __('messages.vendor.store.video.plans.with_status_success'),
             'data' => $data
         ]);
     }
@@ -791,7 +557,7 @@ class StoreController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized'
+                 'message' => __('messages.vendor.store.video.auth.unauthorized')
             ], 401);
         }
 
@@ -802,16 +568,16 @@ class StoreController extends Controller
                 'payment_screenshot' => 'required|image|mimes:jpg,jpeg,png|max:2048',
             ],
             [
-                'store_id.required' => 'Store is required',
-                'store_id.exists' => 'Store not found',
+               'store_id.required' => __('messages.vendor.store.video.validation.store_required'),
+                'store_id.exists' => __('messages.vendor.store.video.validation.store_exists'),
 
-                'plan_id.required' => 'Please select a plan',
-                'plan_id.exists' => 'Selected plan is invalid',
+                'plan_id.required' => __('messages.vendor.store.video.validation.plan_required'),
+                'plan_id.exists' => __('messages.vendor.store.video.validation.plan_exists'),
 
-                'payment_screenshot.required' => 'Payment screenshot is required',
-                'payment_screenshot.image' => 'File must be an image',
-                'payment_screenshot.mimes' => 'Only JPG, JPEG, PNG allowed',
-                'payment_screenshot.max' => 'Image size must be less than 2MB',
+                'payment_screenshot.required' => __('messages.vendor.store.video.validation.payment_required'),
+                'payment_screenshot.image' => __('messages.vendor.store.video.validation.payment_image'),
+                'payment_screenshot.mimes' => __('messages.vendor.store.video.validation.payment_mimes'),
+                'payment_screenshot.max' => __('messages.vendor.store.video.validation.payment_max'),
             ]
         );
 
@@ -823,7 +589,7 @@ class StoreController extends Controller
         if (!$store) {
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid store or not owned by user'
+               'message' => __('messages.vendor.store.video.request.invalid_store')
             ], 403);
         }
 
@@ -846,7 +612,7 @@ class StoreController extends Controller
         if ($exists) {
             return response()->json([
                 'status' => false,
-                'message' => 'You already have a pending request for this plan'
+                'message' => __('messages.vendor.store.video.request.duplicate')
             ], 400);
         }
 
@@ -861,7 +627,7 @@ class StoreController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Request sent to admin'
+              'message' => __('messages.vendor.store.video.request.success')
         ]);
     }
 
@@ -873,7 +639,7 @@ class StoreController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized user'
+                 'message' => __('messages.vendor.store.video.upload.unauthorized')
             ], 401);
         }
 
@@ -918,7 +684,7 @@ class StoreController extends Controller
         if (!$store) {
             return response()->json([
                 'status' => false,
-                'message' => 'You do not have permission to upload video for this store'
+              'message' => __('messages.vendor.store.video.upload.permission_denied')
             ], 403);
         }
 
@@ -931,7 +697,7 @@ class StoreController extends Controller
         if (!$approvedPlan) {
             return response()->json([
                 'status' => false,
-                'message' => 'No approved video plan found. Please purchase and get approval first.'
+                  'message' => __('messages.vendor.store.video.upload.no_plan')
             ], 400);
         }
 
@@ -939,7 +705,7 @@ class StoreController extends Controller
         if ($store->video_expires_at && now()->greaterThan($store->video_expires_at)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Your previous video plan has expired. Please renew your plan.'
+                 'message' => __('messages.vendor.store.video.upload.expired')
             ], 400);
         }
 

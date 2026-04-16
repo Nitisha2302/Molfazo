@@ -23,7 +23,7 @@ class VendorBankController extends Controller
         if (!$vendor || $vendor->role != 2 || $vendor->status_id != 1) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized vendor.'
+                'message' => __('messages.vendor.bank.auth.unauthorized')
             ], 403);
         }
 
@@ -36,14 +36,17 @@ class VendorBankController extends Controller
             'banks.*.account_holder_name' => 'required|string|max:255',
             'banks.*.account_number' => 'required|string|max:50',
         ], [
-            'payment_modes.required' => 'Payment mode is required.',
-            'payment_modes.array' => 'Payment mode must be an array.',
-            'payment_modes.*.in' => 'Payment mode must be COD or Bank.',
-            'banks.required_if' => 'Bank details are required when payment mode includes Bank.',
-            'banks.*.bank_id.required' => 'Bank ID is required.',
-            'banks.*.bank_id.exists' => 'Selected bank does not exist.',
-            'banks.*.account_holder_name.required' => 'Account holder name is required.',
-            'banks.*.account_number.required' => 'Account number is required.',
+            'payment_modes.required' => __('messages.vendor.bank.validation.payment_modes_required'),
+            'payment_modes.array' => __('messages.vendor.bank.validation.payment_modes_array'),
+            'payment_modes.*.in' => __('messages.vendor.bank.validation.payment_modes_invalid'),
+
+            'banks.required_if' => __('messages.vendor.bank.validation.banks_required'),
+
+            'banks.*.bank_id.required' => __('messages.vendor.bank.validation.bank_id_required'),
+            'banks.*.bank_id.exists' => __('messages.vendor.bank.validation.bank_id_exists'),
+
+            'banks.*.account_holder_name.required' => __('messages.vendor.bank.validation.account_holder_required'),
+            'banks.*.account_number.required' => __('messages.vendor.bank.validation.account_number_required'),
         ]);
 
         if ($validator->fails()) {
@@ -82,7 +85,7 @@ class VendorBankController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Payment modes updated successfully.'
+            'message' => __('messages.vendor.bank.success.updated')
         ]);
     }
 
@@ -98,7 +101,7 @@ class VendorBankController extends Controller
         if (!$vendor || $vendor->role != 2 || $vendor->status_id != 1) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized.'
+                   'message' => __('messages.vendor.bank.auth.unauthorized')
             ], 403);
         }
 
@@ -117,6 +120,7 @@ class VendorBankController extends Controller
 
         return response()->json([
             'status' => true,
+             'message' => __('messages.vendor.bank.success.fetched'),
             'payment_modes' => $vendor->payment_modes ?? [],
             'bank_details' => in_array('bank', $vendor->payment_modes ?? []) ? $banks : []
         ]);
