@@ -328,12 +328,12 @@ class AuthController extends Controller
         =============================== */
         $rules = [
             'name'            => 'nullable|string|max:255',
-            'email'           => 'required|email|unique:users,email',
-            'password'        => 'required|min:6|confirmed',
+            'email'           => 'nullable|email|unique:users,email',
+            'password'        => 'nullable|min:6|confirmed',
 
-            'city'            => 'required|string',
-            'country'         => 'required|string',
-            'terms_accepted'  => 'required|in:1',
+            'city'            => 'nullable|string',
+            'country'         => 'nullable|string',
+            'terms_accepted'  => 'nullable|in:1',
 
             'profile_photo'   => 'nullable|image|mimes:jpg,png',
             'alt_mobile'      => 'nullable|digits_between:8,15',
