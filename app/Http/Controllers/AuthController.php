@@ -358,6 +358,7 @@ class AuthController extends Controller
             'password.confirmed' => __('messages.vendor.completeprofile.validation.password_confirmed'),
             'terms_accepted.in'  => __('messages.vendor.completeprofile.validation.terms_required'),
         ];
+        
 
         $validator = Validator::make($request->all(), $rules, $messages);
 
