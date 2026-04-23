@@ -455,7 +455,7 @@ class CategoryController extends Controller
     public function updateChildCategory(Request $request, $id)
     {
         $child = ChildCategory::findOrFail($id);
-        $sub   = SubCategory::with('category')->findOrFail($request->sub_category_id);
+      
 
         $request->validate([
             'sub_category_id' => 'required|exists:sub_categories,id',
@@ -483,6 +483,7 @@ class CategoryController extends Controller
             'image.mimes' => 'Only JPG, JPEG, PNG, and WEBP formats are allowed.',
             'image.max'   => 'Image size must be less than 1MB.',
         ]);
+          $sub   = SubCategory::with('category')->findOrFail($request->sub_category_id);
 
         if ($request->status_id == 1 &&
             ($sub->status_id == 2 || $sub->category->status_id == 2)) {
