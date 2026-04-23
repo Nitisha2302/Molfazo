@@ -612,12 +612,12 @@ class AuthController extends Controller
             ], 403);
         }
 
-        if ($user->status_id != 1) {
-            return response()->json([
-                'status'  => false,
-              'message' => __('messages.vendor.login_otp.not_active'),
-            ], 403);
-        }
+        // if ($user->status_id != 1) {
+        //     return response()->json([
+        //         'status'  => false,
+        //       'message' => __('messages.vendor.login_otp.not_active'),
+        //     ], 403);
+        // }
 
         /* ===============================
         GENERATE OTP
