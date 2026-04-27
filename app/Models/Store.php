@@ -16,11 +16,13 @@ class Store extends Model
         'delivery_policy','delivery_days','social_links',
         'background_video',
     'video_expires_at',
-    'video_plan_id'
+    'video_plan_id',
+    'delivery_config',
     ];
 
     protected $casts = [
         'type' => 'array',
+         'delivery_config' => 'array',
     ];
 
     public function vendor()

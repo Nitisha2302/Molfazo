@@ -64,6 +64,19 @@ class StoreController extends Controller
             'delivery_policy' => 'nullable|array',
             'return_policy' => 'nullable|array',
             'delivery_days' => 'nullable|string',
+            
+            'delivery_config' => 'nullable|array',
+
+            'delivery_config.*.city' => 'required|string',
+            'delivery_config.*.enabled' => 'required|boolean',
+
+            'delivery_config.*.delivery_type' => 'required_if:delivery_config.*.enabled,true|in:courier,taxi',
+
+            'delivery_config.*.delivery_time_value' => 'required_if:delivery_config.*.enabled,true|integer|min:1|max:24',
+
+            'delivery_config.*.delivery_time_unit' => 'required_if:delivery_config.*.enabled,true|in:hours,day',
+
+            'delivery_config.*.description' => 'nullable|string|max:255',
 
         ], [
               'name.required' => __('messages.vendor.store.validation.name_required'),
@@ -84,6 +97,19 @@ class StoreController extends Controller
             'store_background_image.image' => __('messages.vendor.store.validation.background_image'),
             'store_background_image.mimes' => __('messages.vendor.store.validation.background_mimes'),
             'store_background_image.max' => __('messages.vendor.store.validation.background_max'),
+
+            'delivery_config.*.city.required' => 'delivery City is required',
+            'delivery_config.*.enabled.required' => 'Delivery status is required',
+
+            'delivery_config.*.delivery_type.required_if' => 'Delivery type is required when enabled',
+            'delivery_config.*.delivery_type.in' => 'Delivery type must be courier or taxi',
+
+            'delivery_config.*.delivery_time_value.required_if' => 'Delivery time required',
+            'delivery_config.*.delivery_time_value.integer' => 'Delivery time must be number',
+            'delivery_config.*.delivery_time_value.max' => 'Max 24 hours or 1 day',
+
+            'delivery_config.*.delivery_time_unit.required_if' => 'Time unit required',
+            'delivery_config.*.delivery_time_unit.in' => 'Must be hours or day',
 
 
         ]);
@@ -145,11 +171,12 @@ class StoreController extends Controller
             'status_id' => 2, // Pending admin approval
             'store_background_image' => $backgroundImagePath,
 
-          'background_color' => $request->background_color,
+           'background_color' => $request->background_color,
             'social_links' => $socialLinksJson,
             'delivery_policy' => json_encode($request->delivery_policy ?? []),
             'return_policy' => json_encode($request->return_policy ?? []),
             'delivery_days' => $request->delivery_days ?? null,
+            'delivery_config' => $request->delivery_config ?? [],
 
         ]);
 
@@ -268,6 +295,8 @@ class StoreController extends Controller
                 : null,
 
             'video_expires_at' => $store->video_expires_at,
+
+            'delivery_config' => $store->delivery_config ?? [],
             'created_at' => $store->created_at,
             'updated_at' => $store->updated_at,
         ];
@@ -324,6 +353,19 @@ class StoreController extends Controller
             'delivery_policy' => 'nullable|array',
             'return_policy' => 'nullable|array',
             'delivery_days' => 'nullable|string',
+
+            'delivery_config' => 'nullable|array',
+
+            'delivery_config.*.city' => 'required|string',
+            'delivery_config.*.enabled' => 'required|boolean',
+
+            'delivery_config.*.delivery_type' => 'required_if:delivery_config.*.enabled,true|in:courier,taxi',
+
+            'delivery_config.*.delivery_time_value' => 'required_if:delivery_config.*.enabled,true|integer|min:1|max:24',
+
+            'delivery_config.*.delivery_time_unit' => 'required_if:delivery_config.*.enabled,true|in:hours,day',
+
+            'delivery_config.*.description' => 'nullable|string|max:255',
         ], [
 
             // 🔴 VALIDATION MESSAGES
@@ -343,6 +385,19 @@ class StoreController extends Controller
             'store_background_image.image' => __('messages.vendor.store.validation.background_image'),
             'store_background_image.mimes' => __('messages.vendor.store.validation.background_mimes'),
             'store_background_image.max' => __('messages.vendor.store.validation.background_max'),
+
+            'delivery_config.*.city.required' => 'City is required',
+            'delivery_config.*.enabled.required' => 'Delivery status is required',
+
+            'delivery_config.*.delivery_type.required_if' => 'Delivery type is required when enabled',
+            'delivery_config.*.delivery_type.in' => 'Delivery type must be courier or taxi',
+
+            'delivery_config.*.delivery_time_value.required_if' => 'Delivery time required',
+            'delivery_config.*.delivery_time_value.integer' => 'Delivery time must be number',
+            'delivery_config.*.delivery_time_value.max' => 'Max 24 hours or 1 day',
+
+            'delivery_config.*.delivery_time_unit.required_if' => 'Time unit required',
+            'delivery_config.*.delivery_time_unit.in' => 'Must be hours or day',
         ]);
 
 
@@ -414,6 +469,7 @@ class StoreController extends Controller
         // 🔥 IMPORTANT LOGIC
         $store->status_id = 2; // Pending again
         $store->reject_reason = null; // clear old reject reason
+        $store->delivery_config = $request->delivery_config ?? [];
 
         $store->save();
 

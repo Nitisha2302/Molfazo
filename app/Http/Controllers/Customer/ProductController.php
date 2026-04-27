@@ -163,10 +163,10 @@ class ProductController extends Controller
 
             unset($product->children);
 
-            // 🔥 SORT SELLERS
+            //  SORT SELLERS
           $product->other_sellers = $product->other_sellers->sortBy('price')->values();
 
-            // ✅ FORMAT COMBINATIONS
+            // FORMAT COMBINATIONS
             $product->combinations = $product->combinations->map(function ($combo) {
                 return [
                     'id' => $combo->id,
@@ -404,7 +404,201 @@ class ProductController extends Controller
     }
 
 
-    public function search(Request $request)
+    // public function search(Request $request)
+    // {
+
+    //     // 🔥 Get logged-in user (optional)
+    //     $user = Auth::guard('api')->user();
+
+    //     $favIds = [];
+
+    //     if ($user) {
+    //         $favIds = FavoriteProducts::where('user_id', $user->id)
+    //                     ->pluck('product_id')
+    //                     ->toArray();
+    //     }
+    //     $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage','store.user','store.vendorBanks.bank','combinations','children.store','children.primaryImage','reviews.images' ])
+    //         ->withAvg('reviews', 'rating')   // 🔥 ADD
+    //         ->withCount('reviews')  ->where('status_id', 1)->where('approval_status', 'approved')->whereNull('parent_product_id');
+
+    //     //  Search Keyword
+    //     if ($request->has('search') && $request->search != '') {
+
+    //         $search = $request->search;
+
+    //         $query->where(function ($q) use ($search) {
+
+    //             // Product Name
+    //             $q->where('name', 'like', '%' . $search . '%')
+
+    //              // 🔥 ARTICLE NUMBER SEARCH
+    //             ->orWhere('article_number', 'like', '%' . $search . '%')
+
+    //                 // Store Name
+    //                 ->orWhereHas('store', function ($q2) use ($search) {
+    //                     $q2->where('name', 'like', '%' . $search . '%');
+    //                 })
+
+    //                 // Category Name
+    //                 ->orWhereHas('category', function ($q3) use ($search) {
+    //                     $q3->where('name', 'like', '%' . $search . '%');
+    //                 })
+
+    //                 // SubCategory Name
+    //                 ->orWhereHas('subCategory', function ($q4) use ($search) {
+    //                     $q4->where('name', 'like', '%' . $search . '%');
+    //                 })
+
+    //                 // ChildCategory Name
+    //                 ->orWhereHas('childCategory', function ($q5) use ($search) {
+    //                     $q5->where('name', 'like', '%' . $search . '%');
+    //                 });
+    //         });
+    //     }
+
+    //      // 🔥 City Filter
+    //     if ($request->filled('city')) {
+    //         $query->whereHas('store', function ($q) use ($request) {
+    //             $q->where('city', 'like', '%' . $request->city . '%');
+    //         });
+    //     }
+
+    //     // 🔥 Country Filter
+    //     if ($request->filled('country')) {
+    //         $query->whereHas('store', function ($q) use ($request) {
+    //             $q->where('country', 'like', '%' . $request->country . '%');
+    //         });
+    //     }
+    //     // 🔥 Filters (Optional)
+    //     if ($request->has('category_id') && $request->category_id != '') {
+    //         $query->where('category_id', $request->category_id);
+    //     }
+
+    //     if ($request->has('sub_category_id') && $request->sub_category_id != '') {
+    //         $query->where('sub_category_id', $request->sub_category_id);
+    //     }
+
+    //     if ($request->has('child_category_id') && $request->child_category_id != '') {
+    //         $query->where('child_category_id', $request->child_category_id);
+    //     }
+
+    //     if ($request->has('store_id') && $request->store_id != '') {
+    //         $query->where('store_id', $request->store_id);
+    //     }
+
+    //     // 🔥 Sorting
+    //     if ($request->has('sort') && $request->sort != '') {
+    //         switch ($request->sort) {
+    //             case 'latest':
+    //                 $query->orderBy('id', 'desc');
+    //                 break;
+
+    //             case 'price_low':
+    //                 $query->orderBy('price', 'asc');
+    //                 break;
+
+    //             case 'price_high':
+    //                 $query->orderBy('price', 'desc');
+    //                 break;
+
+    //             default:
+    //                 $query->orderBy('id', 'desc');
+    //         }
+    //     } else {
+    //         $query->orderBy('id', 'desc');
+    //     }
+
+    //     // 🔥 No Pagination
+    //     $products = $query->get();
+
+    //     if ($products->isEmpty()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => __('messages.customer.product.search.empty'),
+    //             'data' => []
+    //         ], 201);
+    //     }
+
+    //     // 🔥 Convert primaryImage object -> primaryimage key
+    //    $products = $products->map(function ($product) use ($favIds) {
+    //         $product->primaryimage = optional($product->primaryImage)->image;
+    //         unset($product->primaryImage);
+    //         $product->is_favorite = in_array($product->id, $favIds);
+    //         $product->other_sellers = $product->children->map(function ($child) {
+    //             return [
+    //                 'product_id' => $child->id,
+    //                 'store_id' => $child->store_id,
+    //                 'store_name' => $child->store->name ?? null,
+    //                  'store_logo' => $child->store->logo ?? null,
+    //                 'price' => $child->price,
+    //                 'discount_price' => $child->discount_price?? null,
+    //                 'primary_image' => optional($child->primaryImage)->image,
+    //                 'available_quantity' => $child->available_quantity,
+    //             ];
+    //         });
+    //         unset($product->children);
+    //         $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
+    //         $product->total_reviews = $product->reviews_count;
+
+    //         $product->reviews = $product->reviews->map(function ($review) {
+    //             return [
+    //                 'id' => $review->id,
+    //                 'rating' => $review->rating,
+    //                 'title' => $review->title,
+    //                 'review' => $review->review,
+    //                 'username' => $review->username,
+    //                 'profile_image' => $review->profile_image,
+    //                 'created_at' => $review->created_at,
+
+    //                 'images' => $review->images->map(function ($img) {
+    //                     return [
+    //                         'id' => $img->id,
+    //                         'image' => $img->image,
+    //                     ];
+    //                 }),
+    //             ];
+    //         });
+    //            $product->combinations = $product->combinations->map(function ($combo) {
+    //             return [
+    //                 'id' => $combo->id,
+    //                 'variant' => json_decode($combo->combination, true),
+    //                 'price' => $combo->price,
+    //                 'stock' => $combo->stock,
+    //                 'images' => $combo->images ? json_decode($combo->images, true) : []
+    //             ];
+    //         });
+    //          // ✅ Product Banks
+    //        $paymentModes = $product->store->user->payment_modes ?? [];
+
+    //             if (in_array('bank', $paymentModes)) {
+
+    //                 $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
+    //                     return [
+    //                         'bank_id' => $vendorBank->bank->id ?? null,
+    //                         'name' => $vendorBank->bank->name ?? null,
+    //                         'logo' => $vendorBank->bank->logo ?? null,
+    //                         'account_holder_name' => $vendorBank->account_holder_name,
+    //                         'account_number' => $vendorBank->account_number,
+    //                     ];
+    //                 });
+
+    //             } else {
+    //                 $product->banks = [];
+    //             }
+    //         return $product;
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //        'message' => __('messages.customer.product.search.success'),
+    //         'data' => $products
+    //     ], 200);
+    // }
+    
+    // add new paran delivery config in search 
+
+
+     public function search(Request $request)
     {
 
         // 🔥 Get logged-in user (optional)
@@ -469,6 +663,8 @@ class ProductController extends Controller
                 $q->where('country', 'like', '%' . $request->country . '%');
             });
         }
+
+
         // 🔥 Filters (Optional)
         if ($request->has('category_id') && $request->category_id != '') {
             $query->where('category_id', $request->category_id);
@@ -510,6 +706,66 @@ class ProductController extends Controller
 
         // 🔥 No Pagination
         $products = $query->get();
+
+        // 🔥 DELIVERY FILTER (CITY + TYPE + TIME)
+        if (
+            $request->filled('delivery_city') ||
+            $request->filled('delivery_type') ||
+            ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit'))
+        ) {
+
+            $products = $products->filter(function ($product) use ($request) {
+
+                $configs = $product->store->delivery_config ?? [];
+
+                // अगर string है → decode
+                if (is_string($configs)) {
+                    $configs = json_decode($configs, true);
+                }
+
+                if (!$configs || !is_array($configs)) {
+                    return false;
+                }
+
+                foreach ($configs as $config) {
+
+                    // ❌ skip disabled
+                    if (($config['enabled'] ?? 0) != 1) continue;
+
+                    // ✅ DELIVERY CITY
+                    if ($request->filled('delivery_city')) {
+                        if (strtolower($config['city']) != strtolower($request->delivery_city)) {
+                            continue;
+                        }
+                    }
+
+                    // ✅ DELIVERY TYPE
+                    if ($request->filled('delivery_type')) {
+                        if (($config['delivery_type'] ?? '') != $request->delivery_type) {
+                            continue;
+                        }
+                    }
+
+                    // ✅ DELIVERY TIME (IMPORTANT)
+                    if ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit')) {
+
+                        if (($config['delivery_time_unit'] ?? '') != $request->delivery_time_unit) {
+                            continue;
+                        }
+
+                        if (($config['delivery_time_value'] ?? 9999) > $request->delivery_time_value) {
+                            continue;
+                        }
+                    }
+
+                    // ✅ ALL CONDITIONS PASSED
+                    return true;
+                }
+
+                return false;
+
+            })->values(); // reset index
+        }
 
         if ($products->isEmpty()) {
             return response()->json([
@@ -594,7 +850,8 @@ class ProductController extends Controller
             'data' => $products
         ], 200);
     }
-    
+
+
     // Add / Remove Favorite
     public function toggleFavorite(Request $request)
     {
