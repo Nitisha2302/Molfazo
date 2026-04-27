@@ -804,7 +804,7 @@ class OrderController extends Controller
                         $config['enabled'] == 1
                     ) {
                         $isServiceAvailable = true;
-                        
+
                         if (isset($config['delivery_time_value']) && isset($config['delivery_time_unit'])) {
                             $deliveryTime = $config['delivery_time_value'] . ' ' . $config['delivery_time_unit'];
                         } else {
@@ -816,6 +816,7 @@ class OrderController extends Controller
                     }
                 }
             }
+            
 
             // ❌ NOT SERVICEABLE
             if (!$isServiceAvailable) {
