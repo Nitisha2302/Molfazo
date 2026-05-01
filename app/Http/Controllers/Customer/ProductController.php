@@ -14,6 +14,201 @@ use Illuminate\Support\Facades\Validator;
 class ProductController extends Controller
 {
 
+    // public function list(Request $request)
+    // {
+    //   $user = Auth::guard('api')->user();
+
+    //     // Get favorite product ids
+    //     $favIds = [];
+
+    //     if ($user) {
+    //         $favIds = FavoriteProducts::where('user_id', $user->id)
+    //                     ->pluck('product_id')
+    //                     ->toArray();
+    //     }
+    //     $query = Product::with(['store', 'category', 'subCategory', 'childCategory',   'children.store', 'primaryImage', 'reviews.images','store.user','store.vendorBanks.bank','combinations','children.primaryImage'  ])->withAvg('reviews', 'rating')
+    //     ->withCount('reviews')->where('approval_status', 'approved')->whereNull('parent_product_id');
+
+    //     // Filters
+    //     if ($request->has('category_id')) {
+    //         $query->where('category_id', $request->category_id);
+    //     }
+
+    //     if ($request->has('subcategory_id')) {
+    //         $query->where('sub_category_id', $request->subcategory_id);
+    //     }
+
+    //     if ($request->has('child_category_id')) {
+    //         $query->where('child_category_id', $request->child_category_id);
+    //     }
+
+    //     // ✅ Store Location Filter (NEW CODE)
+    //    // Store Location Filter
+    //     if ($request->filled('city') || $request->filled('country')) {
+
+    //         $query->whereHas('store', function ($q) use ($request) {
+
+    //             if ($request->filled('city')) {
+    //                 $q->where('city', 'like', '%' . $request->city . '%');
+    //             }
+
+    //             if ($request->filled('country')) {
+    //                 $q->where('country', 'like', '%' . $request->country . '%');
+    //             }
+
+    //         });
+    //     }
+
+    //     // Search by product name
+    //     if ($request->has('search')) {
+    //         $query->where('name', 'like', '%' . $request->search . '%');
+    //     }
+
+    //     // Type Based (Trending / Latest)
+    //     if ($request->has('type') && $request->type != '') {
+
+    //         if ($request->type == 'trending') {
+
+    //             // ✅ Trending = Most sold products (Top 10)
+    //             $query->withSum('orderItems as total_sold', 'quantity')
+    //                 ->orderByDesc('total_sold')
+    //                 ->limit(10);
+
+    //         } elseif ($request->type == 'latest') {
+
+    //             // ✅ Latest = Last 10 added products
+    //             $query->orderBy('id', 'desc')
+    //                 ->limit(10);
+    //         }
+
+    //     } else {
+
+    //         //  Sorting Normal
+    //         if ($request->has('sort') && $request->sort != '') {
+    //             switch ($request->sort) {
+    //                 case 'latest':
+    //                     $query->orderBy('id', 'desc');
+    //                     break;
+
+    //                 case 'price_low':
+    //                     $query->orderBy('price', 'asc');
+    //                     break;
+
+    //                 case 'price_high':
+    //                     $query->orderBy('price', 'desc');
+    //                     break;
+
+    //                 default:
+    //                     $query->orderBy('id', 'desc');
+    //             }
+    //         } else {
+    //             $query->orderBy('id', 'desc');
+    //         }
+    //     }
+    //     //  NO PAGINATION
+    //     $products = $query->get();
+
+    //     // If no products found → return 201
+    //     if ($products->isEmpty()) {
+    //         return response()->json([
+    //             'status' => false,
+    //            'message' => __('messages.customer.product.list.empty')
+    //         ], 201);
+    //     }
+
+    //      $products = $products->map(function ($product) use ($favIds) {
+
+    //         $product->primaryimage = optional($product->primaryImage)->image;
+
+    //         // remove relation object
+    //         unset($product->primaryImage);
+
+    //          //  Favorite status
+    //         $product->is_favorite = in_array($product->id, $favIds);
+
+    //         // 🔥 OTHER SELLERS
+    //         $product->other_sellers = $product->children->map(function ($child) {
+    //             return [
+    //                 'product_id' => $child->id,
+    //                 'store_id' => $child->store_id,
+    //                 'store_name' => $child->store->name ?? null,
+    //                 'store_logo' => $child->store->logo ?? null,
+    //                 'price' => $child->price,
+    //                 'discount_price' => $child->discount_price?? null,
+    //                 'primary_image' => optional($child->primaryImage)->image,
+    //                 'available_quantity' => $child->available_quantity,
+    //             ];
+    //         });
+
+    //         $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
+    //        $product->total_reviews = $product->reviews_count;
+
+    //         $product->reviews = $product->reviews->map(function ($review) {
+    //             return [
+    //                 'id' => $review->id,
+    //                 'rating' => $review->rating,
+    //                 'title' => $review->title,
+    //                 'review' => $review->review,
+    //                 'username' => $review->username,
+    //                 'profile_image' => $review->profile_image,
+    //                 'created_at' => $review->created_at,
+    //                 'images' => $review->images->map(function ($img) {
+    //                     return [
+    //                         'id' => $img->id,
+    //                         'image' => $img->image,
+    //                     ];
+    //                 }),
+    //             ];
+    //         });
+
+    //         unset($product->children);
+
+    //         //  SORT SELLERS
+    //       $product->other_sellers = $product->other_sellers->sortBy('price')->values();
+
+    //         // FORMAT COMBINATIONS
+    //         $product->combinations = $product->combinations->map(function ($combo) {
+    //             return [
+    //                 'id' => $combo->id,
+    //                 'variant' => json_decode($combo->combination, true),
+    //                 'price' => $combo->price,
+    //                 'stock' => $combo->stock,
+    //                 'images' => $combo->images ? json_decode($combo->images, true) : []
+    //             ];
+    //         });
+    //          // ✅ Banks List
+    //         $paymentModes = $product->store->user->payment_modes ?? [];
+
+    //             if (in_array('bank', $paymentModes)) {
+
+    //                 $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
+    //                     return [
+    //                         'bank_id' => $vendorBank->bank->id ?? null,
+    //                         'name' => $vendorBank->bank->name ?? null,
+    //                         'logo' => $vendorBank->bank->logo ?? null,
+    //                         'account_holder_name' => $vendorBank->account_holder_name,
+    //                         'account_number' => $vendorBank->account_number,
+    //                     ];
+    //                 });
+
+    //             } else {
+    //                 $product->banks = [];
+    //             }
+
+    //         return $product;
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => __('messages.customer.product.list.success'),
+    //         'data' => $products
+    //     ]);
+    // }
+
+
+    // with new search
+
+
     public function list(Request $request)
     {
       $user = Auth::guard('api')->user();
@@ -107,6 +302,66 @@ class ProductController extends Controller
         }
         //  NO PAGINATION
         $products = $query->get();
+
+        // 🔥 DELIVERY FILTER (CITY + TYPE + TIME)
+        if (
+            $request->filled('delivery_city') ||
+            $request->filled('delivery_type') ||
+            ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit'))
+        ) {
+
+            $products = $products->filter(function ($product) use ($request) {
+
+                $configs = $product->store->delivery_config ?? [];
+
+                // decode
+                if (is_string($configs)) {
+                    $configs = json_decode($configs, true);
+                }
+
+                if (!$configs || !is_array($configs)) {
+                    return false;
+                }
+
+                foreach ($configs as $config) {
+
+                    // ❌ skip disabled
+                    if (($config['enabled'] ?? 0) != 1) continue;
+
+                    // ✅ DELIVERY CITY
+                    if ($request->filled('delivery_city')) {
+                        if (strtolower($config['city']) != strtolower($request->delivery_city)) {
+                            continue;
+                        }
+                    }
+
+                    // ✅ DELIVERY TYPE
+                    if ($request->filled('delivery_type')) {
+                        if (($config['delivery_type'] ?? '') != $request->delivery_type) {
+                            continue;
+                        }
+                    }
+
+                    // ✅ DELIVERY TIME
+                    if ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit')) {
+
+                        if (($config['delivery_time_unit'] ?? '') != $request->delivery_time_unit) {
+                            continue;
+                        }
+
+                        if (($config['delivery_time_value'] ?? 9999) > $request->delivery_time_value) {
+                            continue;
+                        }
+                    }
+
+                    // ✅ MATCH FOUND
+                    return true;
+                }
+
+                return false;
+
+            })->values(); // reset index
+        }
 
         // If no products found → return 201
         if ($products->isEmpty()) {
@@ -206,7 +461,7 @@ class ProductController extends Controller
     }
 
     
-     public function details(Request $request, $id)
+    public function details(Request $request, $id)
     {
         $user = Auth::guard('api')->user();
 

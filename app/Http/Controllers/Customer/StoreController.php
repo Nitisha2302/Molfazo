@@ -10,19 +10,69 @@ use App\Models\Product;
 class StoreController extends Controller
 {
     // Get all stores paginated
-    public function list(Request $request)
-    {
-        // $query = Store::query();
-        $query = Store::where('status_id', 1); // ✅ only active stores
+    // public function list(Request $request)
+    // {
+    //     // $query = Store::query();
+    //     $query = Store::where('status_id', 1); // ✅ only active stores
 
-        // Optional filters
-        if ($request->has('city')) {
-            $query->where('city', $request->city);
+    //     // Optional filters
+    //     if ($request->has('city')) {
+    //         $query->where('city', $request->city);
+    //     }
+
+    //     if ($request->has('type')) {
+    //         $query->where('type', $request->type);
+    //     }
+
+        
+    //      // 🔥 NO PAGINATION
+    //     // $stores = $query->get();
+        
+    //     //  $stores = $query->with(['products' => function ($q) {
+    //     //     $q->latest()->limit(6)->with('primaryImage'); 
+    //     // }])->get();
+
+    //     $stores = $query->with(['products' => function ($q) {
+    //         $q->where('approval_status', 'approved') // ✅ correct filter
+    //         ->latest()
+    //         ->limit(6)
+    //         ->with('primaryImage');
+    //     }])->get();
+
+    //     // Optional: handle no data case
+    //     if ($stores->isEmpty()) {
+    //         return response()->json([
+    //             'status' => false,
+    //           'message' => __('messages.customer.store.list.empty')
+    //         ], 201);
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => __('messages.customer.store.list.success'),
+    //         'data' => $stores
+    //     ]);
+    // }
+
+
+    // with new days search 
+
+
+     public function list(Request $request)
+    {
+        $query = Store::where('status_id', 1);
+
+        // 🔥 Store city filter (existing)
+        if ($request->filled('city')) {
+            $query->where('city', 'like', '%' . $request->city . '%');
         }
 
-        if ($request->has('type')) {
+        // 🔥 Store type filter (existing)
+        if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
+
+        
 
         
          // 🔥 NO PAGINATION
@@ -38,6 +88,66 @@ class StoreController extends Controller
             ->limit(6)
             ->with('primaryImage');
         }])->get();
+
+        // 🔥 DELIVERY FILTER (CITY + TYPE + TIME)
+        if (
+            $request->filled('delivery_city') ||
+            $request->filled('delivery_type') ||
+            ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit'))
+        ) {
+
+            $stores = $stores->filter(function ($store) use ($request) {
+
+                $configs = $store->delivery_config ?? [];
+
+                // decode if string
+                if (is_string($configs)) {
+                    $configs = json_decode($configs, true);
+                }
+
+                if (!$configs || !is_array($configs)) {
+                    return false;
+                }
+
+                foreach ($configs as $config) {
+
+                    // ❌ skip disabled
+                    if (($config['enabled'] ?? 0) != 1) continue;
+
+                    // ✅ DELIVERY CITY
+                    if ($request->filled('delivery_city')) {
+                        if (strtolower($config['city']) != strtolower($request->delivery_city)) {
+                            continue;
+                        }
+                    }
+
+                    // ✅ DELIVERY TYPE
+                    if ($request->filled('delivery_type')) {
+                        if (($config['delivery_type'] ?? '') != $request->delivery_type) {
+                            continue;
+                        }
+                    }
+
+                    // ✅ DELIVERY TIME
+                    if ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit')) {
+
+                        if (($config['delivery_time_unit'] ?? '') != $request->delivery_time_unit) {
+                            continue;
+                        }
+
+                        if (($config['delivery_time_value'] ?? 9999) > $request->delivery_time_value) {
+                            continue;
+                        }
+                    }
+
+                    // ✅ MATCH FOUND
+                    return true;
+                }
+
+                return false;
+
+            })->values();
+        }
 
         // Optional: handle no data case
         if ($stores->isEmpty()) {
