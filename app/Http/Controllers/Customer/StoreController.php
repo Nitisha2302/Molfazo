@@ -164,6 +164,7 @@ class StoreController extends Controller
         ]);
     }
 
+    
     // Get single store + paginated products
     public function details(Request $request, $id)
     {
