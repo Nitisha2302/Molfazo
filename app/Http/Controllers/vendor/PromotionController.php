@@ -157,7 +157,7 @@ class PromotionController extends Controller
             $file->move(public_path('assets/payment_screenshots'), $imageName);
         }
 
-        // ✅ CREATE REQUEST
+        //  CREATE REQUEST
         PromotionRequest::create([
             'vendor_id' => $user->id,
             'product_id' => $request->product_id,
@@ -165,6 +165,7 @@ class PromotionController extends Controller
             'payment_screenshot' => $imageName, 
             'status' => 'pending'
         ]);
+
 
         return response()->json([
             'status' => true,

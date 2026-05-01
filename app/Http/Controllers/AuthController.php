@@ -612,6 +612,8 @@ class AuthController extends Controller
             ], 403);
         }
 
+
+        
         // if ($user->status_id != 1) {
         //     return response()->json([
         //         'status'  => false,
