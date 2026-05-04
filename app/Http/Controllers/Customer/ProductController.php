@@ -1580,6 +1580,8 @@ class ProductController extends Controller
             ], 201);
         }
 
+        
+
         // 🔥 Convert primaryImage object -> primaryimage key
        $products = $products->map(function ($product) use ($favIds) {
             $product->primaryimage = optional($product->primaryImage)->image;
