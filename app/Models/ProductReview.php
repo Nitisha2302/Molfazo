@@ -36,5 +36,10 @@ class ProductReview extends Model
     {
         return $this->hasMany(ProductReviewImage::class, 'review_id');
     }
+
+    public function vendor()
+    {
+        return $this->belongsTo(User::class, 'vendor_id'); // 👈 IMPORTANT
+    }
     
 }
