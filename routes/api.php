@@ -150,6 +150,7 @@ Route::post('customer/address/save', [CustomerAuthController::class, 'storeAddre
 Route::get('customer/address/list', [CustomerAuthController::class, 'addressList']);
 Route::delete('customer/address/remove/{id}', action: [CustomerAuthController::class, 'destroyAddress']);
 Route::post('customer/address/set-default', [CustomerAuthController::class, 'setDefaultAddress']);
+Route::post('delete-account', [CustomerAuthController::class, 'deleteAccount']);
 
 
 Route::get('customer/categories', [CustomerCategoryController::class, 'categories']); // All categories with sub & child

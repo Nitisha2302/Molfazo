@@ -65,7 +65,8 @@ class AuthController extends Controller
         }
 
         // 👤 Check user by mobile
-        $user = User::where('mobile', $phone)->first();
+        // $user = User::where('mobile', $phone)->first();
+        $user = User::withTrashed()->where('mobile', $phone)->first();
 
         //  If user exists but NOT customer
         if ($user && $user->role != 3) {
@@ -75,14 +76,22 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // 👤 Find or Create Customer (role = 3)
-        $user = User::firstOrCreate(
-            ['mobile' => $phone],
-            [
+        //  Find or Create Customer (role = 3)
+        // $user = User::firstOrCreate(
+        //     ['mobile' => $phone],
+        //     [
+        //         'role' => 3,
+        //         'is_mobile_verified' => 0,
+        //     ]
+        // );
+
+        if (!$user) {
+            $user = User::create([
+                'mobile' => $phone,
                 'role' => 3,
                 'is_mobile_verified' => 0,
-            ]
-        );
+            ]);
+        }
 
         // 🚫 Block / Delete check
         if (!empty($user->is_blocked)) {
@@ -92,11 +101,17 @@ class AuthController extends Controller
             ], 403);
         }
 
-        if (!empty($user->is_deleted)) {
+        // if (!empty($user->is_deleted)) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => __('messages.customer.login.deleted'),
+
+        //     ], 403);
+        // }
+        if ($user && $user->deleted_at !== null) {
             return response()->json([
                 'status' => false,
                 'message' => __('messages.customer.login.deleted'),
-
             ], 403);
         }
 
@@ -348,7 +363,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name'      => 'required|string|max:50',
             'full_name' => 'required|string|max:100',
-            'mobile'    => 'required|digits:10',
+            'mobile'    => 'required|digits_between:8,15',
             'address'   => 'required|string',
             'city'      => 'required|string',
             'state'     => 'nullable|string',
@@ -527,6 +542,39 @@ class AuthController extends Controller
         ], 200);
     }
 
+
+     public function deleteAccount(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        // ✅ Revoke tokens properly
+        if (method_exists($user, 'tokens')) {
+            $user->tokens()->delete(); // Sanctum
+        }
+
+        // if using api_token (your case)
+        $user->api_token = null;
+
+        // OPTIONAL: anonymize safely (not fully remove)
+        $user->fcm_token = null;
+
+        $user->save();
+
+        // ✅ Soft delete
+        $user->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Account deleted successfully'
+        ]);
+    }
 
 
 

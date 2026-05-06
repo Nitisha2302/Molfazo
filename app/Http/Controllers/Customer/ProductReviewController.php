@@ -106,10 +106,54 @@ class ProductReviewController extends Controller
     }
 
 
-    public function list($productId)
+    // public function list($productId)
+    // {
+    //     $product = Product::with(['reviews.user', 'reviews.images'])
+    //         ->find($productId);
+
+    //     if (!$product) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'Product not found.'
+    //         ], 404);
+    //     }
+
+    //     $average = $product->reviews()->avg('rating');
+    //     $count   = $product->reviews()->count();
+
+    //     // ✅ Format reviews
+    //     $reviews = $product->reviews->map(function ($review) {
+
+    //         return [
+    //             'id'        => $review->id,
+    //             'rating'    => $review->rating,
+    //             'review'    => $review->review,
+    //             'user'      => [
+    //                 'id'   => $review->user->id,
+    //                 'name' => $review->user->name,
+    //                 'profile_photo' => $review->user->profile_photo
+    //                     ? $review->user->profile_photo
+    //                     : null
+    //             ],
+    //             'images' => $review->images->map(function ($img) {
+    //                 return  $img->image;
+    //             })
+    //         ];
+    //     });
+
+    //     return response()->json([
+    //         'status'         => true,
+    //         'message' => __('messages.customer.review.list_success'),
+    //         'average_rating' => $average ? round($average, 1) : 0,
+    //         'total_reviews'  => $count,
+    //         'reviews'        => $reviews
+    //     ], 200);
+    // }
+
+     public function list($productId)
     {
-        $product = Product::with(['reviews.user', 'reviews.images'])
-            ->find($productId);
+        $product = Product::with(['reviews.user', 'reviews.vendor', 'reviews.images'])
+         ->find($productId);
 
         if (!$product) {
             return response()->json([
@@ -124,22 +168,47 @@ class ProductReviewController extends Controller
         // ✅ Format reviews
         $reviews = $product->reviews->map(function ($review) {
 
-            return [
-                'id'        => $review->id,
-                'rating'    => $review->rating,
-                'review'    => $review->review,
-                'user'      => [
-                    'id'   => $review->user->id,
-                    'name' => $review->user->name,
-                    'profile_photo' => $review->user->profile_photo
-                        ? $review->user->profile_photo
-                        : null
-                ],
-                'images' => $review->images->map(function ($img) {
-                    return  $img->image;
-                })
-            ];
-        });
+    // 👇 Case 1: Real User
+    if ($review->user_id && $review->user) {
+        $userData = [
+            'id'   => $review->user->id,
+            'name' => $review->user->name,
+            'profile_photo' => $review->user->profile_photo ?? null,
+            'type' => 'user'
+        ];
+    }
+
+    // 👇 Case 2: Vendor review
+    elseif ($review->vendor_id && $review->vendor) {
+        $userData = [
+            'id'   => $review->vendor->id,
+            'name' => $review->vendor->name,
+            'profile_photo' => $review->vendor->profile_photo ?? null,
+            'type' => 'vendor'
+        ];
+    }
+
+    // 👇 Case 3: Manual / Fake review
+    else {
+        $userData = [
+            'id'   => null,
+            'name' => $review->username ?? 'Anonymous',
+            'profile_photo' => $review->profile_image ?? null,
+            'type' => 'manual'
+        ];
+    }
+
+    return [
+        'id'        => $review->id,
+        'rating'    => $review->rating,
+        'review'    => $review->review,
+        'user'      => $userData,
+
+        'images' => $review->images->map(function ($img) {
+            return $img->image;
+        })
+    ];
+});
 
         return response()->json([
             'status'         => true,
