@@ -1572,6 +1572,7 @@ class ProductController extends Controller
             })->values();
         }
 
+        
         if ($products->isEmpty()) {
             return response()->json([
                 'status' => false,
