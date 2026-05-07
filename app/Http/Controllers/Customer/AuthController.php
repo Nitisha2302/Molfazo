@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use App\Models\UserLang;
 use Illuminate\Support\Facades\DB;
 use App\Models\BlockedUser;
+use App\Models\Report;
 
 class AuthController extends Controller
 {
@@ -727,6 +728,85 @@ class AuthController extends Controller
             'is_blocked' => true,
             'message' => 'User blocked successfully'
         ]);
+    }
+
+    public function storeReport(Request $request)
+    {
+        // 1️⃣ Authenticate user
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.report.user_not_authenticated'),
+            ], 401);
+        }
+
+        // 2️⃣ Detect user language
+        $userLang = UserLang::where('user_id', $user->id)
+            ->where('device_token', $user->device_token)
+            ->where('device_type', $user->device_type)
+            ->first();
+
+        $lang = $userLang->language ?? 'ru';
+
+        app()->setLocale($lang);
+
+        // 3️⃣ Validation
+        $validator = Validator::make($request->all(), [
+
+            'reported_user_id' => 'required|exists:users,id',
+            'description'      => 'required|string|max:2000',
+
+        ], [
+
+            'reported_user_id.required' =>
+                __('messages.report.validation.reported_user_required'),
+
+            'reported_user_id.exists' =>
+                __('messages.report.validation.reported_user_invalid'),
+
+            'description.required' =>
+                __('messages.report.validation.description_required'),
+
+            'description.string' =>
+                __('messages.report.validation.description_string'),
+
+            'description.max' =>
+                __('messages.report.validation.description_max'),
+        ]);
+
+        if ($validator->fails()) {
+
+            return response()->json([
+                'status'  => false,
+                'message' => $validator->errors()->first(),
+            ], 201);
+        }
+
+        // 4️⃣ Prevent self report
+        if ($user->id == $request->reported_user_id) {
+
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.report.cannot_report_self'),
+            ], 201);
+        }
+
+        // 5️⃣ Save report
+        $report = Report::create([
+
+            'user_id'          => $user->id,
+            'reported_user_id' => $request->reported_user_id,
+            'description'      => $request->description,
+        ]);
+
+        // 6️⃣ Success response
+        return response()->json([
+            'status'  => true,
+            'message' => __('messages.report.success'),
+            'data'    => $report,
+        ], 200);
     }
 
 

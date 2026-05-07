@@ -223,7 +223,7 @@ Route::middleware('auth:api')->group(function () {
 Route::post('/didit/webhook', [KycController::class, 'webhook'])->name('didit.webhook');
 
 Route::post('toggle-block-user', [CustomerAuthController::class, 'toggleBlockUser']);
-
+  Route::post('/store-report', [CustomerAuthController::class, 'storeReport']);
 
 
 

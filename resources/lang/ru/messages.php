@@ -21,6 +21,23 @@ return [
         'user_not_authenticated' => 'User not authenticated.',
     ],
 
+    'report' => [
+
+        'success' => 'Жалоба успешно отправлена.',
+        'user_not_authenticated' => 'Пользователь не авторизован.',
+        'cannot_report_self' => 'Вы не можете пожаловаться на самого себя.',
+
+        'validation' => [
+
+            'reported_user_required' => 'Необходимо указать пользователя.',
+            'reported_user_invalid'  => 'Пользователь не найден.',
+
+            'description_required' => 'Описание обязательно.',
+            'description_string'   => 'Описание должно быть строкой.',
+            'description_max'      => 'Описание не должно превышать 2000 символов.',
+        ],
+    ],
+
     'enquiry' => [
 
         'unauthorized' => 'Доступ запрещён.',

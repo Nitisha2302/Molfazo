@@ -206,6 +206,15 @@
                 </a>
             </li>
 
+            <li class="@if (Route::currentRouteName() == 'dashboard.admin.reports.index') active @endif">
+                <a href="{{ route('dashboard.admin.reports.index') }}">
+                    <span class="d-flex gap-3 align-items-end">
+                       <i class="fas fa-file-alt icon-font-size"></i>
+                        <span class="nav-content-menu">User's Report</span>
+                    </span>
+                </a>
+            </li>
+
 
         @endif
 

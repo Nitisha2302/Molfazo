@@ -21,6 +21,23 @@ return [
         'user_not_authenticated' => 'User not authenticated.',
     ],
 
+    'report' => [
+
+        'success' => 'Report submitted successfully.',
+        'user_not_authenticated' => 'User not authenticated.',
+        'cannot_report_self' => 'You cannot report yourself.',
+
+        'validation' => [
+
+            'reported_user_required' => 'Reported user is required.',
+            'reported_user_invalid'  => 'Reported user not found.',
+
+            'description_required' => 'Description is required.',
+            'description_string'   => 'Description must be a valid string.',
+            'description_max'      => 'Description cannot exceed 2000 characters.',
+        ],
+    ],
+
     'enquiry' => [
 
         'unauthorized' => 'Unauthorized',

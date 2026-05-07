@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Enquiry;
 use App\Models\PrivacyPolicy;
 use App\Models\TermsCondition;
+use App\Models\Report;
 class EnquiryController extends Controller
 {
 
@@ -186,6 +187,63 @@ class EnquiryController extends Controller
         Enquiry::findOrFail($request->query_id)->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    public function index(Request $request)
+    {
+        $query = Report::with([
+            'user',
+            'reportedUser'
+        ]);
+
+        // 🔍 Search
+        if ($request->filled('search')) {
+
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+
+                // Description search
+                $q->where('description', 'like', '%' . $search . '%')
+
+                // Reporter User
+                ->orWhereHas('user', function ($userQuery) use ($search) {
+
+                    $userQuery->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('mobile', 'like', '%' . $search . '%');
+                })
+
+                // Reported User
+                ->orWhereHas('reportedUser', function ($userQuery) use ($search) {
+
+                    $userQuery->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('mobile', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        $reports = $query->latest()->paginate(10);
+
+        return view('admin.reports.index', compact('reports'));
+    }
+
+
+    public function destroy($id)
+    {
+        $report = Report::find($id);
+
+        if (!$report) {
+
+            return redirect()
+                ->back()
+                ->with('error', 'Report not found.');
+        }
+
+        $report->delete();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Report deleted successfully.');
     }
 
 

@@ -54,6 +54,11 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     // Admin Dashboard
     Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'role:1']], function () {
 
+       Route::get('/reports', [EnquiryController::class, 'index'])
+            ->name('reports.index');
+
+            Route::delete('/reports/{id}/delete', [EnquiryController::class, 'destroy'])
+         ->name('reports.delete');
 
     
       Route::get('edit-privacy-policy', [EnquiryController::class, 'editPrivacyPolicy'])->name('privacy-policy.edit');

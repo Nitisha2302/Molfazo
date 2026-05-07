@@ -20,6 +20,23 @@ return [
         'user_not_authenticated' => 'Шумо тасдиқ нашудаед. Лутфан ворид шавед.',
     ],
 
+    'report' => [
+
+        'success' => 'Шикоят бомуваффақият фиристода шуд.',
+        'user_not_authenticated' => 'Корбар тасдиқ нашудааст.',
+        'cannot_report_self' => 'Шумо наметавонед худро шикоят кунед.',
+
+        'validation' => [
+
+            'reported_user_required' => 'Интихоби корбар ҳатмист.',
+            'reported_user_invalid'  => 'Корбар ёфт нашуд.',
+
+            'description_required' => 'Тавсиф ҳатмист.',
+            'description_string'   => 'Тавсиф бояд матн бошад.',
+            'description_max'      => 'Тавсиф набояд аз 2000 аломат зиёд бошад.',
+        ],
+    ],
+
     'enquiry' => [
 
         'unauthorized' => 'Дастрасӣ иҷозат дода нашудааст.',
