@@ -556,7 +556,133 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function sendVendorLoginOtp(Request $request)
+    // public function sendVendorLoginOtp(Request $request)
+    // {
+
+    //         $userLang = DB::table('user_langs')
+    //         ->where('device_token', $request->device_token)
+    //         ->where('device_type', $request->device_type)
+    //         ->value('language');
+
+    //         $lang = $request->header('lang')
+    //             ?? $request->lang
+    //             ?? $request->query('lang')
+    //             ?? $userLang
+    //             ?? 'ru';
+
+    //         app()->setLocale($lang);
+    //    /* ===============================
+    //     VALIDATION
+    //     =============================== */
+    //       $validator = Validator::make($request->all(), [
+    //         'phone_number' => 'required|digits_between:8,15',
+    //         'device_type'  => 'nullable|string|max:255',
+    //         'device_token' => 'nullable|string|max:255',
+    //         'fcm_token'    => 'nullable|string|max:255',
+    //     ], [
+    //         'phone_number.required'       => __('messages.vendor.login_otp.validation.mobile_required'),
+    //         'phone_number.digits_between' => __('messages.vendor.login_otp.validation.mobile_invalid'),
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => $validator->errors()->first(), // Return first error
+    //             'errors'  => $validator->errors(),         // Optional: full list of errors
+    //         ], 201);
+    //     }
+
+
+    //     /* ===============================
+    //     USER CHECK
+    //     =============================== */
+    //     $user = User::where('mobile', $request->phone_number)->first();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status'  => false,
+    //                'message' => __('messages.vendor.login_otp.account_not_found'),
+    //         ], 404);
+    //     }
+
+    //     if ($user->role != 2) {
+    //         return response()->json([
+    //             'status'  => false,
+    //              'message' => __('messages.vendor.login_otp.only_vendor'),
+    //         ], 403);
+    //     }
+
+
+        
+    //     // if ($user->status_id != 1) {
+    //     //     return response()->json([
+    //     //         'status'  => false,
+    //     //       'message' => __('messages.vendor.login_otp.not_active'),
+    //     //     ], 403);
+    //     // }
+
+    //     /* ===============================
+    //     GENERATE OTP
+    //     =============================== */
+    //     $otp = rand(100000, 999999);
+
+    //     $user->mobile_otp = $otp;
+    //     $user->mobile_otp_sent_at = now();
+    //     $user->save();
+
+    //     /* ===============================
+    //     SEND OTP
+    //     =============================== */
+    //     $phone = $request->phone_number;
+    //     // ✅ Dynamic SMS
+    //    $smsMessage = __('messages.vendor.login_otp.sms.otp_message', ['otp' => $otp]);
+    //    $responseMessage = __('messages.vendor.login_otp.otp_sent');
+    //     $responseOtp = null;
+
+    //     if (strlen($phone) === 9) {
+    //         // OSON SMS
+    //         $txnId = 'login_' . time();
+    //         $login  = config('services.oson.login');
+    //         $from   = config('services.oson.sender');
+    //         $apiKey = config('services.oson.api_key');
+
+    //         $hash = $this->generateSha256Hex(
+    //             "$txnId;$login;$from;$phone;$apiKey"
+    //         );
+    //         // $hash = $this->generateSha256Hex(
+    //         //     "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
+    //         // );
+
+    //         Http::get('https://api.osonsms.com/sendsms_v1.php', [
+    //             'login'        =>  $login,
+    //             'from'         => $from,
+    //             'phone_number' => $phone,
+    //             'msg'          => $smsMessage,
+    //             'txn_id'       => $txnId,
+    //             'str_hash'     => $hash,
+    //         ]);
+    //     }
+
+    //     if (strlen($phone) === 10) {
+    //         // India testing
+    //        $responseMessage = __('messages.vendor.login_otp.otp_test');
+    //         $responseOtp = $otp;
+    //     }
+
+    //     return response()->json([
+    //         'status'  => true,
+    //         'message' => $responseMessage,
+    //         'data'    => [
+    //             'phone_number' => $phone,
+    //             'otp' => $responseOtp,
+    //         ],
+    //     ], 200);
+    // }
+
+
+    // with default otp 
+
+     public function sendVendorLoginOtp(Request $request)
     {
 
             $userLang = DB::table('user_langs')
@@ -621,10 +747,22 @@ class AuthController extends Controller
         //     ], 403);
         // }
 
-        /* ===============================
+       /* ===============================
         GENERATE OTP
         =============================== */
-        $otp = rand(100000, 999999);
+
+        $phone = trim((string)$request->phone_number);
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        // Fixed OTP for test number OR 10 digit numbers
+        if ($phone == '123456788' || strlen($phone) == 10) {
+
+            $otp = 123456;
+
+        } else {
+
+            $otp = random_int(100000, 999999);
+        }
 
         $user->mobile_otp = $otp;
         $user->mobile_otp_sent_at = now();
@@ -633,15 +771,23 @@ class AuthController extends Controller
         /* ===============================
         SEND OTP
         =============================== */
-        $phone = $request->phone_number;
-        // ✅ Dynamic SMS
-       $smsMessage = __('messages.vendor.login_otp.sms.otp_message', ['otp' => $otp]);
-       $responseMessage = __('messages.vendor.login_otp.otp_sent');
+
+        $smsMessage = __('messages.vendor.login_otp.sms.otp_message', ['otp' => $otp]);
+
+        $responseMessage = __('messages.vendor.login_otp.otp_sent');
         $responseOtp = null;
 
-        if (strlen($phone) === 9) {
-            // OSON SMS
+        // ✅ Test number OR 10 digit number
+        if ($phone == '123456788' || strlen($phone) == 10) {
+
+            $responseMessage = __('messages.vendor.login_otp.otp_test');
+            $responseOtp = $otp;
+        }
+        // ✅ Normal 9 digit → Send SMS
+        elseif (strlen($phone) == 9) {
+
             $txnId = 'login_' . time();
+
             $login  = config('services.oson.login');
             $from   = config('services.oson.sender');
             $apiKey = config('services.oson.api_key');
@@ -649,12 +795,9 @@ class AuthController extends Controller
             $hash = $this->generateSha256Hex(
                 "$txnId;$login;$from;$phone;$apiKey"
             );
-            // $hash = $this->generateSha256Hex(
-            //     "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
-            // );
 
             Http::get('https://api.osonsms.com/sendsms_v1.php', [
-                'login'        =>  $login,
+                'login'        => $login,
                 'from'         => $from,
                 'phone_number' => $phone,
                 'msg'          => $smsMessage,
@@ -663,18 +806,12 @@ class AuthController extends Controller
             ]);
         }
 
-        if (strlen($phone) === 10) {
-            // India testing
-           $responseMessage = __('messages.vendor.login_otp.otp_test');
-            $responseOtp = $otp;
-        }
-
         return response()->json([
             'status'  => true,
             'message' => $responseMessage,
             'data'    => [
                 'phone_number' => $phone,
-                'otp' => $responseOtp,
+                'otp'          => $responseOtp,
             ],
         ], 200);
     }

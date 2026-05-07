@@ -16,12 +16,134 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\UserLang;
 use Illuminate\Support\Facades\DB;
+use App\Models\BlockedUser;
 
 class AuthController extends Controller
 {
    /**
      * REGISTER OR LOGIN + SEND OTP
      */
+    // public function login(Request $request)
+    // {
+
+    //     // $userLang = DB::table('user_langs')
+    //     // ->where('device_token', $request->device_id)
+    //     // ->where('device_type', $request->device_type)
+    //     // ->value('language');
+
+    //     // $lang = $request->header('lang')
+    //     //     ?? $request->lang
+    //     //     ?? $request->query('lang')
+    //     //     ?? $userLang
+    //     //     ?? 'ru';
+
+    //     // app()->setLocale($lang);
+    //     $validator = Validator::make($request->all(), [
+    //         'phone_number' => 'required|digits_between:8,15',
+    //         'device_type'  => 'nullable|string|max:255',
+    //         'device_id'    => 'nullable|string|max:255',
+    //         'fcm_token'    => 'nullable|string|max:255',
+    //     ], [
+    //         'phone_number.required' => __('messages.customer.login.validation.phone_required'),
+    //          'phone_number.digits_between' => __('messages.customer.login.validation.phone_invalid'),
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => $validator->errors()->first(),
+    //         ], 201);
+    //     }
+
+    //     $phone = $request->phone_number;
+
+    //     // ✅ Always random OTP
+    //     $otp = rand(100000, 999999);
+
+    //     // ✅ Optional: fixed OTP only in local env
+    //     if (app()->environment('local') && env('TEST_OTP')) {
+    //         $otp = env('TEST_OTP');
+    //     }
+
+    //     // 👤 Check user by mobile
+    //     // $user = User::where('mobile', $phone)->first();
+    //     $user = User::withTrashed()->where('mobile', $phone)->first();
+
+    //     //  If user exists but NOT customer
+    //     if ($user && $user->role != 3) {
+    //         return response()->json([
+    //             'status'  => false,
+    //              'message' => __('messages.customer.login.vendor_exists'),
+    //         ], 403);
+    //     }
+
+    //     //  Find or Create Customer (role = 3)
+    //     // $user = User::firstOrCreate(
+    //     //     ['mobile' => $phone],
+    //     //     [
+    //     //         'role' => 3,
+    //     //         'is_mobile_verified' => 0,
+    //     //     ]
+    //     // );
+
+    //     if (!$user) {
+    //         $user = User::create([
+    //             'mobile' => $phone,
+    //             'role' => 3,
+    //             'is_mobile_verified' => 0,
+    //         ]);
+    //     }
+
+    //     // 🚫 Block / Delete check
+    //     if (!empty($user->is_blocked)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => __('messages.customer.login.blocked'),
+    //         ], 403);
+    //     }
+
+    //     // if (!empty($user->is_deleted)) {
+    //     //     return response()->json([
+    //     //         'status' => false,
+    //     //         'message' => __('messages.customer.login.deleted'),
+
+    //     //     ], 403);
+    //     // }
+    //     if ($user && $user->deleted_at !== null) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => __('messages.customer.login.deleted'),
+    //         ], 403);
+    //     }
+
+    //     // 🔄 Update OTP & device info
+    //     $user->update([
+    //         'mobile_otp'         => $otp,
+    //         'mobile_otp_sent_at' => now(),
+    //         'device_type'        => $request->device_type,
+    //         'device_token'          => $request->device_id,
+    //         'fcm_token'          => $request->fcm_token,
+    //     ]);
+
+    //     // 📩 Send SMS (real numbers only)
+    //     // if (app()->environment('production')) {
+    //         // $this->sendOsonSms($phone, $otp);
+    //         $this->sendOsonSms($phone, $otp, app()->getLocale());
+    //     // }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => __('messages.customer.login.otp_sent'),
+    //         'data'   => [
+    //             'user_id' => $user->id,
+    //             'mobile'  => $user->mobile,
+    //             'otp'     => app()->environment('local') ? $otp : null, // show only in local
+    //         ],
+    //     ], 200);
+    // }
+
+    // with default user 
+
     public function login(Request $request)
     {
 
@@ -54,10 +176,18 @@ class AuthController extends Controller
             ], 201);
         }
 
-        $phone = $request->phone_number;
+       $phone = $request->phone_number;
 
-        // ✅ Always random OTP
-        $otp = rand(100000, 999999);
+        // ✅ Static OTP for test number
+        if ($phone === '123456789') {
+            $otp = 123456;
+        } else {
+            try {
+                $otp = random_int(100000, 999999);
+            } catch (\Exception $e) {
+                $otp = mt_rand(100000, 999999);
+            }
+        }
 
         // ✅ Optional: fixed OTP only in local env
         if (app()->environment('local') && env('TEST_OTP')) {
@@ -412,7 +542,7 @@ class AuthController extends Controller
     }
 
 
-   public function addressList()
+    public function addressList()
     {
         $user = Auth::guard('api')->user();
 
@@ -543,39 +673,61 @@ class AuthController extends Controller
     }
 
 
-     public function deleteAccount(Request $request)
+    public function toggleBlockUser(Request $request)
     {
         $user = Auth::guard('api')->user();
 
+        // 🔥 IMPORTANT
         if (!$user) {
+
             return response()->json([
                 'status' => false,
-                'message' => 'User not authenticated'
+                'message' => 'Unauthorized user'
             ], 401);
         }
 
-        // ✅ Revoke tokens properly
-        if (method_exists($user, 'tokens')) {
-            $user->tokens()->delete(); // Sanctum
+        $request->validate([
+            'blocked_user_id' => 'required|exists:users,id'
+        ]);
+
+        // prevent self block
+        if ($user->id == $request->blocked_user_id) {
+
+            return response()->json([
+                'status' => false,
+                'message' => 'You cannot block yourself'
+            ]);
         }
 
-        // if using api_token (your case)
-        $user->api_token = null;
+        $existingBlock = BlockedUser::where([
+            'blocked_by' => $user->id,
+            'blocked_user_id' => $request->blocked_user_id
+        ])->first();
 
-        // OPTIONAL: anonymize safely (not fully remove)
-        $user->fcm_token = null;
+        // UNBLOCK
+        if ($existingBlock) {
 
-        $user->save();
+            $existingBlock->delete();
 
-        // ✅ Soft delete
-        $user->delete();
+            return response()->json([
+                'status' => true,
+                'is_blocked' => false,
+                'message' => 'User unblocked successfully'
+            ]);
+        }
+
+        // BLOCK
+        BlockedUser::create([
+            'blocked_by' => $user->id,
+            'blocked_user_id' => $request->blocked_user_id
+        ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'Account deleted successfully'
+            'is_blocked' => true,
+            'message' => 'User blocked successfully'
         ]);
     }
-
 
 
 

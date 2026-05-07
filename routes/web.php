@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\PromotionPackageController;
 use App\Http\Controllers\Admin\VideoPlanController;
 use App\Http\Controllers\Admin\VideoRequestController;
 use App\Http\Controllers\Admin\EnquiryController;
+use App\Http\Controllers\ContentController;
 
 
 Route::fallback(function () {
@@ -45,7 +46,8 @@ Route::get('/delete-account/{id?}', [AdminAuthController::class, 'showDeleteAcco
 Route::post('/delete-account-confirm', [AdminAuthController::class, 'confirmDeleteAccount'])->name('delete-account.confirm');
 
 
-
+Route::get('/privacy-policy', [ContentController::class, 'commonPrivacyPolicy']);
+Route::get('/delete-account-policy', [ContentController::class, 'commonDeletePolicy']);
 
 // Routes with the same prefix for both Admin and Investor
 Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {

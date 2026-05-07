@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\BlockedUser;
 
 class Product extends Model
 {
@@ -93,12 +94,24 @@ class Product extends Model
             ->where('approval_status', 'approved');
     }
 
-//   public function reviews()
-// {
-//     return $this->hasMany(ProductReview::class, 'product_id')
-//         ->whereNull('deleted_at')
-//         ->where('status', 'approved');
-// }
+    //   public function reviews()
+    // {
+    //     return $this->hasMany(ProductReview::class, 'product_id')
+    //         ->whereNull('deleted_at')
+    //         ->where('status', 'approved');
+    // }
+
+    public function scopeNotBlocked($query, $userId)
+    {
+        $blockedIds = BlockedUser::getBlockedUserIds($userId);
+
+        return $query->whereHas('store', function ($q) use ($blockedIds) {
+
+            if (!empty($blockedIds)) {
+                $q->whereNotIn('user_id', $blockedIds);
+            }
+        });
+    }
 
     
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\BlockedUser;
 
 class Store extends Model
 {
@@ -43,5 +44,18 @@ class Store extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+
+    public function scopeNotBlocked($query, $userId)
+    {
+        $blockedIds = BlockedUser::getBlockedUserIds($userId);
+
+        if (!empty($blockedIds)) {
+
+            $query->whereNotIn('user_id', $blockedIds);
+        }
+
+        return $query;
     }
 }

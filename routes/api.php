@@ -222,6 +222,8 @@ Route::middleware('auth:api')->group(function () {
 // Public (DIDIT webhook)
 Route::post('/didit/webhook', [KycController::class, 'webhook'])->name('didit.webhook');
 
+Route::post('toggle-block-user', [CustomerAuthController::class, 'toggleBlockUser']);
+
 
 
 

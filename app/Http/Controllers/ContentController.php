@@ -127,5 +127,16 @@ class ContentController extends Controller
         ]);
     }
 
+
+    public function commonPrivacyPolicy(Request $request)
+    {
+        return view('admin.common.privacyPolicy');
+    }
+
+    public function commonDeletePolicy(Request $request)
+    {
+        return view('admin.common.deletePolicy');
+    }
+
     
 }

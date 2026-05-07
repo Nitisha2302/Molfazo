@@ -8,6 +8,8 @@ use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\App;
+use App\Models\BlockedUser;
+
 
 class ChatController extends Controller
 {
@@ -143,7 +145,81 @@ class ChatController extends Controller
 
 
     // ✅ Get All Messages in Conversation
-    public function allMessages(Request $request)
+    // public function allMessages(Request $request)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => __('messages.customer.chat.unauthorized')
+    //         ], 401);
+    //     }
+
+    //     $validator = Validator::make($request->all(), [
+    //         'conversation_id' => 'required|exists:conversations,id',
+    //     ], [
+    //        'conversation_id.required' => __('messages.customer.chat.validation.conversation_required'),
+    //        'conversation_id.exists'   => __('messages.customer.chat.validation.conversation_invalid'),
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validator->errors()->first()
+    //         ], 201);
+    //     }
+
+    //     $conversation = Conversation::find($request->conversation_id);
+
+    //     if (!in_array($user->id, [$conversation->user_one_id, $conversation->user_two_id])) {
+    //         return response()->json([
+    //             'status' => false,
+    //              'message' => __('messages.customer.chat.not_participant')
+    //         ], 403);
+    //     }
+
+    //     $messages = $conversation->messages()
+    //         ->with('sender')
+    //         ->orderBy('id', 'asc')
+    //         ->get()
+    //         ->map(function ($m) use ($user) {
+
+    //             $sender = $m->sender;
+
+    //             return [
+    //                 'id' => $m->id,
+    //                 'conversation_id' => $m->conversation_id,
+    //                 'sender_id' => $m->sender_id,
+    //                 'is_me' => $m->sender_id == $user->id,
+
+    //                 'sender_name' => $sender->name ?? null,
+    //                 'sender_phone' => $sender->mobile ?? null,
+    //                 'sender_image' => $sender->profile_photo ?? null,
+
+    //                 'message' => $m->message,
+    //                  'image' => $m->image,
+    //                 'type' => $m->type,
+    //                 'meta' => $m->meta,
+
+    //                 'send_at' => $m->send_at ? $m->send_at->toDateTimeString() : null,
+    //                 'read_at' => $m->read_at ? $m->read_at->toDateTimeString() : null,
+
+    //                 'created_at' => $m->created_at->toDateTimeString(),
+    //             ];
+    //         });
+
+    //     return response()->json([
+    //         'status' => true,
+    //          'message' => __('messages.customer.chat.messages_fetched'),
+    //         'messages' => $messages
+    //     ], 200);
+    // }
+
+    // with blocked user 
+
+
+     public function allMessages(Request $request)
     {
         $user = Auth::guard('api')->user();
 
@@ -177,11 +253,26 @@ class ChatController extends Controller
             ], 403);
         }
 
+        // 🔥 Opposite user
+        $otherUserId = $conversation->user_one_id == $user->id
+            ? $conversation->user_two_id
+            : $conversation->user_one_id;
+
+        // 🔥 Block check
+        $blockedByMe = \App\Models\BlockedUser::where('blocked_by', $user->id)
+            ->where('blocked_user_id', $otherUserId)
+            ->exists();
+
+        $blockedByOther = \App\Models\BlockedUser::where('blocked_by', $otherUserId)
+            ->where('blocked_user_id', $user->id)
+            ->exists();
+
+
         $messages = $conversation->messages()
             ->with('sender')
             ->orderBy('id', 'asc')
             ->get()
-            ->map(function ($m) use ($user) {
+            ->map(function ($m) use ($user,$blockedByMe, $blockedByOther, $otherUserId) {
 
                 $sender = $m->sender;
 
@@ -204,12 +295,24 @@ class ChatController extends Controller
                     'read_at' => $m->read_at ? $m->read_at->toDateTimeString() : null,
 
                     'created_at' => $m->created_at->toDateTimeString(),
+
+
+                
                 ];
             });
 
         return response()->json([
             'status' => true,
              'message' => __('messages.customer.chat.messages_fetched'),
+                 // 🔥 Block info
+                    'is_blocked' => $blockedByMe || $blockedByOther,
+
+                    // 🔥 Kis side se block hua
+                    'blocked_by_me' => $blockedByMe,
+                    'blocked_by_other_user' => $blockedByOther,
+
+                    // 🔥 Opposite user id
+                    'chat_user_id' => $otherUserId,
             'messages' => $messages
         ], 200);
     }
