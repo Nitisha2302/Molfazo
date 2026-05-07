@@ -711,6 +711,11 @@ return [
             'messages_fetched' => 'Паёмҳо гирифта шуданд',
             'message_sent' => 'Паём фиристода шуд',
 
+             // ✅ Notifications
+            'new_message_title' => 'Паёми нав',
+            'image_sent' => '📷 Сурат фиристод',
+            'new_message' => 'Паёми нав гирифта шуд',
+
             'validation' => [
                 'other_user_required' => 'ID-и корбари дигар лозим аст',
                 'other_user_invalid'  => 'Корбари дигар ёфт нашуд',

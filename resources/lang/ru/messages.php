@@ -710,6 +710,10 @@ return [
             'messages_fetched' => 'Сообщения получены.',
             'message_sent' => 'Сообщение отправлено',
 
+             'new_message_title' => 'Новое сообщение',
+            'image_sent' => '📷 Отправил(а) изображение',
+            'new_message' => 'Получено новое сообщение',
+
             'validation' => [
                 'other_user_required' => 'Требуется ID другого пользователя',
                 'other_user_invalid'  => 'Пользователь не найден',

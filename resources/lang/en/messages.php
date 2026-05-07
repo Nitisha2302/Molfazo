@@ -738,6 +738,10 @@ return [
             'messages_fetched' => 'Messages fetched successfully.',
             'message_sent' => 'Message sent successfully.',
 
+               'new_message_title' => 'New Message',
+                'image_sent' => '📷 Sent an image',
+                'new_message' => 'New message received',
+
             'validation' => [
                 'other_user_required' => 'Other user id is required.',
                 'other_user_invalid'  => 'Other user does not exist.',

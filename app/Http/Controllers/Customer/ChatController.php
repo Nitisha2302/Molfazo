@@ -319,7 +319,215 @@ class ChatController extends Controller
 
     // with notifications 
 
-    public function send(Request $request)
+    // public function send(Request $request)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //              'message' => __('messages.customer.chat.unauthorized')
+    //         ], 401);
+    //     }
+
+    //     $validator = Validator::make($request->all(), [
+    //         'conversation_id' => 'nullable|exists:conversations,id',
+    //         'other_user_id'   => 'nullable|exists:users,id',
+    //            'product_id'      => 'required_without:conversation_id|exists:products,id',
+    //         'message'         => 'nullable|string|max:5000',
+    //           'image'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+    //         'type'            => 'nullable|in:text,image,file,system',
+    //         'meta'            => 'nullable'
+    //     ], [
+
+    //        'conversation_id.exists' => __('messages.customer.chat.validation.conversation_invalid'),
+    //         'other_user_id.exists'   => __('messages.customer.chat.validation.other_user_invalid'),
+    //         'message.string'         => __('messages.customer.chat.validation.message_required'),
+    //         'image.image'            => __('messages.customer.chat.validation.image_invalid'),
+    //         // 'conversation_id.exists' => 'Conversation not found',
+    //         // 'other_user_id.exists'   => 'User not found',
+    //         // 'message.required'       => 'Message is required',
+    //         // 'message.string'         => 'Message must be string',
+    //         // 'message.max'            => 'Message too long (max 5000)',
+    //         //  'image.image'            => 'Invalid image file',
+    //         // 'image.mimes'            => 'Image must be jpg,jpeg,png,webp',
+    //         // 'image.max'              => 'Image size must be max 2MB',
+    //         // 'type.in'                => 'Invalid message type',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validator->errors()->first()
+    //         ], 201);
+    //     }
+
+    //     // Conversation detect
+    //     if ($request->conversation_id) {
+    //         $conversation = Conversation::find($request->conversation_id);
+    //     } else {
+    //         if (!$request->other_user_id) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                   'message' => __('messages.customer.chat.validation.other_user_required')
+    //             ], 201);
+    //         }
+
+    //         $conversation = Conversation::between($user->id, $request->other_user_id,$request->product_id);
+    //     }
+
+    //     // Participant check
+    //     if (!in_array($user->id, [$conversation->user_one_id, $conversation->user_two_id])) {
+    //         return response()->json([
+    //             'status' => false,
+    //            'message' => __('messages.customer.chat.not_participant')
+    //         ], 403);
+    //     }
+
+    //     // Upload Image if exists
+    //    $imagePath = null;
+
+    //     if ($request->hasFile('image')) {
+
+    //         $image = $request->file('image');
+
+    //         $fileName = time() . '_' . rand(1000, 9999) . '.' . $image->getClientOriginalExtension();
+
+    //         $destinationPath = public_path('assets/customervendorchat_images');
+
+    //         if (!file_exists($destinationPath)) {
+    //             mkdir($destinationPath, 0777, true);
+    //         }
+
+    //         $image->move($destinationPath, $fileName);
+
+    //         $imagePath =  $fileName;
+    //          $imagePath = url('assets/customervendorchat_images/' . $fileName);
+    //     }
+
+
+    //     // Message type auto detect
+    //     $type = 'text';
+
+    //     if ($request->hasFile('image') && $request->message) {
+    //         $type = 'text_image';
+    //     } elseif ($request->hasFile('image')) {
+    //         $type = 'image';
+    //     }
+
+    //     $message = Message::create([
+    //         'conversation_id' => $conversation->id,
+    //         'sender_id'       => $user->id,
+    //         'message'         => $request->message,
+    //         'image'           => $imagePath,
+    //         'type'            => $type,
+    //         'meta'            => $request->meta,
+    //         'send_at'         => now()
+    //     ]);
+
+    //     $conversation->update([
+    //         'last_message_id'      => $message->id,
+    //         'last_message_preview' => $request->message ? substr($request->message, 0, 200) : '📷 Image',
+    //         'last_message_at'      => now()
+    //     ]);
+
+       
+    //      // ✅ Receiver ID detect
+    //     $receiverId = $conversation->user_one_id == $user->id
+    //         ? $conversation->user_two_id
+    //         : $conversation->user_one_id;
+
+    //     // $receiver = User::find($receiverId);
+
+    //     $receiver = \App\Models\User::find($receiverId);
+
+    //     // ✅ Send FCM Notification (English Only)
+    //     if ($receiver && $receiver->fcm_token) {
+
+    //     // 🌍 Set receiver language
+    //     $lang = $receiver->language ?? 'ru';
+    //     App::setLocale($lang);
+
+
+    //         $tokens = [
+    //             [
+    //                 'fcm_token' => $receiver->fcm_token,
+    //                 'device_type'  => $receiver->device_type ?? 'android',
+    //                 'user_id'      => $receiver->id,
+    //             ]
+    //         ];
+
+    //           // 📩 Message body
+    //         $body = match ($type) {
+    //             'text' => $request->message,
+    //             'image' => __('messages.customer.chat.image_sent'),
+    //             'text_image' => ($request->message ?? '') . " 📷",
+    //             default => __('messages.customer.chat.new_message'),
+    //         };
+
+
+    //         // Notification body based on type
+    //         // $body = '';
+
+    //         // if ($type == 'text') {
+    //         //     $body = $request->message;
+    //         // } elseif ($type == 'image') {
+    //         //     $body = "📷 Sent an image";
+    //         // } elseif ($type == 'text_image') {
+    //         //     $body = ($request->message ?? '') . " 📷";
+    //         // } else {
+    //         //     $body = "New message received";
+    //         // }
+
+    //         $product = $conversation->product;
+    //         $store = $product ? $product->store : null;
+    //         $productId = $product->id ?? null;
+    //         $productName = $product->name ?? null;
+    //         $productImage = $product->primaryImage->image ?? null;
+    //         $storeName = $store->name ?? null;
+    //         $storeLogoImage = $store->logo ?? null;
+    //         $storeBackImage = $store->store_background_image ?? null;
+
+    //         $notificationData = [
+    //             'notification_type' => 2,
+    //             'title' => __('messages.customer.chat.new_message_title', [], $lang),
+    //             'body'  => $user->name . ": " . $body,
+    //             'conversation_id' => $conversation->id,
+    //             'sender_id' => $user->id,
+    //             'image_url' => $imagePath ?? null,
+
+    //             // ✅ NEW CHAT-ONLY EXTRA DATA
+    //             'product_id'      => $productId,
+    //             'product_name'    => $productName,
+    //             'product_image'   => $productImage,
+    //             'store_name'      => $storeName,
+    //             'store_logo_image'     => $storeLogoImage,
+    //             'store_background_image'     => $storeBackImage,
+    //         ];
+
+    //         $fcmService = new \App\Services\FCMService();
+    //        $fcmService->sendNotification($tokens, $notificationData, false);
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //        'message' => __('messages.customer.chat.message_sent'),
+    //         'message_data' => [
+    //             'id' => $message->id,
+    //             'conversation_id' => $message->conversation_id,
+    //             'sender_id' => $message->sender_id,
+    //             'message' => $message->message,
+    //             'image' => $message->image,
+    //             'type' => $message->type,
+    //             'meta' => $message->meta,
+    //             'send_at' => $message->send_at ? $message->send_at->toDateTimeString() : null,
+    //             'read_at' => $message->read_at ? $message->read_at->toDateTimeString() : null,
+    //             'created_at' => $message->created_at->toDateTimeString(),
+    //         ]
+    //     ], 200);
+    // }
+
+     public function send(Request $request)
     {
         $user = Auth::guard('api')->user();
 
