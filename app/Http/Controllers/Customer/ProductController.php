@@ -1087,6 +1087,288 @@ class ProductController extends Controller
     }
 
 
+    // public function search(Request $request)
+    // {
+
+    //     // 🔥 Get logged-in user (optional)
+    //     $user = Auth::guard('api')->user();
+
+    //     $favIds = [];
+
+    //     if ($user) {
+    //         $favIds = FavoriteProducts::where('user_id', $user->id)
+    //                     ->pluck('product_id')
+    //                     ->toArray();
+    //     }
+    //     $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage','store.user','store.vendorBanks.bank','combinations','children.store','children.primaryImage','reviews.images' ])
+    //         ->withAvg('reviews', 'rating')   // 🔥 ADD
+    //         ->withCount('reviews')  ->where('status_id', 1)->where('approval_status', 'approved')->whereNull('parent_product_id');
+
+    //     //  Search Keyword
+    //     if ($request->has('search') && $request->search != '') {
+
+    //         $search = $request->search;
+
+    //         $query->where(function ($q) use ($search) {
+
+    //             // Product Name
+    //             $q->where('name', 'like', '%' . $search . '%')
+
+    //              // 🔥 ARTICLE NUMBER SEARCH
+    //             ->orWhere('article_number', 'like', '%' . $search . '%')
+
+    //                 // Store Name
+    //                 ->orWhereHas('store', function ($q2) use ($search) {
+    //                     $q2->where('name', 'like', '%' . $search . '%');
+    //                 })
+
+    //                 // Category Name
+    //                 ->orWhereHas('category', function ($q3) use ($search) {
+    //                     $q3->where('name', 'like', '%' . $search . '%');
+    //                 })
+
+    //                 // SubCategory Name
+    //                 ->orWhereHas('subCategory', function ($q4) use ($search) {
+    //                     $q4->where('name', 'like', '%' . $search . '%');
+    //                 })
+
+    //                 // ChildCategory Name
+    //                 ->orWhereHas('childCategory', function ($q5) use ($search) {
+    //                     $q5->where('name', 'like', '%' . $search . '%');
+    //                 });
+    //         });
+    //     }
+
+    //      // 🔥 City Filter
+    //     if ($request->filled('city')) {
+    //         $query->whereHas('store', function ($q) use ($request) {
+    //             $q->where('city', 'like', '%' . $request->city . '%');
+    //         });
+    //     }
+
+    //     // 🔥 Country Filter
+    //     if ($request->filled('country')) {
+    //         $query->whereHas('store', function ($q) use ($request) {
+    //             $q->where('country', 'like', '%' . $request->country . '%');
+    //         });
+    //     }
+
+
+    //     // 🔥 Filters (Optional)
+    //     if ($request->has('category_id') && $request->category_id != '') {
+    //         $query->where('category_id', $request->category_id);
+    //     }
+
+    //     if ($request->has('sub_category_id') && $request->sub_category_id != '') {
+    //         $query->where('sub_category_id', $request->sub_category_id);
+    //     }
+
+    //     if ($request->has('child_category_id') && $request->child_category_id != '') {
+    //         $query->where('child_category_id', $request->child_category_id);
+    //     }
+
+    //     if ($request->has('store_id') && $request->store_id != '') {
+    //         $query->where('store_id', $request->store_id);
+    //     }
+
+    //     // 🔥 Sorting
+    //     if ($request->has('sort') && $request->sort != '') {
+    //         switch ($request->sort) {
+    //             case 'latest':
+    //                 $query->orderBy('id', 'desc');
+    //                 break;
+
+    //             case 'price_low':
+    //                 $query->orderBy('price', 'asc');
+    //                 break;
+
+    //             case 'price_high':
+    //                 $query->orderBy('price', 'desc');
+    //                 break;
+
+    //             default:
+    //                 $query->orderBy('id', 'desc');
+    //         }
+    //     } else {
+    //         $query->orderBy('id', 'desc');
+    //     }
+
+    //     // 🔥 No Pagination
+    //     $products = $query->get();
+
+    //    // =========================
+    //     // 🔥 DELIVERY FILTER (MULTIPLE SUPPORT)
+    //     // =========================
+
+    //     if (
+    //         $request->filled('delivery_city') ||
+    //         $request->filled('delivery_type') ||
+    //         ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit'))
+    //     ) {
+
+    //         // Normalize inputs
+    //         $cities = $request->delivery_city;
+    //         $types  = $request->delivery_type;
+
+    //         if (!is_array($cities) && $cities) {
+    //             $cities = [$cities];
+    //         }
+
+    //         if (!is_array($types) && $types) {
+    //             $types = [$types];
+    //         }
+
+    //         $products = $products->filter(function ($product) use ($request, $cities, $types) {
+
+    //             $configs = $product->store->delivery_config ?? [];
+
+    //             // decode JSON
+    //             if (is_string($configs)) {
+    //                 $configs = json_decode($configs, true);
+    //             }
+
+    //             if (!$configs || !is_array($configs)) {
+    //                 return false;
+    //             }
+
+    //             foreach ($configs as $config) {
+
+    //                 // ❌ skip disabled
+    //                 if (($config['enabled'] ?? 0) != 1) continue;
+
+    //                 // ✅ MULTIPLE CITY MATCH
+    //                 if (!empty($cities)) {
+    //                     $configCity = strtolower(trim($config['city'] ?? ''));
+
+    //                     $cityMatch = collect($cities)->contains(function ($city) use ($configCity) {
+    //                         return strtolower(trim($city)) === $configCity;
+    //                     });
+
+    //                     if (!$cityMatch) continue;
+    //                 }
+
+    //                 // ✅ MULTIPLE TYPE MATCH
+    //                 if (!empty($types)) {
+    //                     $typeMatch = collect($types)->contains(function ($type) use ($config) {
+    //                         return strtolower(trim($type)) === strtolower(trim($config['delivery_type'] ?? ''));
+    //                     });
+
+    //                     if (!$typeMatch) continue;
+    //                 }
+
+    //                 // ✅ DELIVERY TIME
+    //                 if ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit')) {
+
+    //                     $reqUnit = strtolower(trim($request->delivery_time_unit));
+    //                     $configUnit = strtolower(trim($config['delivery_time_unit'] ?? ''));
+
+    //                     if ($reqUnit !== $configUnit) {
+    //                         continue;
+    //                     }
+
+    //                     if ((int)$config['delivery_time_value'] > (int)$request->delivery_time_value) {
+    //                         continue;
+    //                     }
+    //                 }
+
+    //                 return true;
+    //             }
+
+    //             return false;
+
+    //         })->values();
+    //     }
+
+        
+    //     if ($products->isEmpty()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => __('messages.customer.product.search.empty'),
+    //             'data' => []
+    //         ], 201);
+    //     }
+
+        
+
+    //     // 🔥 Convert primaryImage object -> primaryimage key
+    //    $products = $products->map(function ($product) use ($favIds) {
+    //         $product->primaryimage = optional($product->primaryImage)->image;
+    //         unset($product->primaryImage);
+    //         $product->is_favorite = in_array($product->id, $favIds);
+    //         $product->other_sellers = $product->children->map(function ($child) {
+    //             return [
+    //                 'product_id' => $child->id,
+    //                 'store_id' => $child->store_id,
+    //                 'store_name' => $child->store->name ?? null,
+    //                  'store_logo' => $child->store->logo ?? null,
+    //                 'price' => $child->price,
+    //                 'discount_price' => $child->discount_price?? null,
+    //                 'primary_image' => optional($child->primaryImage)->image,
+    //                 'available_quantity' => $child->available_quantity,
+    //             ];
+    //         });
+    //         unset($product->children);
+    //         $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
+    //         $product->total_reviews = $product->reviews_count;
+
+    //         $product->reviews = $product->reviews->map(function ($review) {
+    //             return [
+    //                 'id' => $review->id,
+    //                 'rating' => $review->rating,
+    //                 'title' => $review->title,
+    //                 'review' => $review->review,
+    //                 'username' => $review->username,
+    //                 'profile_image' => $review->profile_image,
+    //                 'created_at' => $review->created_at,
+
+    //                 'images' => $review->images->map(function ($img) {
+    //                     return [
+    //                         'id' => $img->id,
+    //                         'image' => $img->image,
+    //                     ];
+    //                 }),
+    //             ];
+    //         });
+    //            $product->combinations = $product->combinations->map(function ($combo) {
+    //             return [
+    //                 'id' => $combo->id,
+    //                 'variant' => json_decode($combo->combination, true),
+    //                 'price' => $combo->price,
+    //                 'stock' => $combo->stock,
+    //                 'images' => $combo->images ? json_decode($combo->images, true) : []
+    //             ];
+    //         });
+    //          // ✅ Product Banks
+    //        $paymentModes = $product->store->user->payment_modes ?? [];
+
+    //             if (in_array('bank', $paymentModes)) {
+
+    //                 $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
+    //                     return [
+    //                         'bank_id' => $vendorBank->bank->id ?? null,
+    //                         'name' => $vendorBank->bank->name ?? null,
+    //                         'logo' => $vendorBank->bank->logo ?? null,
+    //                         'account_holder_name' => $vendorBank->account_holder_name,
+    //                         'account_number' => $vendorBank->account_number,
+    //                     ];
+    //                 });
+
+    //             } else {
+    //                 $product->banks = [];
+    //             }
+    //         return $product;
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //        'message' => __('messages.customer.product.search.success'),
+    //         'data' => $products
+    //     ], 200);
+    // }
+
+
+    // with seach changes duplicate sho in search 
+
     public function search(Request $request)
     {
 
@@ -1279,6 +1561,25 @@ class ProductController extends Controller
             })->values();
         }
 
+
+        // 🔥 GROUP PRODUCTS BY ARTICLE NUMBER
+        $products = $products
+            ->groupBy('article_number')
+            ->map(function ($items) {
+
+                // ✅ Prefer original product
+                $original = $items->firstWhere('parent_product_id', null);
+
+                // agar original hai to wahi return karo
+                if ($original) {
+                    return $original;
+                }
+
+                // warna first duplicate return karo
+                return $items->first();
+            })
+            ->values();
+
         
         if ($products->isEmpty()) {
             return response()->json([
@@ -1365,6 +1666,8 @@ class ProductController extends Controller
             'data' => $products
         ], 200);
     }
+
+    
 
     // with block functionality
 

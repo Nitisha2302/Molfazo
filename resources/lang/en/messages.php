@@ -21,6 +21,17 @@ return [
         'user_not_authenticated' => 'User not authenticated.',
     ],
 
+    'block_user' => [
+
+        'unauthorized' => 'Unauthorized user',
+
+        'cannot_block_self' => 'You cannot block yourself',
+
+        'blocked_success' => 'User blocked successfully',
+
+        'unblocked_success' => 'User unblocked successfully',
+    ],
+
     'report' => [
 
         'success' => 'Report submitted successfully.',

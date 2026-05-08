@@ -683,7 +683,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized user'
+               'message' => __('messages.block_user.unauthorized')
             ], 401);
         }
 
@@ -696,8 +696,8 @@ class AuthController extends Controller
 
             return response()->json([
                 'status' => false,
-                'message' => 'You cannot block yourself'
-            ]);
+                'message' => __('messages.block_user.cannot_block_self')
+            ],201);
         }
 
         $existingBlock = BlockedUser::where([
@@ -713,8 +713,8 @@ class AuthController extends Controller
             return response()->json([
                 'status' => true,
                 'is_blocked' => false,
-                'message' => 'User unblocked successfully'
-            ]);
+                 'message' => __('messages.block_user.unblocked_success')
+            ],200);
         }
 
         // BLOCK
@@ -726,8 +726,8 @@ class AuthController extends Controller
         return response()->json([
             'status' => true,
             'is_blocked' => true,
-            'message' => 'User blocked successfully'
-        ]);
+              'message' => __('messages.block_user.blocked_success')
+        ],200);
     }
 
     public function storeReport(Request $request)

@@ -21,6 +21,17 @@ return [
         'user_not_authenticated' => 'User not authenticated.',
     ],
 
+    'block_user' => [
+
+        'unauthorized' => 'Пользователь не авторизован',
+
+        'cannot_block_self' => 'Вы не можете заблокировать самого себя',
+
+        'blocked_success' => 'Пользователь успешно заблокирован',
+
+        'unblocked_success' => 'Пользователь успешно разблокирован',
+    ],
+
     'report' => [
 
         'success' => 'Жалоба успешно отправлена.',
