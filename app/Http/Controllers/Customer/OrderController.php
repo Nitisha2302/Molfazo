@@ -123,7 +123,7 @@ class OrderController extends Controller
             }
 
              // ✅ CUSTOMER CITY
-            $customerCity = strtolower(trim($address->name));
+            $customerCity = strtolower(trim($address->city));
 
             // ✅ GET STORE DELIVERY CONFIG
             $store = Store::find($storeId);
