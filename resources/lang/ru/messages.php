@@ -21,6 +21,8 @@ return [
         'user_not_authenticated' => 'User not authenticated.',
     ],
 
+
+
     'block_user' => [
 
         'unauthorized' => 'Пользователь не авторизован',
@@ -30,6 +32,15 @@ return [
         'blocked_success' => 'Пользователь успешно заблокирован',
 
         'unblocked_success' => 'Пользователь успешно разблокирован',
+    ],
+
+    'delete_account' => [
+
+        'user_not_authenticated' => 'User not authenticated',
+
+        'account_deleted_successfully' => 'Account deleted successfully',
+
+        'account_deleted' => 'Your account has been deleted',
     ],
 
     'report' => [

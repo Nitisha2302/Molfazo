@@ -31,6 +31,16 @@ return [
         'unblocked_success' => 'Корбар бомуваффақият аз блок бароварда шуд',
     ],
 
+
+    'delete_account' => [
+
+        'user_not_authenticated' => 'User not authenticated',
+
+        'account_deleted_successfully' => 'Account deleted successfully',
+
+        'account_deleted' => 'Your account has been deleted',
+    ],
+
     'report' => [
 
         'success' => 'Шикоят бомуваффақият фиристода шуд.',

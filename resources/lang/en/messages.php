@@ -32,6 +32,15 @@ return [
         'unblocked_success' => 'User unblocked successfully',
     ],
 
+    'delete_account' => [
+
+        'user_not_authenticated' => 'User not authenticated',
+
+        'account_deleted_successfully' => 'Account deleted successfully',
+
+        'account_deleted' => 'Your account has been deleted',
+    ],
+
     'report' => [
 
         'success' => 'Report submitted successfully.',

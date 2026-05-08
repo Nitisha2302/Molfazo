@@ -1372,7 +1372,7 @@ class ProductController extends Controller
     public function search(Request $request)
     {
 
-        // 🔥 Get logged-in user (optional)
+        // Get logged-in user 
         $user = Auth::guard('api')->user();
 
         $favIds = [];
@@ -1383,7 +1383,7 @@ class ProductController extends Controller
                         ->toArray();
         }
         $query = Product::with(['store', 'category', 'subCategory', 'childCategory', 'primaryImage','store.user','store.vendorBanks.bank','combinations','children.store','children.primaryImage','reviews.images' ])
-            ->withAvg('reviews', 'rating')   // 🔥 ADD
+            ->withAvg('reviews', 'rating')   
             ->withCount('reviews')  ->where('status_id', 1)->where('approval_status', 'approved')->whereNull('parent_product_id');
 
         //  Search Keyword
@@ -1421,14 +1421,14 @@ class ProductController extends Controller
             });
         }
 
-         // 🔥 City Filter
+         //  City Filter
         if ($request->filled('city')) {
             $query->whereHas('store', function ($q) use ($request) {
                 $q->where('city', 'like', '%' . $request->city . '%');
             });
         }
 
-        // 🔥 Country Filter
+        //  Country Filter
         if ($request->filled('country')) {
             $query->whereHas('store', function ($q) use ($request) {
                 $q->where('country', 'like', '%' . $request->country . '%');
@@ -1436,7 +1436,7 @@ class ProductController extends Controller
         }
 
 
-        // 🔥 Filters (Optional)
+        //  Filters (Optional)
         if ($request->has('category_id') && $request->category_id != '') {
             $query->where('category_id', $request->category_id);
         }
@@ -1453,7 +1453,7 @@ class ProductController extends Controller
             $query->where('store_id', $request->store_id);
         }
 
-        // 🔥 Sorting
+        //  Sorting
         if ($request->has('sort') && $request->sort != '') {
             switch ($request->sort) {
                 case 'latest':
@@ -1475,11 +1475,11 @@ class ProductController extends Controller
             $query->orderBy('id', 'desc');
         }
 
-        // 🔥 No Pagination
+        //  No Pagination
         $products = $query->get();
 
        // =========================
-        // 🔥 DELIVERY FILTER (MULTIPLE SUPPORT)
+        //  DELIVERY FILTER (MULTIPLE SUPPORT)
         // =========================
 
         if (
@@ -1487,6 +1487,50 @@ class ProductController extends Controller
             $request->filled('delivery_type') ||
             ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit'))
         ) {
+
+           //  Reload all products including duplicates
+            $products = Product::with([
+                'store',
+                'category',
+                'subCategory',
+                'childCategory',
+                'primaryImage',
+                'store.user',
+                'store.vendorBanks.bank',
+                'combinations',
+                'children.store',
+                'children.primaryImage',
+                'reviews.images'
+            ])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->where('status_id', 1)
+            ->where('approval_status', 'approved')
+            ->get();
+
+            // 🔥 Re-apply search filters on all products
+
+            if ($request->has('search') && $request->search != '') {
+
+                $search = strtolower(trim($request->search));
+
+                $products = $products->filter(function ($product) use ($search) {
+
+                    return
+                        str_contains(strtolower($product->name ?? ''), $search)
+
+                        || str_contains(strtolower($product->article_number ?? ''), $search)
+
+                        || str_contains(strtolower($product->store->name ?? ''), $search)
+
+                        || str_contains(strtolower($product->category->name ?? ''), $search)
+
+                        || str_contains(strtolower($product->subCategory->name ?? ''), $search)
+
+                        || str_contains(strtolower($product->childCategory->name ?? ''), $search);
+
+                })->values();
+            }
 
             // Normalize inputs
             $cities = $request->delivery_city;
@@ -1561,21 +1605,20 @@ class ProductController extends Controller
             })->values();
         }
 
-
-        // 🔥 GROUP PRODUCTS BY ARTICLE NUMBER
+        // GROUP PRODUCTS BY ARTICLE NUMBER
         $products = $products
             ->groupBy('article_number')
             ->map(function ($items) {
 
-                // ✅ Prefer original product
+                // Prefer original product
                 $original = $items->firstWhere('parent_product_id', null);
 
-                // agar original hai to wahi return karo
+                // agar original hai to wahi show karo
                 if ($original) {
                     return $original;
                 }
 
-                // warna first duplicate return karo
+                // warna first duplicate show karo
                 return $items->first();
             })
             ->values();

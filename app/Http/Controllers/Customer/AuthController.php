@@ -810,5 +810,32 @@ class AuthController extends Controller
     }
 
 
+    public function deleteAccount(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => __('messages.delete_account.user_not_authenticated'),
+            ], 401);
+        }
+
+        // logout token
+        $user->api_token = null;
+        $user->fcm_token = null;
+
+        // soft delete
+        $user->deleted_at = now();
+
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => __('messages.delete_account.account_deleted_successfully'),
+        ],200);
+    }
+
+
 
 }
