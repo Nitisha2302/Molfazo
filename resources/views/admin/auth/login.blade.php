@@ -7,9 +7,9 @@
       <div class="d-flex flex-column gap-5">
       <div class="col-md-12">
         <div class="d-block text-center banner-contentbox login-contentbox">
-          <div class="logo-clr">
+          <!-- <div class="logo-clr">
             <img src="{{ asset('assets/admin/images/molofzo_logo.png') }}" width="200" alt="logo">
-          </div>
+          </div> -->
           <div class="login-box mx-auto">  
                                
             <!-- Login Form -->
@@ -20,8 +20,9 @@
                     {{ session('success') }}
                   </div>
               @endif 
-              <div class="user-iconbox d-flex justify-content-center">
-                <img src="{{ asset('assets/admin/images/user-icon.png') }}" alt="user-icon">
+              <div class="mb-4 d-flex justify-content-center">
+                <!-- <img src="{{ asset('assets/admin/images/user-icon.png') }}" alt="user-icon"> -->
+                  <img src="{{ asset('assets/admin/images/molofzo_logo_single.jpg') }}" alt="user-icon" style="width:50px">
               </div>
               <div class="d-block mb-2">
                 <div class="icon-box @error('email') is-error @enderror">
