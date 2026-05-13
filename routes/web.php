@@ -46,7 +46,8 @@ Route::get('/delete-account/{id?}', [AdminAuthController::class, 'showDeleteAcco
 Route::post('/delete-account-confirm', [AdminAuthController::class, 'confirmDeleteAccount'])->name('delete-account.confirm');
 
 
-Route::get('/privacy-policy', [ContentController::class, 'commonPrivacyPolicy']);
+Route::get('/customer/privacy-policy', [ContentController::class, 'customerPrivacyPolicy']);
+Route::get('/vendor/privacy-policy', [ContentController::class, 'vendorPrivacyPolicy']);
 Route::get('/delete-account-policy', [ContentController::class, 'commonDeletePolicy']);
 
 // Routes with the same prefix for both Admin and Investor

@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\PrivacyPolicy;
 use App\Models\TermsCondition;
+
 use App\Models\Enquiry;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+
 
 class ContentController extends Controller
 {
@@ -128,10 +130,21 @@ class ContentController extends Controller
     }
 
 
-    public function commonPrivacyPolicy(Request $request)
+   
+    public function customerPrivacyPolicy(Request $request)
     {
-        return view('admin.common.privacyPolicy');
+        $policy = PrivacyPolicy::where('type', 'customer')->first();
+
+        return view('admin.common.privacyPolicy', compact('policy'));
     }
+
+    public function vendorPrivacyPolicy(Request $request)
+    {
+        $policy = PrivacyPolicy::where('type', 'vendor')->first();
+
+        return view('admin.common.privacyPolicy', compact('policy'));
+    }
+
 
     public function commonDeletePolicy(Request $request)
     {

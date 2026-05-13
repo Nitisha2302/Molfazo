@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="icon" href="{{ asset('favicon-molfazo.png') }}" type="image/x-icon">
-    <title>Privacy Policy - inBozor</title>
 
-     <link rel="stylesheet" href="{{ asset('assets/admin/bootstrap/bootstrap.min.css') }}">
+    <link rel="icon" href="{{ asset('favicon-molfazo.png') }}" type="image/x-icon">
+
+    <title>{{ strip_tags($policy->title ?? 'Privacy Policy') }}</title>
+
+    <link rel="stylesheet" href="{{ asset('assets/admin/bootstrap/bootstrap.min.css') }}">
 
     <style>
         body{
@@ -29,22 +31,30 @@
             font-weight: 700;
         }
 
-        .policy-content h3{
-            margin-top: 25px;
-            margin-bottom: 15px;
-            font-size: 22px;
-            font-weight: 600;
+        .policy-content{
+            font-size:16px;
+            line-height:1.8;
+            color:#333;
         }
 
-        .policy-content p,
-        .policy-content li{
-            font-size: 16px;
-            line-height: 1.8;
-            color: #333;
+        .policy-content h1,
+        .policy-content h2,
+        .policy-content h3,
+        .policy-content h4,
+        .policy-content h5,
+        .policy-content h6{
+            margin-top:25px;
+            margin-bottom:15px;
+            font-weight:600;
         }
 
         .policy-content ul{
-            padding-left: 20px;
+            padding-left:20px;
+        }
+
+        .policy-content img{
+            max-width:100%;
+            height:auto;
         }
     </style>
 </head>
@@ -53,72 +63,26 @@
 <div class="container">
     <div class="policy-wrapper">
 
-        <h1 class="policy-title">
-            Сиёсати махфият – Inbozor
+        <!-- Logo -->
+        <div class="d-flex align-items-center justify-content-center mb-4">
+            <a class="navbar-brand" href="">
+                <img 
+                    class="full-imgbox" 
+                    src="{{ asset('assets/admin/images/molofzo_logo.png') }}" 
+                    width="200" 
+                    alt="logo"
+                >
+            </a>
+        </div>
+
+        <!-- Title -->
+        <h1 class="policy-title text-center">
+            {!! $policy?->title ?? 'Privacy Policy' !!}
         </h1>
 
+        <!-- Content -->
         <div class="policy-content">
-
-            <p>
-                Мо махфияти маълумоти шахсии шуморо эҳтиром мекунем ва ӯҳдадор ҳастем, ки онро ҳифз намоем.
-            </p>
-
-            <h3>Кадом маълумот ҷамъоварӣ мешавад:</h3>
-
-            <ul>
-                <li>Ном, рақами телефон, почтаи электронӣ</li>
-                <li>Суроғаи таҳвил</li>
-                <li>Маълумоти фармоиш ва пардохт</li>
-                <li>Маълумоти дастгоҳ ва истифода</li>
-            </ul>
-
-            <h3>Чӣ тавр истифода мешавад:</h3>
-
-            <ul>
-                <li>Барои қабул ва иҷрои фармоиш</li>
-                <li>Барои расонидани маҳсулот</li>
-                <li>Барои тамос бо корбар</li>
-                <li>Барои беҳтар кардани хизматрасонӣ</li>
-            </ul>
-
-            <h3>Мубодилаи маълумот:</h3>
-
-            <p>
-                Мо метавонем маълумоти шуморо бо:
-            </p>
-
-            <ul>
-                <li>хизматрасониҳои таҳвил (курьерҳо)</li>
-                <li>хизматрасониҳои пардохт</li>
-            </ul>
-
-            <p>
-                мубодила намоем.
-            </p>
-
-            <h3>Амният:</h3>
-
-            <p>
-                Мо чораҳои заруриро барои ҳифзи маълумоти шумо меандешем.
-            </p>
-
-            <h3>Ҳуқуқҳои шумо:</h3>
-
-            <p>
-                Шумо метавонед дархост намоед:
-            </p>
-
-            <ul>
-                <li>ислоҳи маълумот</li>
-                <li>нест кардани маълумот</li>
-            </ul>
-
-            <h3>Тамос:</h3>
-
-            <p>
-                support@inbozor.com
-            </p>
-
+            {!! $policy?->content ?? 'No Privacy Policy Found.' !!}
         </div>
 
     </div>
