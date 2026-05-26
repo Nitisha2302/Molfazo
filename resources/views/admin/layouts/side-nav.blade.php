@@ -215,6 +215,15 @@
                 </a>
             </li>
 
+            <li class="@if (Route::currentRouteName() == 'dashboard.admin.change.password') active @endif">
+                <a href="{{ route('dashboard.admin.change.password') }}">
+                    <span class="d-flex gap-3 align-items-end">
+                        <i class="fas fa-key icon-font-size"></i>
+                        <span class="nav-content-menu">Change Password</span>
+                    </span>
+                </a>
+            </li>
+
 
         @endif
 

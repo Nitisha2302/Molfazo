@@ -289,7 +289,156 @@ class AuthController extends Controller
         return hash('sha256', $utf8String);
     }
 
-    public function vendorCompleteProfile(Request $request)
+    // public function vendorCompleteProfile(Request $request)
+    // {
+    //     /* ===============================
+    //     AUTHENTICATED USER
+    //     =============================== */
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => __('messages.vendor.completeprofile.user_not_authenticated'),
+    //         ], 401);
+    //     }
+
+
+    //      // 🌐 Language detect
+    //     // $userLang = UserLang::where('user_id', $user->id)
+    //     //     ->where('device_token', $user->device_token)
+    //     //     ->where('device_type', $user->device_type)
+    //     //     ->first();
+
+    //     // $lang = $userLang->language ?? 'ru';
+    //     // app()->setLocale($lang);
+
+    //      /* ===============================
+    //     VERIFICATION CHECK
+    //     =============================== */
+    //     if (!$user->is_mobile_verified ) {
+    //         return response()->json([
+    //             'status'  => false,
+    //            'message' => __('messages.vendor.completeprofile.mobile_not_verified'),
+    //         ], 403);
+    //     }
+
+    //     /* ===============================
+    //     VALIDATION
+    //     =============================== */
+    //     $rules = [
+    //         'name'            => 'nullable|string|max:255',
+    //         'email'           => 'nullable|email|unique:users,email',
+    //         'password'        => 'nullable|min:6|confirmed',
+
+    //         'city'            => 'nullable|string',
+    //         'country'         => 'nullable|string',
+    //         'terms_accepted'  => 'nullable|in:1',
+
+    //         'profile_photo'   => 'nullable|image|mimes:jpg,png',
+    //         'alt_mobile'      => 'nullable|digits_between:8,15',
+
+    //         // Government ID fields (OPTIONAL)
+    //         'gov_id_type'     => 'nullable|string',
+    //         'gov_id_number'   => 'nullable|string',
+    //         'gov_id_document' => 'nullable|array',
+    //         'gov_id_document.*' => 'file|mimes:jpg,png,pdf',
+
+    //         'device_id'       => 'nullable|string',
+    //         'device_type'     => 'nullable|string',
+    //         'fcm_token'       => 'nullable|string',
+    //     ];
+
+    //     $messages = [
+    //         'name.required'      => __('messages.vendor.completeprofile.validation.name_required'),
+    //         'email.required'     => __('messages.vendor.completeprofile.validation.email_required'),
+    //         'email.unique'       => __('messages.vendor.completeprofile.validation.email_unique'),
+    //         'mobile.required'    => __('messages.vendor.completeprofile.validation.mobile_required'),
+    //         'mobile.unique'      => __('messages.vendor.completeprofile.validation.mobile_unique'),
+    //         'password.confirmed' => __('messages.vendor.completeprofile.validation.password_confirmed'),
+    //         'terms_accepted.in'  => __('messages.vendor.completeprofile.validation.terms_required'),
+    //     ];
+        
+
+    //     $validator = Validator::make($request->all(), $rules, $messages);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => $validator->errors()->first(),
+    //         ], 201);
+    //     }
+
+    //     /* ===============================
+    //     HANDLE FILE UPLOADS
+    //     =============================== */
+        
+    //     // ---- Multiple Government IDs ----
+    //    $uploadedGovIds = [];
+    //     if ($request->hasFile('gov_id_document')) {
+    //         foreach ($request->file('gov_id_document') as $file) {
+    //             $filename = time() . '_' . $file->getClientOriginalName();
+    //             $file->move(public_path('assets/gov_id_document'), $filename);
+    //             $uploadedGovIds[] = $filename;
+    //         }
+    //     }
+    //     $govDocJson = json_encode($uploadedGovIds);
+
+
+
+    //     // ---- Profile Photo (Optional) ----
+    //     $profilePhotoName = null;
+    //     if ($request->hasFile('profile_photo')) {
+    //         $file = $request->file('profile_photo');
+    //         $profilePhotoName = time() . '_' . $file->getClientOriginalName();
+            
+    //         // Move file to folder
+    //         $file->move(public_path('assets/profile_image'), $profilePhotoName);
+            
+    //         // Store only filename in DB
+    //     }
+
+
+    //     /* ===============================
+    //     CREATE USER
+    //     =============================== */
+    //     $user->update([
+    //         // 'name'             => $request->name,
+    //         'email'            => $request->email,
+    //         'alt_mobile'       => $request->alt_mobile,
+    //         'password'         => Hash::make($request->password),
+
+    //         'role'          => 2, // Vendor
+    //         'status_id'        => 2, // Pending admin approval
+
+    //         'gov_id_type'      => $request->gov_id_type,
+    //         'gov_id_number'    => $request->gov_id_number,
+    //         // 'government_id'    => $govDocJson, // multiple files stored
+
+    //         // NEW
+    //         //    'kyc_status' => 'pending',
+
+    //         'city'             => $request->city,
+    //         'country'          => $request->country,
+    //         // 'profile_photo'    => $profilePhotoName,
+    //         'terms_accepted'   => true,
+
+    //         'device_id'        => $request->device_id,
+    //         'device_type'      => $request->device_type,
+    //         'fcm_token'        => $request->fcm_token,
+    //     ]);
+
+    //     return response()->json([
+    //         'status'  => true,
+    //         'message' => __('messages.vendor.completeprofile.register_success'),
+    //         'data'    => $user,
+    //     ], 200);
+    // }
+
+
+    // new with unique isue 
+
+      public function vendorCompleteProfile(Request $request)
     {
         /* ===============================
         AUTHENTICATED USER
@@ -328,7 +477,7 @@ class AuthController extends Controller
         =============================== */
         $rules = [
             'name'            => 'nullable|string|max:255',
-            'email'           => 'nullable|email|unique:users,email',
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
             'password'        => 'nullable|min:6|confirmed',
 
             'city'            => 'nullable|string',

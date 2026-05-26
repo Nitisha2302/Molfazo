@@ -151,5 +151,10 @@ class ContentController extends Controller
         return view('admin.common.deletePolicy');
     }
 
+      public function support(Request $request)
+    {
+        return view('admin.common.support');
+    }
+
     
 }

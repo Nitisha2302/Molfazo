@@ -49,6 +49,8 @@ Route::post('/delete-account-confirm', [AdminAuthController::class, 'confirmDele
 Route::get('/customer/privacy-policy', [ContentController::class, 'customerPrivacyPolicy']);
 Route::get('/vendor/privacy-policy', [ContentController::class, 'vendorPrivacyPolicy']);
 Route::get('/delete-account-policy', [ContentController::class, 'commonDeletePolicy']);
+Route::get('/support', [ContentController::class, 'support']);
+
 
 // Routes with the same prefix for both Admin and Investor
 Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
@@ -236,6 +238,12 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
                 ->name('video.requests.reject');
 
         });
+
+        Route::get('/change-password', [AdminAuthController::class, 'showChangePassword'])
+       ->name('change.password');
+
+        Route::post('change-password', [AdminAuthController::class, 'changePassword'])
+            ->name('change.password.submit');
 
     });  
 

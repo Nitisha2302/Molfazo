@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // Add this line to import Auth
 use App\Models\User;
+use App\Models\AdminLoginLog;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;   
 use Illuminate\Support\Facades\Session; // Import Session
@@ -45,6 +47,13 @@ class AdminAuthController extends Controller
             
         // Log the user in
         Auth::login($user);
+        AdminLoginLog::create([
+            'user_id'    => $user->id,
+            'email'      => $user->email,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'login_at'   => Carbon::now(),
+        ]);
         
         // Store the entire user object in session
         Session::put('user', $user);
@@ -183,6 +192,40 @@ class AdminAuthController extends Controller
         $user->save();
 
         return redirect()->back()->with('success', 'Your account has been deleted successfully.');
+    }
+
+    public function showChangePassword()
+    {
+        return view('admin.auth.change_password');
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:6|confirmed',
+        ], [
+            'current_password.required' => 'Current password is required.',
+            'new_password.required' => 'New password is required.',
+            'new_password.min' => 'Password must be at least 6 characters.',
+            'new_password.confirmed' => 'Confirm password does not match.',
+        ]);
+
+        $user = Auth::user();
+
+        // Check current password
+        if (!Hash::check($request->current_password, $user->password)) {
+
+            return back()->withErrors([
+                'current_password' => 'Current password is incorrect.',
+            ]);
+        }
+
+        // Update password
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return back()->with('success', 'Password changed successfully.');
     }
 
     
