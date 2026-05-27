@@ -185,6 +185,7 @@ Route::get('customer/available-banks', [CustomerOrderController::class, 'availab
  Route::get('customer/order/{id}', [CustomerOrderController::class, 'orderDetails']);
 
  Route::get('customer/products/search', [CustomerProductController::class, 'search']);
+ Route::get('/global-search', [CustomerProductController::class, 'globalSearch']);
 
 
 

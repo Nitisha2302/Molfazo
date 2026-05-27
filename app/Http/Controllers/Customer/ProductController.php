@@ -5,6 +5,10 @@ namespace App\Http\Controllers\Customer; // <--- IMPORTANT
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Store;
+use App\Models\Category;
+use App\Models\ChildCategory;
+use App\Models\SubCategory;
 use App\Models\FavoriteProducts;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BlockedUser;
@@ -2329,6 +2333,178 @@ class ProductController extends Controller
     //         ], 500);
     //     }
     // }
+
+
+    public function globalSearch(Request $request)
+    {
+        $search = $request->search;
+
+        // =========================
+        // STORES
+        // =========================
+
+        $stores = Store::with([
+
+            'products.primaryImage',
+            'products.category:id,name',
+            'products.subCategory:id,name',
+            'products.childCategory:id,name',
+
+        ])
+        ->where('status_id', 1)
+
+        ->where(function ($q) use ($search) {
+
+            $q->where('name', 'like', '%' . $search . '%')
+
+            ->orWhereHas('products', function ($p) use ($search) {
+
+                $p->where('name', 'like', '%' . $search . '%');
+            });
+        })
+        ->get();
+
+        // FORMAT STORE PRODUCTS
+        // $stores = $stores->map(function ($store) {
+
+        //     $store->products = $store->products->map(function ($product) {
+
+        //         $product->primaryimage = optional($product->primaryImage)->image;
+
+        //         unset($product->primaryImage);
+
+        //         return $product;
+        //     });
+
+        //     return $store;
+        // });
+
+
+        $stores = Store::with([
+            'products.primaryImage',
+            'products.category',
+            'products.subCategory',
+            'products.childCategory'
+        ])
+        ->where('status_id', 1)
+        ->where('name', 'like', '%' . $search . '%')
+        ->get();
+        // =========================
+        // CATEGORIES
+        // =========================
+
+        $categories = Category::with([
+
+            'products.store',
+            'products.primaryImage',
+            'products.category:id,name',
+            'products.subCategory:id,name',
+            'products.childCategory:id,name',
+
+        ])
+        ->where('name', 'like', '%' . $search . '%')
+        ->get();
+
+        // FORMAT CATEGORY PRODUCTS
+        $categories = $categories->map(function ($category) {
+
+            $category->products = $category->products->map(function ($product) {
+
+                $product->primaryimage = optional($product->primaryImage)->image;
+
+                unset($product->primaryImage);
+
+                return $product;
+            });
+
+            return $category;
+        });
+
+        // =========================
+        // SUB CATEGORIES
+        // =========================
+
+        $subCategories = SubCategory::with([
+
+            'products.store',
+            'products.primaryImage',
+            'products.category:id,name',
+            'products.subCategory:id,name',
+            'products.childCategory:id,name',
+
+        ])
+        ->where('name', 'like', '%' . $search . '%')
+        ->get();
+
+        // FORMAT SUB CATEGORY PRODUCTS
+        $subCategories = $subCategories->map(function ($sub) {
+
+            $sub->products = $sub->products->map(function ($product) {
+
+                $product->primaryimage = optional($product->primaryImage)->image;
+
+                unset($product->primaryImage);
+
+                return $product;
+            });
+
+            return $sub;
+        });
+
+        // =========================
+        // CHILD CATEGORIES
+        // =========================
+
+        $childCategories = ChildCategory::with([
+
+            'products.store',
+            'products.primaryImage',
+            'products.category:id,name',
+            'products.subCategory:id,name',
+            'products.childCategory:id,name',
+
+        ])
+        ->where('name', 'like', '%' . $search . '%')
+        ->get();
+
+        // FORMAT CHILD CATEGORY PRODUCTS
+        $childCategories = $childCategories->map(function ($child) {
+
+            $child->products = $child->products->map(function ($product) {
+
+                $product->primaryimage = optional($product->primaryImage)->image;
+
+                unset($product->primaryImage);
+
+                return $product;
+            });
+
+            return $child;
+        });
+
+        return response()->json([
+
+            'status' => true,
+
+            'message' => 'Global search fetched successfully',
+
+            'data' => [
+
+                // FULL STORE DETAILS
+                'stores' => $stores,
+
+                // FULL CATEGORY DETAILS
+                'categories' => $categories,
+
+                // FULL SUB CATEGORY DETAILS
+                'sub_categories' => $subCategories,
+
+                // FULL CHILD CATEGORY DETAILS
+                'child_categories' => $childCategories,
+            ]
+
+        ], 200);
+    }
 
 
 

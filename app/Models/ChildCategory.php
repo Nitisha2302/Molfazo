@@ -34,6 +34,10 @@ class ChildCategory extends Model
         return $this->hasOne(CategoryAttribute::class);
     }
 
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'child_category_id');
+    }
 
 
     
