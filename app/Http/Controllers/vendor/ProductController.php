@@ -1437,6 +1437,48 @@ class ProductController extends Controller
     }
 
 
+    public function checkProductName(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (!$user || $user->role != 2 || $user->status_id != 1) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        // Get all store IDs of this vendor
+        $vendorStoreIds = $user->stores()->pluck('id')->toArray();
+
+        // Check if same vendor already has this product name
+        $exists = Product::where('name', $request->name)
+            ->whereIn('store_id', $vendorStoreIds)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'You have already added a product with this name. Please use a different name.',
+            ], 422);
+        }
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Product name is not availabe available.',
+        ], 200);
+    }
     
 
 

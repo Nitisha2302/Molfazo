@@ -113,6 +113,8 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
     Route::get('vendor/product/list', [ProductController::class, 'list']);
     Route::get('vendor/product/details/{id}', [ProductController::class, 'details']);
 
+    Route::post('vendor/product/check-name', [ProductController::class, 'checkProductName']);
+
     Route::get('vendor/store/{store_id}/products', [ProductController::class, 'getstoreAllProducts']);
 
      Route::get('/vendor/dashboard', [ProductController::class, 'dashboard']);

@@ -2335,174 +2335,416 @@ class ProductController extends Controller
     // }
 
 
+    // public function globalSearch(Request $request)
+    // {
+    //     $search = $request->search;
+
+    //     // =========================
+    //     // STORES
+    //     // =========================
+
+    //     $stores = Store::with([
+
+    //         'products.primaryImage',
+    //         'products.category:id,name',
+    //         'products.subCategory:id,name',
+    //         'products.childCategory:id,name',
+
+    //     ])
+    //     ->where('status_id', 1)
+
+    //     ->where(function ($q) use ($search) {
+
+    //         $q->where('name', 'like', '%' . $search . '%')
+
+    //         ->orWhereHas('products', function ($p) use ($search) {
+
+    //             $p->where('name', 'like', '%' . $search . '%');
+    //         });
+    //     })
+    //     ->get();
+
+    //     // FORMAT STORE PRODUCTS
+    //     // $stores = $stores->map(function ($store) {
+
+    //     //     $store->products = $store->products->map(function ($product) {
+
+    //     //         $product->primaryimage = optional($product->primaryImage)->image;
+
+    //     //         unset($product->primaryImage);
+
+    //     //         return $product;
+    //     //     });
+
+    //     //     return $store;
+    //     // });
+
+
+    //     $stores = Store::with([
+    //         'products.primaryImage',
+    //         'products.category',
+    //         'products.subCategory',
+    //         'products.childCategory'
+    //     ])
+    //     ->where('status_id', 1)
+    //     ->where('name', 'like', '%' . $search . '%')
+    //     ->get();
+    //     // =========================
+    //     // CATEGORIES
+    //     // =========================
+
+    //     $categories = Category::with([
+
+    //         'products.store',
+    //         'products.primaryImage',
+    //         'products.category:id,name',
+    //         'products.subCategory:id,name',
+    //         'products.childCategory:id,name',
+
+    //     ])
+    //     ->where('name', 'like', '%' . $search . '%')
+    //     ->get();
+
+    //     // FORMAT CATEGORY PRODUCTS
+    //     $categories = $categories->map(function ($category) {
+
+    //         $category->products = $category->products->map(function ($product) {
+
+    //             $product->primaryimage = optional($product->primaryImage)->image;
+
+    //             unset($product->primaryImage);
+
+    //             return $product;
+    //         });
+
+    //         return $category;
+    //     });
+
+    //     // =========================
+    //     // SUB CATEGORIES
+    //     // =========================
+
+    //     $subCategories = SubCategory::with([
+
+    //         'products.store',
+    //         'products.primaryImage',
+    //         'products.category:id,name',
+    //         'products.subCategory:id,name',
+    //         'products.childCategory:id,name',
+
+    //     ])
+    //     ->where('name', 'like', '%' . $search . '%')
+    //     ->get();
+
+    //     // FORMAT SUB CATEGORY PRODUCTS
+    //     $subCategories = $subCategories->map(function ($sub) {
+
+    //         $sub->products = $sub->products->map(function ($product) {
+
+    //             $product->primaryimage = optional($product->primaryImage)->image;
+
+    //             unset($product->primaryImage);
+
+    //             return $product;
+    //         });
+
+    //         return $sub;
+    //     });
+
+    //     // =========================
+    //     // CHILD CATEGORIES
+    //     // =========================
+
+    //     $childCategories = ChildCategory::with([
+
+    //         'products.store',
+    //         'products.primaryImage',
+    //         'products.category:id,name',
+    //         'products.subCategory:id,name',
+    //         'products.childCategory:id,name',
+
+    //     ])
+    //     ->where('name', 'like', '%' . $search . '%')
+    //     ->get();
+
+    //     // FORMAT CHILD CATEGORY PRODUCTS
+    //     $childCategories = $childCategories->map(function ($child) {
+
+    //         $child->products = $child->products->map(function ($product) {
+
+    //             $product->primaryimage = optional($product->primaryImage)->image;
+
+    //             unset($product->primaryImage);
+
+    //             return $product;
+    //         });
+
+    //         return $child;
+    //     });
+
+    //     return response()->json([
+
+    //         'status' => true,
+
+    //         'message' => 'Global search fetched successfully',
+
+    //         'data' => [
+
+    //             // FULL STORE DETAILS
+    //             'stores' => $stores,
+
+    //             // FULL CATEGORY DETAILS
+    //             'categories' => $categories,
+
+    //             // FULL SUB CATEGORY DETAILS
+    //             'sub_categories' => $subCategories,
+
+    //             // FULL CHILD CATEGORY DETAILS
+    //             'child_categories' => $childCategories,
+    //         ]
+
+    //     ], 200);
+    // }
+
+
+    // with config search
+
     public function globalSearch(Request $request)
     {
         $search = $request->search;
 
         // =========================
+        // NORMALIZE DELIVERY FILTERS
+        // =========================
+        $cities = $request->delivery_city;
+        $types  = $request->delivery_type;
+
+        if (!is_array($cities) && $cities) {
+            $cities = [$cities];
+        }
+
+        if (!is_array($types) && $types) {
+            $types = [$types];
+        }
+
+        $hasDeliveryFilter =
+            $request->filled('delivery_city') ||
+            $request->filled('delivery_type') ||
+            ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit'));
+
+        // =========================
+        // DELIVERY CONFIG FILTER HELPER
+        // =========================
+        $deliveryFilter = function ($product) use ($request, $cities, $types) {
+
+            $configs = $product->store->delivery_config ?? [];
+
+            if (is_string($configs)) {
+                $configs = json_decode($configs, true);
+            }
+
+            if (!$configs || !is_array($configs)) {
+                return false;
+            }
+
+            foreach ($configs as $config) {
+
+                if (($config['enabled'] ?? 0) != 1) continue;
+
+                if (!empty($cities)) {
+                    $configCity = strtolower(trim($config['city'] ?? ''));
+                    $cityMatch = collect($cities)->contains(fn($city) => strtolower(trim($city)) === $configCity);
+                    if (!$cityMatch) continue;
+                }
+
+                if (!empty($types)) {
+                    $typeMatch = collect($types)->contains(fn($type) => strtolower(trim($type)) === strtolower(trim($config['delivery_type'] ?? '')));
+                    if (!$typeMatch) continue;
+                }
+
+                if ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit')) {
+                    $reqUnit    = strtolower(trim($request->delivery_time_unit));
+                    $configUnit = strtolower(trim($config['delivery_time_unit'] ?? ''));
+                    if ($reqUnit !== $configUnit) continue;
+                    if ((int)$config['delivery_time_value'] > (int)$request->delivery_time_value) continue;
+                }
+
+                return true;
+            }
+
+            return false;
+        };
+
+        // =========================
         // STORES
         // =========================
-
+        // =========================
+        // STORES
+        // =========================
         $stores = Store::with([
-
             'products.primaryImage',
             'products.category:id,name',
             'products.subCategory:id,name',
             'products.childCategory:id,name',
-
         ])
         ->where('status_id', 1)
-
         ->where(function ($q) use ($search) {
-
             $q->where('name', 'like', '%' . $search . '%')
-
             ->orWhereHas('products', function ($p) use ($search) {
-
                 $p->where('name', 'like', '%' . $search . '%');
             });
         })
         ->get();
 
-        // FORMAT STORE PRODUCTS
-        // $stores = $stores->map(function ($store) {
+        if ($hasDeliveryFilter) {
+            $stores = $stores->filter(function ($store) use ($request, $cities, $types) {
 
-        //     $store->products = $store->products->map(function ($product) {
+                // 🔥 Filter store directly by its OWN delivery_config
+                $configs = $store->delivery_config ?? [];
 
-        //         $product->primaryimage = optional($product->primaryImage)->image;
+                if (is_string($configs)) {
+                    $configs = json_decode($configs, true);
+                }
 
-        //         unset($product->primaryImage);
+                if (!$configs || !is_array($configs)) {
+                    return false;
+                }
 
-        //         return $product;
-        //     });
+                foreach ($configs as $config) {
 
-        //     return $store;
-        // });
+                    if (($config['enabled'] ?? 0) != 1) continue;
 
+                    // CITY MATCH
+                    if (!empty($cities)) {
+                        $configCity = strtolower(trim($config['city'] ?? ''));
+                        $cityMatch = collect($cities)->contains(fn($city) => strtolower(trim($city)) === $configCity);
+                        if (!$cityMatch) continue;
+                    }
 
-        $stores = Store::with([
-            'products.primaryImage',
-            'products.category',
-            'products.subCategory',
-            'products.childCategory'
-        ])
-        ->where('status_id', 1)
-        ->where('name', 'like', '%' . $search . '%')
-        ->get();
+                    // TYPE MATCH
+                    if (!empty($types)) {
+                        $typeMatch = collect($types)->contains(fn($type) => strtolower(trim($type)) === strtolower(trim($config['delivery_type'] ?? '')));
+                        if (!$typeMatch) continue;
+                    }
+
+                    // DELIVERY TIME
+                    if ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit')) {
+                        $reqUnit    = strtolower(trim($request->delivery_time_unit));
+                        $configUnit = strtolower(trim($config['delivery_time_unit'] ?? ''));
+                        if ($reqUnit !== $configUnit) continue;
+                        if ((int)$config['delivery_time_value'] > (int)$request->delivery_time_value) continue;
+                    }
+
+                    return true; // ✅ store matches
+                }
+
+                return false;
+
+            })->values();
+        }
+
         // =========================
         // CATEGORIES
         // =========================
-
         $categories = Category::with([
-
             'products.store',
             'products.primaryImage',
             'products.category:id,name',
             'products.subCategory:id,name',
             'products.childCategory:id,name',
-
         ])
         ->where('name', 'like', '%' . $search . '%')
         ->get();
 
-        // FORMAT CATEGORY PRODUCTS
-        $categories = $categories->map(function ($category) {
+        $categories = $categories->map(function ($category) use ($hasDeliveryFilter, $deliveryFilter) {
+
+            // ✅ Apply delivery filter on products
+            if ($hasDeliveryFilter) {
+                $category->products = $category->products->filter($deliveryFilter)->values();
+            }
 
             $category->products = $category->products->map(function ($product) {
-
                 $product->primaryimage = optional($product->primaryImage)->image;
-
                 unset($product->primaryImage);
-
                 return $product;
             });
 
             return $category;
-        });
+
+        // ✅ Remove categories with no matching products
+        })->when($hasDeliveryFilter, fn($col) => $col->filter(fn($c) => $c->products->isNotEmpty())->values());
 
         // =========================
         // SUB CATEGORIES
         // =========================
-
         $subCategories = SubCategory::with([
-
             'products.store',
             'products.primaryImage',
             'products.category:id,name',
             'products.subCategory:id,name',
             'products.childCategory:id,name',
-
         ])
         ->where('name', 'like', '%' . $search . '%')
         ->get();
 
-        // FORMAT SUB CATEGORY PRODUCTS
-        $subCategories = $subCategories->map(function ($sub) {
+        $subCategories = $subCategories->map(function ($sub) use ($hasDeliveryFilter, $deliveryFilter) {
+
+            // ✅ Apply delivery filter on products
+            if ($hasDeliveryFilter) {
+                $sub->products = $sub->products->filter($deliveryFilter)->values();
+            }
 
             $sub->products = $sub->products->map(function ($product) {
-
                 $product->primaryimage = optional($product->primaryImage)->image;
-
                 unset($product->primaryImage);
-
                 return $product;
             });
 
             return $sub;
-        });
+
+        // ✅ Remove sub-categories with no matching products
+        })->when($hasDeliveryFilter, fn($col) => $col->filter(fn($s) => $s->products->isNotEmpty())->values());
 
         // =========================
         // CHILD CATEGORIES
         // =========================
-
         $childCategories = ChildCategory::with([
-
             'products.store',
             'products.primaryImage',
             'products.category:id,name',
             'products.subCategory:id,name',
             'products.childCategory:id,name',
-
         ])
         ->where('name', 'like', '%' . $search . '%')
         ->get();
 
-        // FORMAT CHILD CATEGORY PRODUCTS
-        $childCategories = $childCategories->map(function ($child) {
+        $childCategories = $childCategories->map(function ($child) use ($hasDeliveryFilter, $deliveryFilter) {
+
+            // ✅ Apply delivery filter on products
+            if ($hasDeliveryFilter) {
+                $child->products = $child->products->filter($deliveryFilter)->values();
+            }
 
             $child->products = $child->products->map(function ($product) {
-
                 $product->primaryimage = optional($product->primaryImage)->image;
-
                 unset($product->primaryImage);
-
                 return $product;
             });
 
             return $child;
-        });
+
+        // ✅ Remove child-categories with no matching products
+        })->when($hasDeliveryFilter, fn($col) => $col->filter(fn($c) => $c->products->isNotEmpty())->values());
 
         return response()->json([
-
-            'status' => true,
-
+            'status'  => true,
             'message' => 'Global search fetched successfully',
-
-            'data' => [
-
-                // FULL STORE DETAILS
-                'stores' => $stores,
-
-                // FULL CATEGORY DETAILS
-                'categories' => $categories,
-
-                // FULL SUB CATEGORY DETAILS
-                'sub_categories' => $subCategories,
-
-                // FULL CHILD CATEGORY DETAILS
+            'data'    => [
+                'stores'           => $stores,
+                'categories'       => $categories,
+                'sub_categories'   => $subCategories,
                 'child_categories' => $childCategories,
             ]
-
         ], 200);
     }
 
