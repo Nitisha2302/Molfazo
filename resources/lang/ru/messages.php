@@ -115,7 +115,9 @@ return [
             ],
 
             'sms' => [
+                // 'otp_message' => 'Ваш код подтверждения: :otp для входа в inBozor',
                 'otp_message' => 'Ваш код подтверждения: :otp для входа в inBozor',
+                
             ],
 
         ],
@@ -169,6 +171,7 @@ return [
             ],
 
             'sms' => [
+                // 'otp_message' => 'Ваш код подтверждения: :otp для входа в inBozor',
                 'otp_message' => 'Ваш код подтверждения: :otp для входа в inBozor',
             ],
 
@@ -641,7 +644,9 @@ return [
 
 
         'sms' => [
-            'otp' => 'Ваш код подтверждения для входа в inBozor: :otp',
+            // 'otp' => 'Ваш код подтверждения для входа в inBozor: :otp',
+             'otp' => 'Ваш код подтверждения: :otp для входа в inBozor',
+            
         ],
 
         'verify_otp' => [
