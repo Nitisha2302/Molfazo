@@ -109,6 +109,8 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
 
     // PRODUCTS
      Route::post('vendor/product/create', [ProductController::class, 'create']);
+        Route::post('vendor/product/analyzeImage', [ProductController::class, 'analyzeImage']);
+     
    Route::post('vendor/product/edit/{id}', [ProductController::class, 'update']);
     Route::get('vendor/product/list', [ProductController::class, 'list']);
     Route::get('vendor/product/details/{id}', [ProductController::class, 'details']);

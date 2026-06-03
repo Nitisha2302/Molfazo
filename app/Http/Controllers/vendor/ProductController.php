@@ -20,6 +20,7 @@ use Carbon\Carbon;
 use App\Models\AttributeRequest;
 use Illuminate\Support\Facades\DB;
 use App\Services\FCMService;
+use Illuminate\Support\Facades\Http;
 
 
 
@@ -1478,6 +1479,145 @@ class ProductController extends Controller
             'status'  => true,
             'message' => 'Product name is not availabe available.',
         ], 200);
+    }
+
+
+    public function analyzeImage(Request $request)
+    {
+        /* ===============================
+           AUTHENTICATED USER
+        =============================== */
+        $user = Auth::guard('api')->user();
+        if (!$user || $user->role != 2 || $user->status_id != 1) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Unauthorized. Only active vendors can use this feature.',
+            ], 403);
+        }
+
+        /* ===============================
+           VALIDATION
+        =============================== */
+        $validator = Validator::make($request->all(), [
+            'image' => 'required|file|mimes:jpeg,jpg,png,gif|max:5120', // 5MB max
+        ], [
+            'image.required' => 'Please upload an image.',
+            'image.mimes'    => 'Image must be jpeg, jpg, png, or gif.',
+            'image.max'      => 'Image must not exceed 5MB.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        /* ===============================
+           PREPARE IMAGE FOR GEMINI
+        =============================== */
+        $file      = $request->file('image');
+        $mimeType  = $file->getMimeType();               // e.g. image/jpeg
+        $imageData = base64_encode(file_get_contents($file->getRealPath()));
+
+        /* ===============================
+           CALL GEMINI VISION API
+        =============================== */
+        $apiKey = config('services.gemini.api_key'); // set in config/services.php
+
+        $prompt = <<<PROMPT
+            You are an expert ecommerce product copywriter.
+
+            Analyze this product image carefully and respond ONLY in the following JSON format (no extra text):
+
+            {
+            "name": "<short product title, max 10 words, suitable for an ecommerce listing>",
+            "description": "<detailed product description, 80-120 words, written for an ecommerce website. Highlight key features, materials, use cases, and benefits. Professional and persuasive tone.>"
+            }
+        PROMPT;
+
+        $payload = [
+            'contents' => [
+                [
+                    'parts' => [
+                        [
+                            'inline_data' => [
+                                'mime_type' => $mimeType,
+                                'data'      => $imageData,
+                            ],
+                        ],
+                        [
+                            'text' => $prompt,
+                        ],
+                    ],
+                ],
+            ],
+            'generationConfig' => [
+                'temperature'     => 0.4,
+                'maxOutputTokens' => 512,
+            ],
+        ];
+
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post(
+                    // ✅ New (current 2026 model)
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}",
+                    $payload
+                );
+
+            if ($response->failed()) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Gemini API error: ' . $response->body(),
+                ], 500);
+            }
+
+            $responseBody = $response->json();
+
+            // Extract text from Gemini response
+            $rawText = $responseBody['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+            if (!$rawText) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Could not extract response from Gemini.',
+                ], 500);
+            }
+
+            // Strip markdown code fences if present (```json ... ```)
+            $cleanText = preg_replace('/^```(?:json)?\s*/i', '', trim($rawText));
+            $cleanText = preg_replace('/\s*```$/', '', $cleanText);
+
+            $parsed = json_decode($cleanText, true);
+
+            if (!$parsed || !isset($parsed['name'], $parsed['description'])) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Gemini returned unexpected format.',
+                    'raw'     => $rawText, // helpful for debugging
+                ], 500);
+            }
+
+            /* ===============================
+               SUCCESS RESPONSE
+            =============================== */
+            return response()->json([
+                'status'  => true,
+                'message' => 'Image analyzed successfully.',
+                'data'    => [
+                    'name'        => $parsed['name'],
+                    'description' => $parsed['description'],
+                ],
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Something went wrong: ' . $e->getMessage(),
+            ], 500);
+        }
     }
     
 
