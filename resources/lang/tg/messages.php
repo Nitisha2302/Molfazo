@@ -112,8 +112,8 @@ return [
             ],
 
             'sms' => [
-                // 'otp_message' => 'Рамзи тасдиқ: :otp барои ворид шудан ба inBozor',
-                 'otp_message' => 'Ваш код подтверждения: :otp для входа в inBozor',
+                'otp_message' => 'Рамзи тасдиқ: :otp барои ворид шудан ба inBozor',
+                //  'otp_message' => 'Ваш код подтверждения: :otp для входа в inBozor',
                 
             ],
 
@@ -168,7 +168,7 @@ return [
 
             'sms' => [
                 'otp_message' => 'Рамзи тасдиқ: :otp барои ворид шудан ба inBozor',
-                 'otp_message' =>  'Ваш код подтверждения: :otp для входа в inBozor',
+                //  'otp_message' =>  'Ваш код подтверждения: :otp для входа в inBozor',
                
             ],
 
