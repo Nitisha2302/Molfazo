@@ -1483,6 +1483,167 @@ class ProductController extends Controller
 
 
     
+    // public function analyzeImage(Request $request)
+    // {
+    //     /* ===============================
+    //     AUTHENTICATED USER
+    //     =============================== */
+    //     $user = Auth::guard('api')->user();
+    //     if (!$user || $user->role != 2 || $user->status_id != 1) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'Unauthorized. Only active vendors can use this feature.',
+    //         ], 403);
+    //     }
+
+    //     /* ===============================
+    //     VALIDATION
+    //     =============================== */
+    //     $validator = Validator::make($request->all(), [
+    //         'image' => 'required|file|mimes:jpeg,jpg,png,gif|max:5120',
+    //     ], [
+    //         'image.required' => 'Please upload an image.',
+    //         'image.mimes'    => 'Image must be jpeg, jpg, png, or gif.',
+    //         'image.max'      => 'Image must not exceed 5MB.',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => $validator->errors()->first(),
+    //         ], 422);
+    //     }
+
+    //     /* ===============================
+    //     PREPARE IMAGE FOR GEMINI
+    //     =============================== */
+    //     $file      = $request->file('image');
+    //     $mimeType  = $file->getMimeType();
+    //     $imageData = base64_encode(file_get_contents($file->getRealPath()));
+
+    //     /* ===============================
+    //     CALL GEMINI VISION API
+    //     =============================== */
+    //     $apiKey      = config('services.gemini.api_key');
+    //     $modelsToTry = ['gemini-2.5-flash','gemini-2.5-flash-lite'];
+
+    //     $prompt = <<<PROMPT
+    //         You are an expert ecommerce product copywriter.
+
+    //         Analyze this product image carefully and respond ONLY in the following JSON format (no extra text).
+    //         Write the name and description in Russian language (Русский).
+    //         Description must be maximum 100 words only.
+
+    //         {
+    //         "name": "<короткое название товара, максимум 10 слов, для интернет-магазина>",
+    //         "description": "<описание товара, максимум 100 слов>"
+    //         }
+    //     PROMPT;
+
+    //     $payload = [
+    //         'contents' => [
+    //             [
+    //                 'parts' => [
+    //                     [
+    //                         'inline_data' => [
+    //                             'mime_type' => $mimeType,
+    //                             'data'      => $imageData,
+    //                         ],
+    //                     ],
+    //                     [
+    //                         'text' => $prompt,
+    //                     ],
+    //                 ],
+    //             ],
+    //         ],
+    //        'generationConfig' => [
+    //             'temperature'     => 0.4,
+    //             'maxOutputTokens' => 2048,
+    //         ],
+    //     ];
+
+    //     try {
+    //         $response  = null;
+    //         $lastError = null;
+
+    //         /* ===============================
+    //         TRY EACH MODEL (FALLBACK)
+    //         =============================== */
+    //         foreach ($modelsToTry as $model) {
+    //             $res = Http::timeout(30)
+    //                 ->withHeaders(['Content-Type' => 'application/json'])
+    //                 ->post(
+    //                     "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}",
+    //                     $payload
+    //                 );
+
+    //             if ($res->successful()) {
+    //                 $response = $res;
+    //                 break; // ✅ success, stop trying
+    //             }
+
+    //             $lastError = $res->body(); // save error, try next model
+    //         }
+
+    //         /* ===============================
+    //         ALL MODELS FAILED
+    //         =============================== */
+    //         if (!$response) {
+    //             return response()->json([
+    //                 'status'  => false,
+    //                 'message' => 'Gemini API error: ' . $lastError,
+    //             ], 500);
+    //         }
+
+    //         /* ===============================
+    //         PARSE RESPONSE
+    //         =============================== */
+    //         $responseBody = $response->json();
+
+    //         $rawText = $responseBody['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+    //         if (!$rawText) {
+    //             return response()->json([
+    //                 'status'  => false,
+    //                 'message' => 'Could not extract response from Gemini.',
+    //             ], 500);
+    //         }
+
+    //         // Strip markdown code fences if present (```json ... ```)
+    //         $cleanText = preg_replace('/^```(?:json)?\s*/i', '', trim($rawText));
+    //         $cleanText = preg_replace('/\s*```$/', '', $cleanText);
+
+    //         $parsed = json_decode($cleanText, true);
+
+    //         if (!$parsed || !isset($parsed['name'], $parsed['description'])) {
+    //             return response()->json([
+    //                 'status'  => false,
+    //                 'message' => 'Gemini returned unexpected format.',
+    //                 'raw'     => $rawText,
+    //             ], 500);
+    //         }
+
+    //         /* ===============================
+    //         SUCCESS RESPONSE
+    //         =============================== */
+    //         return response()->json([
+    //             'status'  => true,
+    //             'message' => 'Image analyzed successfully.',
+    //             'data'    => [
+    //                 'name'        => $parsed['name'],
+    //                 'description' => $parsed['description'],
+    //             ],
+    //         ], 200);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'Something went wrong: ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
+    
     public function analyzeImage(Request $request)
     {
         /* ===============================
@@ -1527,18 +1688,20 @@ class ProductController extends Controller
         $apiKey      = config('services.gemini.api_key');
         $modelsToTry = ['gemini-2.5-flash','gemini-2.5-flash-lite'];
 
-        $prompt = <<<PROMPT
-        You are an expert ecommerce product copywriter.
+       $prompt = <<<PROMPT
+            You are an expert ecommerce product copywriter.
 
-        Analyze this product image carefully and respond ONLY in the following JSON format (no extra text).
-        Write the name and description in Russian language (Русский).
-        Description must be maximum 100 words only.
+            Analyze this product image carefully and respond ONLY in the following JSON format (no extra text).
+            Write the name, short_description and long_description in Russian language (Русский).
+            short_description must be maximum 50 words only.
+            long_description must be maximum 100 words only.
 
-        {
-        "name": "<короткое название товара, максимум 10 слов, для интернет-магазина>",
-        "description": "<описание товара, максимум 100 слов>"
-        }
-    PROMPT;
+            {
+            "name": "<короткое название товара, максимум 10 слов, для интернет-магазина>",
+            "short_description": "<краткое описание товара, максимум 50 слов>",
+            "long_description": "<подробное описание товара, максимум 100 слов. Укажите ключевые характеристики, материалы, варианты использования и преимущества. Профессиональный и убедительный тон.>"
+            }
+        PROMPT;
 
         $payload = [
             'contents' => [
@@ -1615,7 +1778,7 @@ class ProductController extends Controller
 
             $parsed = json_decode($cleanText, true);
 
-            if (!$parsed || !isset($parsed['name'], $parsed['description'])) {
+           if (!$parsed || !isset($parsed['name'], $parsed['short_description'], $parsed['long_description'])) {
                 return response()->json([
                     'status'  => false,
                     'message' => 'Gemini returned unexpected format.',
@@ -1630,8 +1793,9 @@ class ProductController extends Controller
                 'status'  => true,
                 'message' => 'Image analyzed successfully.',
                 'data'    => [
-                    'name'        => $parsed['name'],
-                    'description' => $parsed['description'],
+                    'name'              => $parsed['name'],
+                    'short_description' => $parsed['short_description'],
+                    'long_description'  => $parsed['long_description'],
                 ],
             ], 200);
 
@@ -1642,5 +1806,8 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+
+
 
 }
