@@ -1471,13 +1471,13 @@ class ProductController extends Controller
         if ($exists) {
             return response()->json([
                 'status'  => false,
-                'message' => 'You have already added a product with this name. Please use a different name.',
+                 'message' => __('messages.vendor.product.check_name.exists'),
             ], 422);
         }
 
         return response()->json([
             'status'  => true,
-            'message' => 'Product name is not availabe available.',
+              'message' => __('messages.vendor.product.check_name.available'),
         ], 200);
     }
 

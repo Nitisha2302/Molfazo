@@ -82,6 +82,11 @@ return [
 
     'vendor' => [
 
+       'check_name' => [
+            'exists'    => 'You have already added a product with this name. Please use a different name.',
+            'available' => 'Product name is available.',
+        ],
+
         'completeprofile' => [
 
             'user_not_authenticated' => 'User not authenticated.',
