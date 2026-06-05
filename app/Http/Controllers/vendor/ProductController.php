@@ -1482,10 +1482,11 @@ class ProductController extends Controller
     }
 
 
+    
     public function analyzeImage(Request $request)
     {
         /* ===============================
-           AUTHENTICATED USER
+        AUTHENTICATED USER
         =============================== */
         $user = Auth::guard('api')->user();
         if (!$user || $user->role != 2 || $user->status_id != 1) {
@@ -1496,10 +1497,10 @@ class ProductController extends Controller
         }
 
         /* ===============================
-           VALIDATION
+        VALIDATION
         =============================== */
         $validator = Validator::make($request->all(), [
-            'image' => 'required|file|mimes:jpeg,jpg,png,gif|max:5120', // 5MB max
+            'image' => 'required|file|mimes:jpeg,jpg,png,gif|max:5120',
         ], [
             'image.required' => 'Please upload an image.',
             'image.mimes'    => 'Image must be jpeg, jpg, png, or gif.',
@@ -1514,27 +1515,30 @@ class ProductController extends Controller
         }
 
         /* ===============================
-           PREPARE IMAGE FOR GEMINI
+        PREPARE IMAGE FOR GEMINI
         =============================== */
         $file      = $request->file('image');
-        $mimeType  = $file->getMimeType();               // e.g. image/jpeg
+        $mimeType  = $file->getMimeType();
         $imageData = base64_encode(file_get_contents($file->getRealPath()));
 
         /* ===============================
-           CALL GEMINI VISION API
+        CALL GEMINI VISION API
         =============================== */
-        $apiKey = config('services.gemini.api_key'); // set in config/services.php
+        $apiKey      = config('services.gemini.api_key');
+        $modelsToTry = ['gemini-2.5-flash','gemini-2.5-flash-lite'];
 
         $prompt = <<<PROMPT
-            You are an expert ecommerce product copywriter.
+        You are an expert ecommerce product copywriter.
 
-            Analyze this product image carefully and respond ONLY in the following JSON format (no extra text):
+        Analyze this product image carefully and respond ONLY in the following JSON format (no extra text).
+        Write the name and description in Russian language (Русский).
+        Description must be maximum 100 words only.
 
-            {
-            "name": "<short product title, max 10 words, suitable for an ecommerce listing>",
-            "description": "<detailed product description, 80-120 words, written for an ecommerce website. Highlight key features, materials, use cases, and benefits. Professional and persuasive tone.>"
-            }
-        PROMPT;
+        {
+        "name": "<короткое название товара, максимум 10 слов, для интернет-магазина>",
+        "description": "<описание товара, максимум 100 слов>"
+        }
+    PROMPT;
 
         $payload = [
             'contents' => [
@@ -1552,31 +1556,50 @@ class ProductController extends Controller
                     ],
                 ],
             ],
-            'generationConfig' => [
+           'generationConfig' => [
                 'temperature'     => 0.4,
-                'maxOutputTokens' => 512,
+                'maxOutputTokens' => 2048,
             ],
         ];
 
         try {
-            $response = Http::timeout(30)
-                ->withHeaders(['Content-Type' => 'application/json'])
-                ->post(
-                    // ✅ New (current 2026 model)
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}",
-                    $payload
-                );
+            $response  = null;
+            $lastError = null;
 
-            if ($response->failed()) {
+            /* ===============================
+            TRY EACH MODEL (FALLBACK)
+            =============================== */
+            foreach ($modelsToTry as $model) {
+                $res = Http::timeout(30)
+                    ->withHeaders(['Content-Type' => 'application/json'])
+                    ->post(
+                        "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}",
+                        $payload
+                    );
+
+                if ($res->successful()) {
+                    $response = $res;
+                    break; // ✅ success, stop trying
+                }
+
+                $lastError = $res->body(); // save error, try next model
+            }
+
+            /* ===============================
+            ALL MODELS FAILED
+            =============================== */
+            if (!$response) {
                 return response()->json([
                     'status'  => false,
-                    'message' => 'Gemini API error: ' . $response->body(),
+                    'message' => 'Gemini API error: ' . $lastError,
                 ], 500);
             }
 
+            /* ===============================
+            PARSE RESPONSE
+            =============================== */
             $responseBody = $response->json();
 
-            // Extract text from Gemini response
             $rawText = $responseBody['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
             if (!$rawText) {
@@ -1596,12 +1619,12 @@ class ProductController extends Controller
                 return response()->json([
                     'status'  => false,
                     'message' => 'Gemini returned unexpected format.',
-                    'raw'     => $rawText, // helpful for debugging
+                    'raw'     => $rawText,
                 ], 500);
             }
 
             /* ===============================
-               SUCCESS RESPONSE
+            SUCCESS RESPONSE
             =============================== */
             return response()->json([
                 'status'  => true,
@@ -1619,7 +1642,5 @@ class ProductController extends Controller
             ], 500);
         }
     }
-    
-
 
 }
