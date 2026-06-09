@@ -26,21 +26,128 @@ use Illuminate\Support\Facades\DB;
 class AuthController extends Controller
 {
 
+    // public function sendMobileOtp(Request $request)
+    // {
+
+    //        $userLang = DB::table('user_langs')
+    //         ->where('device_token', $request->device_token)
+    //         ->where('device_type', $request->device_type)
+    //         ->value('language');
+
+    //         $lang = $request->header('lang')
+    //             ?? $request->lang
+    //             ?? $request->query('lang')
+    //             ?? $userLang
+    //             ?? 'ru';
+
+    //         app()->setLocale($lang);
+
+    //     $validator = Validator::make($request->all(), [
+    //         'phone_number' => 'required|digits_between:8,15',
+    //         'device_type'  => 'nullable|string|max:255',
+    //         'device_token' => 'nullable|string|max:255',
+    //         'fcm_token'    => 'nullable|string|max:255',
+    //     ], [
+    //        'phone_number.required' => __('messages.vendor.send_otp.validation.mobile_required'),
+    //        'phone_number.digits_between' => __('messages.vendor.send_otp.validation.mobile_invalid'),
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $validator->errors()->first(),
+    //         ], 201);
+    //     }
+
+    //     $phone = $request->phone_number;
+
+    //     /** 🔴 CHECK IF MOBILE ALREADY EXISTS */
+    //     $existingUser = User::where('mobile', $phone)->first();
+
+    //     if ($existingUser) {
+    //         return response()->json([
+    //             'status' => false,
+    //               'message' => __('messages.vendor.send_otp.mobile_exists'),
+    //         ], 201);
+    //     }
+
+    //     /** ✅ GENERATE OTP */
+    //     $otp = rand(100000, 999999);
+
+    //     /** ✅ CREATE NEW USER */
+    //     $user = User::create([
+    //         'mobile' => $phone,
+    //         'is_mobile_verified' => 0,
+    //         'device_type' => $request->device_type,
+    //         'device_token' => $request->device_token,
+    //         'fcm_token' => $request->fcm_token,
+    //         'mobile_otp' => $otp,
+    //         'role' => 2,
+    //         'mobile_otp_sent_at' => now(),
+    //     ]);
+    //     $smsMessage = __('messages.vendor.send_otp.sms.otp_message', ['otp' => $otp]);
+    //      $responseMessage = __('messages.vendor.send_otp.otp_sent');
+    //     $responseOtp = null;
+
+        
+
+    //     /** 🌍 OSON SMS (9-digit numbers) */
+    //     if (strlen($phone) === 9) {
+    //         $txnId = 'otp_' . time();
+    //         $login  = config('services.oson.login');
+    //         $from   = config('services.oson.sender');
+    //         $apiKey = config('services.oson.api_key');
+
+    //         $hash = $this->generateSha256Hex(
+    //             "$txnId;$login;$from;$phone;$apiKey"
+    //         );
+    //         // $hash = $this->generateSha256Hex(
+    //         //     "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
+    //         // );
+
+    //         Http::get('https://api.osonsms.com/sendsms_v1.php', [
+    //             'login' => $login,
+    //             'from'  => $from,
+    //             'phone_number' => $phone,
+    //             'msg'   => $smsMessage,
+    //             'txn_id' => $txnId,
+    //             'str_hash' => $hash,
+    //         ]);
+    //     }
+
+    //     /** 🇮🇳 INDIA TEST MODE */
+    //     if (strlen($phone) === 10) {
+    //           $responseMessage = __('messages.vendor.send_otp.otp_test');
+    //         $responseOtp = $otp;
+    //     }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => $responseMessage,
+    //         'data' => [
+    //             'phone_number' => $phone,
+    //             'otp' => $responseOtp,
+    //         ]
+    //     ], 200);
+    // }
+
+
+    // with already exist issue 
+
     public function sendMobileOtp(Request $request)
     {
-
-           $userLang = DB::table('user_langs')
+        $userLang = DB::table('user_langs')
             ->where('device_token', $request->device_token)
             ->where('device_type', $request->device_type)
             ->value('language');
 
-            $lang = $request->header('lang')
-                ?? $request->lang
-                ?? $request->query('lang')
-                ?? $userLang
-                ?? 'ru';
+        $lang = $request->header('lang')
+            ?? $request->lang
+            ?? $request->query('lang')
+            ?? $userLang
+            ?? 'ru';
 
-            app()->setLocale($lang);
+        app()->setLocale($lang);
 
         $validator = Validator::make($request->all(), [
             'phone_number' => 'required|digits_between:8,15',
@@ -48,86 +155,91 @@ class AuthController extends Controller
             'device_token' => 'nullable|string|max:255',
             'fcm_token'    => 'nullable|string|max:255',
         ], [
-           'phone_number.required' => __('messages.vendor.send_otp.validation.mobile_required'),
-           'phone_number.digits_between' => __('messages.vendor.send_otp.validation.mobile_invalid'),
+            'phone_number.required'       => __('messages.vendor.send_otp.validation.mobile_required'),
+            'phone_number.digits_between' => __('messages.vendor.send_otp.validation.mobile_invalid'),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => $validator->errors()->first(),
             ], 201);
         }
 
         $phone = $request->phone_number;
+        $otp   = rand(100000, 999999);
 
-        /** 🔴 CHECK IF MOBILE ALREADY EXISTS */
         $existingUser = User::where('mobile', $phone)->first();
 
         if ($existingUser) {
-            return response()->json([
-                'status' => false,
-                  'message' => __('messages.vendor.send_otp.mobile_exists'),
-            ], 201);
+            // 🔴 Block VERIFIED users — they should use login instead
+            if ($existingUser->is_mobile_verified) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => __('messages.vendor.send_otp.mobile_exists'),
+                ], 201);
+            }
+
+            // ✅ Unverified user — update OTP and device info (resend case)
+            $existingUser->update([
+                'mobile_otp'        => $otp,
+                'mobile_otp_sent_at' => now(),
+                'device_type'       => $request->device_type,
+                'device_token'      => $request->device_token,
+                'fcm_token'         => $request->fcm_token,
+            ]);
+
+            $user = $existingUser;
+        } else {
+            // ✅ New user — create record
+            $user = User::create([
+                'mobile'             => $phone,
+                'is_mobile_verified' => 0,
+                'device_type'        => $request->device_type,
+                'device_token'       => $request->device_token,
+                'fcm_token'          => $request->fcm_token,
+                'mobile_otp'         => $otp,
+                'role'               => 2,
+                'mobile_otp_sent_at' => now(),
+            ]);
         }
 
-        /** ✅ GENERATE OTP */
-        $otp = rand(100000, 999999);
-
-        /** ✅ CREATE NEW USER */
-        $user = User::create([
-            'mobile' => $phone,
-            'is_mobile_verified' => 0,
-            'device_type' => $request->device_type,
-            'device_token' => $request->device_token,
-            'fcm_token' => $request->fcm_token,
-            'mobile_otp' => $otp,
-            'role' => 2,
-            'mobile_otp_sent_at' => now(),
-        ]);
-        $smsMessage = __('messages.vendor.send_otp.sms.otp_message', ['otp' => $otp]);
-         $responseMessage = __('messages.vendor.send_otp.otp_sent');
-        $responseOtp = null;
-
-        
+        $smsMessage      = __('messages.vendor.send_otp.sms.otp_message', ['otp' => $otp]);
+        $responseMessage = __('messages.vendor.send_otp.otp_sent');
+        $responseOtp     = null;
 
         /** 🌍 OSON SMS (9-digit numbers) */
         if (strlen($phone) === 9) {
-            $txnId = 'otp_' . time();
+            $txnId  = 'otp_' . time();
             $login  = config('services.oson.login');
             $from   = config('services.oson.sender');
             $apiKey = config('services.oson.api_key');
 
-            $hash = $this->generateSha256Hex(
-                "$txnId;$login;$from;$phone;$apiKey"
-            );
-            // $hash = $this->generateSha256Hex(
-            //     "borafzo;BORAFZO;{$phone};c3cdbb3f1171320d49f2bf1da20f53fc;{$txnId}"
-            // );
+            $hash = $this->generateSha256Hex("$txnId;$login;$from;$phone;$apiKey");
 
             Http::get('https://api.osonsms.com/sendsms_v1.php', [
-                'login' => $login,
-                'from'  => $from,
+                'login'        => $login,
+                'from'         => $from,
                 'phone_number' => $phone,
-                'msg'   => $smsMessage,
-                'txn_id' => $txnId,
-                'str_hash' => $hash,
+                'msg'          => $smsMessage,
+                'txn_id'       => $txnId,
+                'str_hash'     => $hash,
             ]);
         }
 
         /** 🇮🇳 INDIA TEST MODE */
         if (strlen($phone) === 10) {
-              $responseMessage = __('messages.vendor.send_otp.otp_test');
-            $responseOtp = $otp;
+            $responseMessage = __('messages.vendor.send_otp.otp_test');
+            $responseOtp     = $otp;
         }
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => $responseMessage,
-            'data' => [
+            'data'    => [
                 'phone_number' => $phone,
-                'otp' => $responseOtp,
-            ]
+                'otp'          => $responseOtp,
+            ],
         ], 200);
     }
 
