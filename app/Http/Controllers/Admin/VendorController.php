@@ -11,7 +11,9 @@ class VendorController extends Controller
     // List all vendors
     public function index(Request $request)
     {
-        $query = User::where('role', 2); // Only vendors
+        // $query = User::where('role', 2); // Only vendors
+         $query = User::where('role', 2)
+                 ->where('is_mobile_verified', 1);
 
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
