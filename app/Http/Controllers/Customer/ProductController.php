@@ -12,6 +12,7 @@ use App\Models\SubCategory;
 use App\Models\FavoriteProducts;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BlockedUser;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 use Illuminate\Support\Facades\Validator;
 
@@ -293,11 +294,325 @@ class ProductController extends Controller
     // }
 
 
-    // with seach changes duplicate sho in search 
+    // with seach changes duplicate sho in search  before pagination final 
 
-    public function list(Request $request)
+    // public function list(Request $request)
+    // {
+    //   $user = Auth::guard('api')->user();
+
+    //     // Get favorite product ids
+    //     $favIds = [];
+
+    //     if ($user) {
+    //         $favIds = FavoriteProducts::where('user_id', $user->id)
+    //                     ->pluck('product_id')
+    //                     ->toArray();
+    //     }
+    //     $query = Product::with(['store', 'category', 'subCategory', 'childCategory',   'children.store', 'primaryImage', 'reviews.images','store.user','store.vendorBanks.bank','combinations','children.primaryImage'  ])->withAvg('reviews', 'rating')
+    //     ->withCount('reviews')->where('approval_status', 'approved')->whereNull('parent_product_id');
+
+    //     // Filters
+    //     if ($request->has('category_id')) {
+    //         $query->where('category_id', $request->category_id);
+    //     }
+
+    //     if ($request->has('subcategory_id')) {
+    //         $query->where('sub_category_id', $request->subcategory_id);
+    //     }
+
+    //     if ($request->has('child_category_id')) {
+    //         $query->where('child_category_id', $request->child_category_id);
+    //     }
+
+    //     // ✅ Store Location Filter (NEW CODE)
+    //    // Store Location Filter
+    //     if ($request->filled('city') || $request->filled('country')) {
+
+    //         $query->whereHas('store', function ($q) use ($request) {
+
+    //             if ($request->filled('city')) {
+    //                 $q->where('city', 'like', '%' . $request->city . '%');
+    //             }
+
+    //             if ($request->filled('country')) {
+    //                 $q->where('country', 'like', '%' . $request->country . '%');
+    //             }
+
+    //         });
+    //     }
+
+    //     // Search by product name
+    //     if ($request->has('search')) {
+    //         $query->where('name', 'like', '%' . $request->search . '%');
+    //     }
+
+    //     // Type Based (Trending / Latest)
+    //     if ($request->has('type') && $request->type != '') {
+
+    //         if ($request->type == 'trending') {
+
+    //             // ✅ Trending = Most sold products (Top 10)
+    //             $query->withSum('orderItems as total_sold', 'quantity')
+    //                 ->orderByDesc('total_sold')
+    //                 ->limit(10);
+
+    //         } elseif ($request->type == 'latest') {
+
+    //             // ✅ Latest = Last 10 added products
+    //             $query->orderBy('id', 'desc')
+    //                 ->limit(10);
+    //         }
+
+    //     } else {
+
+    //         //  Sorting Normal
+    //         if ($request->has('sort') && $request->sort != '') {
+    //             switch ($request->sort) {
+    //                 case 'latest':
+    //                     $query->orderBy('id', 'desc');
+    //                     break;
+
+    //                 case 'price_low':
+    //                     $query->orderBy('price', 'asc');
+    //                     break;
+
+    //                 case 'price_high':
+    //                     $query->orderBy('price', 'desc');
+    //                     break;
+
+    //                 default:
+    //                     $query->orderBy('id', 'desc');
+    //             }
+    //         } else {
+    //             $query->orderBy('id', 'desc');
+    //         }
+    //     }
+    //     //  NO PAGINATION
+    //     $products = $query->get();
+
+    //         // =========================
+    //     // 🔥 DELIVERY FILTER (UPDATED)
+    //     // =========================
+
+    //     if (
+    //         $request->filled('delivery_city') ||
+    //         $request->filled('delivery_type') ||
+    //         ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit'))
+    //     ) {
+
+
+    //     // 🔥 Reload all products including duplicates
+    //     $products = Product::with([
+    //         'store',
+    //         'category',
+    //         'subCategory',
+    //         'childCategory',
+    //         'children.store',
+    //         'primaryImage',
+    //         'reviews.images',
+    //         'store.user',
+    //         'store.vendorBanks.bank',
+    //         'combinations',
+    //         'children.primaryImage'
+    //     ])
+    //     ->withAvg('reviews', 'rating')
+    //     ->withCount('reviews')
+    //     ->where('approval_status', 'approved')
+    //     ->get();
+
+    //         // Normalize to arrays
+    //         $cities = $request->delivery_city;
+    //         $types  = $request->delivery_type;
+
+    //         if (!is_array($cities) && $cities) {
+    //             $cities = [$cities];
+    //         }
+
+    //         if (!is_array($types) && $types) {
+    //             $types = [$types];
+    //         }
+
+    //         $products = $products->filter(function ($product) use ($request, $cities, $types) {
+
+    //             $configs = $product->store->delivery_config ?? [];
+
+    //             if (is_string($configs)) {
+    //                 $configs = json_decode($configs, true);
+    //             }
+
+    //             if (!$configs || !is_array($configs)) {
+    //                 return false;
+    //             }
+
+    //             foreach ($configs as $config) {
+
+    //                 // skip disabled
+    //                 if (($config['enabled'] ?? 0) != 1) continue;
+
+    //                 // ✅ MULTIPLE CITY MATCH
+    //                 if (!empty($cities)) {
+    //                     $configCity = strtolower($config['city'] ?? '');
+
+    //                     $cityMatch = collect($cities)->contains(function ($city) use ($configCity) {
+    //                         return strtolower($city) === $configCity;
+    //                     });
+
+    //                     if (!$cityMatch) continue;
+    //                 }
+
+    //                 // ✅ MULTIPLE TYPE MATCH
+    //                 if (!empty($types)) {
+    //                     $typeMatch = collect($types)->contains(function ($type) use ($config) {
+    //                         return strtolower($type) === strtolower($config['delivery_type'] ?? '');
+    //                     });
+
+    //                     if (!$typeMatch) continue;
+    //                 }
+
+    //                 // ✅ DELIVERY TIME
+    //                 if ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit')) {
+
+    //                     if (($config['delivery_time_unit'] ?? '') != $request->delivery_time_unit) {
+    //                         continue;
+    //                     }
+
+    //                     if ((int)$config['delivery_time_value'] > (int)$request->delivery_time_value) {
+    //                         continue;
+    //                     }
+    //                 }
+
+    //                 return true;
+    //             }
+
+    //             return false;
+
+    //         })->values();
+    //     }
+
+    //     // 🔥 GROUP PRODUCTS BY ARTICLE NUMBER
+    //     $products = $products
+    //         ->groupBy('article_number')
+    //         ->map(function ($items) {
+
+    //             // ✅ Prefer original product
+    //             $original = $items->firstWhere('parent_product_id', null);
+
+    //             // agar original hai to wahi return karo
+    //             if ($original) {
+    //                 return $original;
+    //             }
+
+    //             // warna first duplicate return karo
+    //             return $items->first();
+    //         })
+    //         ->values();
+
+    //     // If no products found → return 201
+    //     if ($products->isEmpty()) {
+    //         return response()->json([
+    //             'status' => false,
+    //            'message' => __('messages.customer.product.list.empty')
+    //         ], 201);
+    //     }
+
+    //      $products = $products->map(function ($product) use ($favIds) {
+
+    //         $product->primaryimage = optional($product->primaryImage)->image;
+
+    //         // remove relation object
+    //         unset($product->primaryImage);
+
+    //          //  Favorite status
+    //         $product->is_favorite = in_array($product->id, $favIds);
+
+    //         // 🔥 OTHER SELLERS
+    //         $product->other_sellers = $product->children->map(function ($child) {
+    //             return [
+    //                 'product_id' => $child->id,
+    //                 'store_id' => $child->store_id,
+    //                 'store_name' => $child->store->name ?? null,
+    //                 'store_logo' => $child->store->logo ?? null,
+    //                 'price' => $child->price,
+    //                 'discount_price' => $child->discount_price?? null,
+    //                 'primary_image' => optional($child->primaryImage)->image,
+    //                 'available_quantity' => $child->available_quantity,
+    //             ];
+    //         });
+
+    //         $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
+    //        $product->total_reviews = $product->reviews_count;
+
+    //         $product->reviews = $product->reviews->map(function ($review) {
+    //             return [
+    //                 'id' => $review->id,
+    //                 'rating' => $review->rating,
+    //                 'title' => $review->title,
+    //                 'review' => $review->review,
+    //                 'username' => $review->username,
+    //                 'profile_image' => $review->profile_image,
+    //                 'created_at' => $review->created_at,
+    //                 'images' => $review->images->map(function ($img) {
+    //                     return [
+    //                         'id' => $img->id,
+    //                         'image' => $img->image,
+    //                     ];
+    //                 }),
+    //             ];
+    //         });
+
+    //         unset($product->children);
+
+    //         //  SORT SELLERS
+    //       $product->other_sellers = $product->other_sellers->sortBy('price')->values();
+
+    //         // FORMAT COMBINATIONS
+    //         $product->combinations = $product->combinations->map(function ($combo) {
+    //             return [
+    //                 'id' => $combo->id,
+    //                 'variant' => json_decode($combo->combination, true),
+    //                 'price' => $combo->price,
+    //                 'stock' => $combo->stock,
+    //                 'images' => $combo->images ? json_decode($combo->images, true) : []
+    //             ];
+    //         });
+    //          // ✅ Banks List
+    //         $paymentModes = $product->store->user->payment_modes ?? [];
+
+    //             if (in_array('bank', $paymentModes)) {
+
+    //                 $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
+    //                     return [
+    //                         'bank_id' => $vendorBank->bank->id ?? null,
+    //                         'name' => $vendorBank->bank->name ?? null,
+    //                         'logo' => $vendorBank->bank->logo ?? null,
+    //                         'account_holder_name' => $vendorBank->account_holder_name,
+    //                         'account_number' => $vendorBank->account_number,
+    //                     ];
+    //                 });
+
+    //             } else {
+    //                 $product->banks = [];
+    //             }
+
+    //         return $product;
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => __('messages.customer.product.list.success'),
+    //         'data' => $products
+    //     ]);
+    // }   
+
+
+    // with pagnation 
+
+
+   public function list(Request $request)
     {
       $user = Auth::guard('api')->user();
+
+        $perPage = $request->input('per_page', 15);
 
         // Get favorite product ids
         $favIds = [];
@@ -514,6 +829,11 @@ class ProductController extends Controller
             ], 201);
         }
 
+        // 🔥 Manual pagination (added)
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $total = $products->count();
+        $products = $products->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
          $products = $products->map(function ($product) use ($favIds) {
 
             $product->primaryimage = optional($product->primaryImage)->image;
@@ -596,300 +916,32 @@ class ProductController extends Controller
             return $product;
         });
 
+        // 🔥 Pagination meta (added)
+        $paginated = new LengthAwarePaginator(
+            $products,
+            $total,
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return response()->json([
             'status' => true,
             'message' => __('messages.customer.product.list.success'),
+            'pagination' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page'    => $paginated->lastPage(),
+                'per_page'     => $paginated->perPage(),
+                'total'        => $paginated->total(),
+                'from'         => $paginated->firstItem(),
+                'to'           => $paginated->lastItem(),
+            ],
             'data' => $products
         ]);
-    }   
+    }
 
 
-    // witj block functionaliy
-    
 
-    // public function list(Request $request)
-    // {
-    //   $user = Auth::guard('api')->user();
-
-    //     // Get favorite product ids
-    //     $favIds = [];
-
-    //     if ($user) {
-    //         $favIds = FavoriteProducts::where('user_id', $user->id)
-    //                     ->pluck('product_id')
-    //                     ->toArray();
-    //     }
-
-    //     $blockedIds = [];
-
-    //     if ($user) {
-    //         $blockedIds = BlockedUser::getBlockedUserIds($user->id);
-    //     }
-
-    //     $query = Product::whereHas('store', function ($q) use ($blockedIds) {
-
-    //         if (!empty($blockedIds)) {
-    //             $q->whereNotIn('user_id', $blockedIds);
-    //         }
-
-    //     })
-    //     ->with(['store', 'category', 'subCategory', 'childCategory',   'children.store', 'primaryImage', 'reviews.images','store.user','store.vendorBanks.bank','combinations','children.primaryImage'  ])->withAvg('reviews', 'rating')
-    //     ->withCount('reviews')->where('approval_status', 'approved')->whereNull('parent_product_id');
-
-    //     // Filters
-    //     if ($request->has('category_id')) {
-    //         $query->where('category_id', $request->category_id);
-    //     }
-
-    //     if ($request->has('subcategory_id')) {
-    //         $query->where('sub_category_id', $request->subcategory_id);
-    //     }
-
-    //     if ($request->has('child_category_id')) {
-    //         $query->where('child_category_id', $request->child_category_id);
-    //     }
-
-    //     // ✅ Store Location Filter (NEW CODE)
-    //    // Store Location Filter
-    //     if ($request->filled('city') || $request->filled('country')) {
-
-    //         $query->whereHas('store', function ($q) use ($request) {
-
-    //             if ($request->filled('city')) {
-    //                 $q->where('city', 'like', '%' . $request->city . '%');
-    //             }
-
-    //             if ($request->filled('country')) {
-    //                 $q->where('country', 'like', '%' . $request->country . '%');
-    //             }
-
-    //         });
-    //     }
-
-    //     // Search by product name
-    //     if ($request->has('search')) {
-    //         $query->where('name', 'like', '%' . $request->search . '%');
-    //     }
-
-    //     // Type Based (Trending / Latest)
-    //     if ($request->has('type') && $request->type != '') {
-
-    //         if ($request->type == 'trending') {
-
-    //             // ✅ Trending = Most sold products (Top 10)
-    //             $query->withSum('orderItems as total_sold', 'quantity')
-    //                 ->orderByDesc('total_sold')
-    //                 ->limit(10);
-
-    //         } elseif ($request->type == 'latest') {
-
-    //             // ✅ Latest = Last 10 added products
-    //             $query->orderBy('id', 'desc')
-    //                 ->limit(10);
-    //         }
-
-    //     } else {
-
-    //         //  Sorting Normal
-    //         if ($request->has('sort') && $request->sort != '') {
-    //             switch ($request->sort) {
-    //                 case 'latest':
-    //                     $query->orderBy('id', 'desc');
-    //                     break;
-
-    //                 case 'price_low':
-    //                     $query->orderBy('price', 'asc');
-    //                     break;
-
-    //                 case 'price_high':
-    //                     $query->orderBy('price', 'desc');
-    //                     break;
-
-    //                 default:
-    //                     $query->orderBy('id', 'desc');
-    //             }
-    //         } else {
-    //             $query->orderBy('id', 'desc');
-    //         }
-    //     }
-    //     //  NO PAGINATION
-    //     $products = $query->get();
-
-    //         // =========================
-    //     // 🔥 DELIVERY FILTER (UPDATED)
-    //     // =========================
-
-    //     if (
-    //         $request->filled('delivery_city') ||
-    //         $request->filled('delivery_type') ||
-    //         ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit'))
-    //     ) {
-
-    //         // Normalize to arrays
-    //         $cities = $request->delivery_city;
-    //         $types  = $request->delivery_type;
-
-    //         if (!is_array($cities) && $cities) {
-    //             $cities = [$cities];
-    //         }
-
-    //         if (!is_array($types) && $types) {
-    //             $types = [$types];
-    //         }
-
-    //         $products = $products->filter(function ($product) use ($request, $cities, $types) {
-
-    //             $configs = $product->store->delivery_config ?? [];
-
-    //             if (is_string($configs)) {
-    //                 $configs = json_decode($configs, true);
-    //             }
-
-    //             if (!$configs || !is_array($configs)) {
-    //                 return false;
-    //             }
-
-    //             foreach ($configs as $config) {
-
-    //                 // skip disabled
-    //                 if (($config['enabled'] ?? 0) != 1) continue;
-
-    //                 // ✅ MULTIPLE CITY MATCH
-    //                 if (!empty($cities)) {
-    //                     $configCity = strtolower($config['city'] ?? '');
-
-    //                     $cityMatch = collect($cities)->contains(function ($city) use ($configCity) {
-    //                         return strtolower($city) === $configCity;
-    //                     });
-
-    //                     if (!$cityMatch) continue;
-    //                 }
-
-    //                 // ✅ MULTIPLE TYPE MATCH
-    //                 if (!empty($types)) {
-    //                     $typeMatch = collect($types)->contains(function ($type) use ($config) {
-    //                         return strtolower($type) === strtolower($config['delivery_type'] ?? '');
-    //                     });
-
-    //                     if (!$typeMatch) continue;
-    //                 }
-
-    //                 // ✅ DELIVERY TIME
-    //                 if ($request->filled('delivery_time_value') && $request->filled('delivery_time_unit')) {
-
-    //                     if (($config['delivery_time_unit'] ?? '') != $request->delivery_time_unit) {
-    //                         continue;
-    //                     }
-
-    //                     if ((int)$config['delivery_time_value'] > (int)$request->delivery_time_value) {
-    //                         continue;
-    //                     }
-    //                 }
-
-    //                 return true;
-    //             }
-
-    //             return false;
-
-    //         })->values();
-    //     }
-
-    //     // If no products found → return 201
-    //     if ($products->isEmpty()) {
-    //         return response()->json([
-    //             'status' => false,
-    //            'message' => __('messages.customer.product.list.empty')
-    //         ], 201);
-    //     }
-
-    //      $products = $products->map(function ($product) use ($favIds) {
-
-    //         $product->primaryimage = optional($product->primaryImage)->image;
-
-    //         // remove relation object
-    //         unset($product->primaryImage);
-
-    //          //  Favorite status
-    //         $product->is_favorite = in_array($product->id, $favIds);
-
-    //         // 🔥 OTHER SELLERS
-    //         $product->other_sellers = $product->children->map(function ($child) {
-    //             return [
-    //                 'product_id' => $child->id,
-    //                 'store_id' => $child->store_id,
-    //                 'store_name' => $child->store->name ?? null,
-    //                 'store_logo' => $child->store->logo ?? null,
-    //                 'price' => $child->price,
-    //                 'discount_price' => $child->discount_price?? null,
-    //                 'primary_image' => optional($child->primaryImage)->image,
-    //                 'available_quantity' => $child->available_quantity,
-    //             ];
-    //         });
-
-    //         $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
-    //        $product->total_reviews = $product->reviews_count;
-
-    //         $product->reviews = $product->reviews->map(function ($review) {
-    //             return [
-    //                 'id' => $review->id,
-    //                 'rating' => $review->rating,
-    //                 'title' => $review->title,
-    //                 'review' => $review->review,
-    //                 'username' => $review->username,
-    //                 'profile_image' => $review->profile_image,
-    //                 'created_at' => $review->created_at,
-    //                 'images' => $review->images->map(function ($img) {
-    //                     return [
-    //                         'id' => $img->id,
-    //                         'image' => $img->image,
-    //                     ];
-    //                 }),
-    //             ];
-    //         });
-
-    //         unset($product->children);
-
-    //         //  SORT SELLERS
-    //       $product->other_sellers = $product->other_sellers->sortBy('price')->values();
-
-    //         // FORMAT COMBINATIONS
-    //         $product->combinations = $product->combinations->map(function ($combo) {
-    //             return [
-    //                 'id' => $combo->id,
-    //                 'variant' => json_decode($combo->combination, true),
-    //                 'price' => $combo->price,
-    //                 'stock' => $combo->stock,
-    //                 'images' => $combo->images ? json_decode($combo->images, true) : []
-    //             ];
-    //         });
-    //          // ✅ Banks List
-    //         $paymentModes = $product->store->user->payment_modes ?? [];
-
-    //             if (in_array('bank', $paymentModes)) {
-
-    //                 $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
-    //                     return [
-    //                         'bank_id' => $vendorBank->bank->id ?? null,
-    //                         'name' => $vendorBank->bank->name ?? null,
-    //                         'logo' => $vendorBank->bank->logo ?? null,
-    //                         'account_holder_name' => $vendorBank->account_holder_name,
-    //                         'account_number' => $vendorBank->account_number,
-    //                     ];
-    //                 });
-
-    //             } else {
-    //                 $product->banks = [];
-    //             }
-
-    //         return $product;
-    //     });
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => __('messages.customer.product.list.success'),
-    //         'data' => $products
-    //     ]);
-    // }
 
 
     
@@ -2069,135 +2121,6 @@ class ProductController extends Controller
         
     }
 
-    public function favoriteList()
-    {
-        try {
-
-            $user = Auth::guard('api')->user();
-
-            if (!$user) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Unauthorized user'
-                ], 401);
-            }
-
-            $favorites = FavoriteProducts::with([
-                'product.store',
-                'product.category',
-                'product.subCategory',
-                'product.childCategory',
-                'product.images',
-                'product.primaryImage',
-                'product.reviews.user',
-                'product.reviews.images',
-                'product.store.user',
-                'product.store.vendorBanks.bank'
-                ,'product.combinations',
-            ])
-            ->with(['product' => function ($q) {
-                $q->withAvg('reviews', 'rating')
-                ->withCount('reviews');
-            }])
-            ->where('user_id', $user->id)
-            ->latest()
-            ->get();
-
-            if ($favorites->isEmpty()) {
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'No favorite products found',
-                    'data' => []
-                ]);
-            }
-
-            // 🔥 Format response like product APIs
-            $favorites->transform(function ($item) {
-
-                $product = $item->product;
-
-                // primary image
-                $product->primaryimage = optional($product->primaryImage)->image;
-                unset($product->primaryImage);
-
-                // favorite status
-                $product->is_favorite = true;
-
-                 // ✅ ⭐ ADD RATING
-                $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
-                $product->total_reviews = $product->reviews_count;
-
-                // ✅ ⭐ ADD REVIEWS
-                $product->reviews = $product->reviews->map(function ($review) {
-                    return [
-                        'id' => $review->id,
-                        'rating' => $review->rating,
-                        'title' => $review->title,
-                        'review' => $review->review,
-                        'username' => $review->username,
-                        'profile_image' => $review->profile_image,
-                        'created_at' => $review->created_at,
-
-                        'images' => $review->images->map(function ($img) {
-                            return [
-                                'id' => $img->id,
-                                'image' => $img->image,
-                            ];
-                        }),
-                    ];
-                });
-
-                $product->combinations = $product->combinations->map(function ($combo) {
-                    return [
-                        'id' => $combo->id,
-                        'variant' => json_decode($combo->combination, true),
-                        'price' => $combo->price,
-                        'stock' => $combo->stock,
-                        'images' => $combo->images ? json_decode($combo->images, true) : []
-                    ];
-                });
-
-                // bank details
-                $paymentModes = $product->store->user->payment_modes ?? [];
-
-                if (in_array('bank', $paymentModes)) {
-
-                    $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
-                        return [
-                            'bank_id' => $vendorBank->bank->id ?? null,
-                            'name' => $vendorBank->bank->name ?? null,
-                            'logo' => $vendorBank->bank->logo ?? null,
-                            'account_holder_name' => $vendorBank->account_holder_name,
-                            'account_number' => $vendorBank->account_number,
-                        ];
-                    });
-
-                } else {
-                    $product->banks = [];
-                }
-
-                return $product; // return only product
-            });
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Favorite products fetched successfully',
-                'data' => $favorites
-            ]);
-
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Something went wrong',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    // with block functionlaity
-
     // public function favoriteList()
     // {
     //     try {
@@ -2211,16 +2134,7 @@ class ProductController extends Controller
     //             ], 401);
     //         }
 
-    //        $favorites = FavoriteProducts::whereHas('product.store', function ($q) use ($user) {
-
-    //             $blockedIds = BlockedUser::getBlockedUserIds($user->id);
-
-    //             if (!empty($blockedIds)) {
-    //                 $q->whereNotIn('user_id', $blockedIds);
-    //             }
-
-    //         })
-    //         ->with([
+    //         $favorites = FavoriteProducts::with([
     //             'product.store',
     //             'product.category',
     //             'product.subCategory',
@@ -2333,6 +2247,148 @@ class ProductController extends Controller
     //         ], 500);
     //     }
     // }
+
+
+    // with pagination 
+
+    public function favoriteList(Request $request)
+    {
+        try {
+
+            $user = Auth::guard('api')->user();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized user'
+                ], 401);
+            }
+
+            $perPage = $request->input('per_page', 15);
+
+            $favorites = FavoriteProducts::with([
+                'product.store',
+                'product.category',
+                'product.subCategory',
+                'product.childCategory',
+                'product.images',
+                'product.primaryImage',
+                'product.reviews.user',
+                'product.reviews.images',
+                'product.store.user',
+                'product.store.vendorBanks.bank'
+                ,'product.combinations',
+            ])
+            ->with(['product' => function ($q) {
+                $q->withAvg('reviews', 'rating')
+                ->withCount('reviews');
+            }])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->paginate($perPage);
+
+            if ($favorites->isEmpty()) {
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'No favorite products found',
+                    'data' => []
+                ]);
+            }
+
+            // 🔥 Format response like product APIs
+            $favorites->getCollection()->transform(function ($item) {
+
+                $product = $item->product;
+
+                // primary image
+                $product->primaryimage = optional($product->primaryImage)->image;
+                unset($product->primaryImage);
+
+                // favorite status
+                $product->is_favorite = true;
+
+                 // ✅ ⭐ ADD RATING
+                $product->avg_rating = round($product->reviews_avg_rating ?? 0, 1);
+                $product->total_reviews = $product->reviews_count;
+
+                // ✅ ⭐ ADD REVIEWS
+                $product->reviews = $product->reviews->map(function ($review) {
+                    return [
+                        'id' => $review->id,
+                        'rating' => $review->rating,
+                        'title' => $review->title,
+                        'review' => $review->review,
+                        'username' => $review->username,
+                        'profile_image' => $review->profile_image,
+                        'created_at' => $review->created_at,
+
+                        'images' => $review->images->map(function ($img) {
+                            return [
+                                'id' => $img->id,
+                                'image' => $img->image,
+                            ];
+                        }),
+                    ];
+                });
+
+                $product->combinations = $product->combinations->map(function ($combo) {
+                    return [
+                        'id' => $combo->id,
+                        'variant' => json_decode($combo->combination, true),
+                        'price' => $combo->price,
+                        'stock' => $combo->stock,
+                        'images' => $combo->images ? json_decode($combo->images, true) : []
+                    ];
+                });
+
+                // bank details
+                $paymentModes = $product->store->user->payment_modes ?? [];
+
+                if (in_array('bank', $paymentModes)) {
+
+                    $product->banks = $product->store->vendorBanks->map(function ($vendorBank) {
+                        return [
+                            'bank_id' => $vendorBank->bank->id ?? null,
+                            'name' => $vendorBank->bank->name ?? null,
+                            'logo' => $vendorBank->bank->logo ?? null,
+                            'account_holder_name' => $vendorBank->account_holder_name,
+                            'account_number' => $vendorBank->account_number,
+                        ];
+                    });
+
+                } else {
+                    $product->banks = [];
+                }
+
+                return $product; // return only product
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Favorite products fetched successfully',
+                'pagination' => [
+                    'current_page' => $favorites->currentPage(),
+                    'last_page'    => $favorites->lastPage(),
+                    'per_page'     => $favorites->perPage(),
+                    'total'        => $favorites->total(),
+                    'from'         => $favorites->firstItem(),
+                    'to'           => $favorites->lastItem(),
+                ],
+                'data' => $favorites->getCollection()->values()
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    
 
 
     // public function globalSearch(Request $request)

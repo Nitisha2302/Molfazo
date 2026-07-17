@@ -303,6 +303,50 @@ class ProductController extends Controller
     }
 
 
+    // public function list(Request $request)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user || $user->role != 2 || $user->status_id != 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => __('messages.vendor.product.list.unauthorized'),
+    //         ], 403);
+    //     }
+
+    //     // ✅ Global catalog
+    //     if ($request->has('type') && $request->type == 'all') {
+
+    //         $products = Product::where('status_id', 1)
+    //             ->where('approval_status', 'approved') // 🔥 FIX
+    //             ->with(['reviews.images'])
+    //             ->latest()
+    //             ->get();
+
+    //     } else {
+
+    //         // ✅ Vendor own products
+    //         $products = Product::whereHas('store', function ($q) use ($user) {
+    //                 $q->where('user_id', $user->id);
+    //             })
+    //              ->with(['reviews.images'])
+    //             ->latest()
+    //             ->get();
+    //     }
+
+    //     $products = $products->map(function ($product) {
+    //         return $this->formatProduct($product);
+    //     });
+        
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => __('messages.vendor.product.list.success'),
+    //         'data' => $products,
+    //     ], 200);
+    // }
+
+    // with pagination 
     public function list(Request $request)
     {
         $user = Auth::guard('api')->user();
@@ -314,14 +358,16 @@ class ProductController extends Controller
             ], 403);
         }
 
+        $perPage = $request->input('per_page', 15);
+
         // ✅ Global catalog
         if ($request->has('type') && $request->type == 'all') {
 
             $products = Product::where('status_id', 1)
-                ->where('approval_status', 'approved') // 🔥 FIX
+                ->where('approval_status', 'approved')
                 ->with(['reviews.images'])
                 ->latest()
-                ->get();
+                ->paginate($perPage);
 
         } else {
 
@@ -329,20 +375,27 @@ class ProductController extends Controller
             $products = Product::whereHas('store', function ($q) use ($user) {
                     $q->where('user_id', $user->id);
                 })
-                 ->with(['reviews.images'])
+                ->with(['reviews.images'])
                 ->latest()
-                ->get();
+                ->paginate($perPage);
         }
 
-        $products = $products->map(function ($product) {
+        $data = $products->getCollection()->map(function ($product) {
             return $this->formatProduct($product);
         });
-        
 
         return response()->json([
             'status' => true,
             'message' => __('messages.vendor.product.list.success'),
-            'data' => $products,
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'last_page'    => $products->lastPage(),
+                'per_page'     => $products->perPage(),
+                'total'        => $products->total(),
+                'from'         => $products->firstItem(),
+                'to'           => $products->lastItem(),
+            ],
+            'data' => $data,
         ], 200);
     }
 

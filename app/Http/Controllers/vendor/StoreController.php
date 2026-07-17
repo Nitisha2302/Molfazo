@@ -190,31 +190,73 @@ class StoreController extends Controller
     /**
      * List all stores for the logged-in vendor
      */
-    public function list()
+    // public function list()
+    // {
+    //     /* ===============================
+    //        AUTHENTICATED USER
+    //     =============================== */
+    //     $user = Auth::guard('api')->user();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status'  => false,
+    //            'message' => __('messages.vendor.store.auth.unauthorized'),
+    //         ], 401);
+    //     }
+
+    //     $stores = Store::where('user_id', $user->id)->get();
+
+    //     // Format each store
+    //     $stores = $stores->map(function($store) {
+    //         return $this->formatStore($store);
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => __('messages.vendor.store.list.success'),
+    //         'data' => $stores,
+    //     ], 200);
+    // }
+
+    // with pagination 
+
+    public function list(Request $request)
     {
         /* ===============================
-           AUTHENTICATED USER
+        AUTHENTICATED USER
         =============================== */
         $user = Auth::guard('api')->user();
 
         if (!$user) {
             return response()->json([
                 'status'  => false,
-               'message' => __('messages.vendor.store.auth.unauthorized'),
+                'message' => __('messages.vendor.store.auth.unauthorized'),
             ], 401);
         }
 
-        $stores = Store::where('user_id', $user->id)->get();
+        $perPage = $request->input('per_page', 15); // Default 15 items per page
 
-        // Format each store
-        $stores = $stores->map(function($store) {
+        $stores = Store::where('user_id', $user->id)
+            ->latest()
+            ->paginate($perPage);
+
+        // Format paginated collection
+        $data = $stores->getCollection()->map(function ($store) {
             return $this->formatStore($store);
         });
 
         return response()->json([
             'status' => true,
             'message' => __('messages.vendor.store.list.success'),
-            'data' => $stores,
+            'pagination' => [
+                'current_page' => $stores->currentPage(),
+                'last_page'    => $stores->lastPage(),
+                'per_page'     => $stores->perPage(),
+                'total'        => $stores->total(),
+                'from'         => $stores->firstItem(),
+                'to'           => $stores->lastItem(),
+            ],
+            'data' => $data,
         ], 200);
     }
 
