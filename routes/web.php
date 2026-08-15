@@ -203,6 +203,7 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
         ->name('customers.delete');
 
         Route::get('/stores', [StoreController::class, 'index'])->name('stores');
+        Route::get('/store/{id}', function ($id) {return view('store_share', ['id' => $id]);})->where('id', '[0-9]+');
         Route::post('/stores/{store}/approve', [StoreController::class, 'approve'])->name('stores.approve');
         Route::post('/stores/{store}/reject', [StoreController::class, 'reject'])->name('stores.reject');
 
