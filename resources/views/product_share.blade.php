@@ -108,7 +108,9 @@
         return;
       }
 
+      // Opens THIS product in the app: inbozor://product/{id}
       var customUrl = "inbozor://product/" + productId;
+      // Android Chrome: app if installed, otherwise Play Store
       var intentUrl =
         "intent://product/" + productId +
         "#Intent;scheme=inbozor;package=" + PACKAGE +
@@ -118,15 +120,27 @@
       var launchUrl = isAndroid ? intentUrl : customUrl;
       openApp.href = launchUrl;
 
-      var leftAt = Date.now();
-      window.location.href = launchUrl;
+      var appOpened = false;
+      function markAppOpened() {
+        appOpened = true;
+      }
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) markAppOpened();
+      });
+      window.addEventListener("pagehide", markAppOpened);
+      window.addEventListener("blur", markAppOpened);
 
-      setTimeout(function () {
-        if (document.hidden) return;
-        if (Date.now() - leftAt < 1400) return;
+      function goToStore() {
+        if (appOpened || document.hidden) return;
         statusEl.textContent = "App not installed. Opening the store…";
-        window.location.href = storeUrl;
-      }, 1800);
+        window.location.replace(storeUrl);
+      }
+
+      // Phone: try the app first. Desktop: wait for the button.
+      if (isIOS || isAndroid) {
+        window.location.href = launchUrl;
+        setTimeout(goToStore, 2000);
+      }
     })();
   </script>
 </body>
