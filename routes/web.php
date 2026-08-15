@@ -23,10 +23,42 @@ use App\Http\Controllers\Admin\VideoRequestController;
 use App\Http\Controllers\Admin\EnquiryController;
 use App\Http\Controllers\ContentController;
 
+// Product share deep links (inBozor app). Must exist so shared HTTPS links
+// like https://mudir.inbozor.app/product/{id} do not 404 in the browser.
+Route::get('/product/{id}', function ($id) {
+    if (!ctype_digit((string) $id)) {
+        abort(404);
+    }
 
-Route::fallback(function () {
-    return response()->view('404', [], 404);
+    return response()
+        ->view('product_share', ['id' => $id])
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+})->where('id', '[0-9]+');
+
+Route::get('/.well-known/apple-app-site-association', function () {
+    $path = public_path('.well-known/apple-app-site-association');
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    return response(file_get_contents($path), 200, [
+        'Content-Type' => 'application/json',
+        'Cache-Control' => 'no-cache',
+    ]);
 });
+
+Route::get('/.well-known/assetlinks.json', function () {
+    $path = public_path('.well-known/assetlinks.json');
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    return response(file_get_contents($path), 200, [
+        'Content-Type' => 'application/json',
+        'Cache-Control' => 'no-cache',
+    ]);
+});
+
 Route::get('/', [AdminAuthController::class, 'showLoginForm'])->name('login');
 Route::get('/login', function () {
     return redirect('/');
@@ -244,14 +276,11 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
 
         Route::post('change-password', [AdminAuthController::class, 'changePassword'])
             ->name('change.password.submit');
-
-    });  
-
-
-    
-
-     
-    
-
+    });
 });
+
+Route::fallback(function () {
+    abort(404);
+});
+
 

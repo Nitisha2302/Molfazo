@@ -5,6 +5,10 @@
 
     RewriteEngine On
 
+    # App Links / Universal Links: serve association files through Laravel
+    # so Content-Type is application/json (required by Apple and Android).
+    RewriteRule ^\.well-known/(apple-app-site-association|assetlinks\.json)$ index.php [L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
