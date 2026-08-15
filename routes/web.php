@@ -35,6 +35,10 @@ Route::get('/product/{id}', function ($id) {
         ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
 })->where('id', '[0-9]+');
 
+Route::get('/store/{id}', function ($id) {
+    return view('store_share', ['id' => $id]);
+})->where('id', '[0-9]+');
+
 Route::get('/.well-known/apple-app-site-association', function () {
     $path = public_path('.well-known/apple-app-site-association');
     if (!file_exists($path)) {
@@ -203,7 +207,6 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
         ->name('customers.delete');
 
         Route::get('/stores', [StoreController::class, 'index'])->name('stores');
-        Route::get('/store/{id}', function ($id) {return view('store_share', ['id' => $id]);})->where('id', '[0-9]+');
         Route::post('/stores/{store}/approve', [StoreController::class, 'approve'])->name('stores.approve');
         Route::post('/stores/{store}/reject', [StoreController::class, 'reject'])->name('stores.reject');
 
