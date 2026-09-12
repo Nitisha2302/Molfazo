@@ -49,7 +49,10 @@ class OrderController extends Controller
                 'address_id' => 'nullable|required_if:delivery_method,home_delivery|exists:user_addresses,id',
                 'payment_type'    => 'required|in:cod,online',
                 'delivery_method' => 'nullable|string',
-                 'bank_id'      => 'required_if:payment_type,online|exists:banks,id'
+                'bank_id'      => 'nullable|exists:banks,id'
+
+                //  'bank_id'      => 'required_if:payment_type,online|exists:banks,id'
+
             ],
             [
                 // ✅ ADDRESS
@@ -57,8 +60,8 @@ class OrderController extends Controller
                 'address_id.exists'      => __('messages.customer.order.place.validation.address_invalid'),
                 'payment_type.required'  => __('messages.customer.order.place.validation.payment_required'),
                 'payment_type.in'        => __('messages.customer.order.place.validation.payment_invalid'),
-                'bank_id.required_if'    => __('messages.customer.order.place.validation.bank_required'),
-                'bank_id.exists'         => __('messages.customer.order.place.validation.bank_invalid'),
+                // 'bank_id.required_if'    => __('messages.customer.order.place.validation.bank_required'),
+                // 'bank_id.exists'         => __('messages.customer.order.place.validation.bank_invalid'),
             ]
         );
         
@@ -95,14 +98,21 @@ class OrderController extends Controller
 
         $store = Store::with('user')->find($storeId);
 
-        $paymentModes = $store->user->payment_modes ?? [];
-
-        if ($request->payment_type == 'online' && !in_array('bank', $paymentModes)) {
+        if (!$store) {
             return response()->json([
                 'status' => false,
-                'message' => __('messages.customer.order.place.bank_not_supported')
+                'message' => 'Store not found.'
             ], 400);
         }
+
+        $paymentModes = $store->user?->payment_modes ?? [];
+
+        // if ($request->payment_type == 'online' && !in_array('bank', $paymentModes)) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => __('messages.customer.order.place.bank_not_supported')
+        //     ], 400);
+        // }
 
 
         $deliveryAddress = null;
@@ -128,7 +138,14 @@ class OrderController extends Controller
             // ✅ GET STORE DELIVERY CONFIG
             $store = Store::find($storeId);
 
-            $configs = $store->delivery_config;
+                if (!$store) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Store not found.'
+                    ], 400);
+                }
+
+                $configs = $store->delivery_config;
 
             if (empty($configs)) {
                 return response()->json([
@@ -185,7 +202,22 @@ class OrderController extends Controller
             // ✅ SELF PICKUP → use store address
             $store = Store::find($storeId);
 
-            $deliveryAddress = $store->name . ', ' . $store->address. ', ' . $store->city. ', ' . $store->country ?? 'Store Pickup';
+      $store = Store::find($storeId);
+
+        if (!$store) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Store not found.'
+            ], 400);
+        }
+
+        $deliveryAddress = $store->name . ', ' .
+            $store->address . ', ' .
+            $store->city . ', ' .
+            $store->country;
+
+        $deliveryTime = "";
+        $deliveryType = "pickup";
 
             $deliveryTime = ""; // or dynamic later
             $deliveryType = "pickup";
@@ -227,15 +259,15 @@ class OrderController extends Controller
             $total = 0;
 
             foreach ($cartItems as $item) {
-                $price = $item->combination->price 
-                    ?? $item->product->discount_price 
-                    ?? $item->product->price;
+                $price = $item->combination?->price
+                    ?? $item->product?->discount_price
+                    ?? $item->product?->price;
 
                 $total += $price * $item->quantity;
             }
 
              // 🔐 Secure Bank Account Fetch
-            $accountNumber = null;
+            // $accountNumber = null;
 
             if ($request->payment_type === 'online') {
 
@@ -247,14 +279,14 @@ class OrderController extends Controller
                     ->where('bank_id', $request->bank_id)
                     ->first();
 
-                if (!$vendorBank) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => __('messages.customer.order.place.bank_not_available')
-                    ], 400);
-                }
+                // if (!$vendorBank) {
+                //     return response()->json([
+                //         'status' => false,
+                //         'message' => __('messages.customer.order.place.bank_not_available')
+                //     ], 400);
+                // }
 
-                $accountNumber = $vendorBank->account_number;
+                // $accountNumber = $vendorBank->account_number;
             }
             
 
@@ -272,7 +304,7 @@ class OrderController extends Controller
                 'bank_id' => $request->payment_type == 'online'
                 ? $request->bank_id
                 : null,
-                'account_number'   => $accountNumber,
+                // 'account_number'   => $accountNumber,
                 'delivery_time'   => $deliveryTime,
                 'delivery_type'   => $deliveryType,
             ]);
@@ -280,9 +312,9 @@ class OrderController extends Controller
             // Create order items & decrement stock
             foreach ($cartItems as $item) {
 
-                $price = $item->combination->price 
-                    ?? $item->product->discount_price 
-                    ?? $item->product->price;
+                $price = $item->combination?->price
+                    ?? $item->product?->discount_price
+                    ?? $item->product?->price;
 
                 OrderItem::create([
                     'order_id'       => $order->id,
