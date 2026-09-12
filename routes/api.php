@@ -101,6 +101,7 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
 
     Route::get('banners', [CategoryController::class, 'getBanners']);
     Route::get('cities', [CategoryController::class, 'getCities']);
+     Route::get('cities-with-delivery-charges', [CategoryController::class, 'getCitiesWithDeliveryCharges']);
     Route::get('vendor/banks', [ProductController::class, 'getBankList']);
     
     Route::post('vendor/payment/save', [VendorBankController::class, 'saveVendorPayment']);
