@@ -34,11 +34,14 @@ class CityController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:cities,name',
             // 'status' => 'required|in:0,1',
+             'delivery_charge' => 'required|numeric|min:0',
         ]);
 
         City::create([
             'name' => $request->name,
+              'delivery_charge' => $request->delivery_charge,
             // 'status' => $request->status
+            
         ]);
 
         return redirect()->route('dashboard.admin.cities.index')
@@ -56,11 +59,13 @@ class CityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:cities,name,' . $city->id,
+            'delivery_charge' => 'required|numeric|min:0',
             // 'status' => 'required|in:0,1',
         ]);
 
         $city->update([
             'name' => $request->name,
+             'delivery_charge' => $request->delivery_charge,
             // 'status' => $request->status
         ]);
 

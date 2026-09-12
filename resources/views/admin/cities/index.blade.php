@@ -32,6 +32,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                     <th>Delivery Charge</th>
                     <!-- <th>Status</th> -->
                     <th>Action</th>
                 </tr>
@@ -41,6 +42,9 @@
             @forelse($cities as $city)
                 <tr>
                     <td>{{ $city->name }}</td>
+                    <td>
+                        c.{{ number_format($city->delivery_charge, 2) }}
+                    </td>
                     <!-- <td>
                         <span class="badge {{ $city->status == 1 ? 'bg-success' : 'bg-danger' }}">
                             {{ $city->status == 1 ? 'Active' : 'Inactive' }}

@@ -241,6 +241,18 @@ class CategoryController extends Controller
         ]);
     }
 
+    public function getCitiesWithDeliveryCharges()
+    {
+        $cities = City::orderBy('name')
+            ->get(['id', 'name', 'delivery_charge']);
+
+        return response()->json([
+            'status' => true,
+            'message' => __('messages.vendor.city.success'),
+            'data' => $cities
+        ]);
+    }
+
     
 
 }

@@ -12,5 +12,6 @@ class City extends Model
     protected $fillable = [
         'name',
         'status',
+         'delivery_charge',
     ];
 }

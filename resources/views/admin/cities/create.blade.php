@@ -20,6 +20,24 @@
                     @error('name')<div class="text-danger">{{ $message }}</div>@enderror
                 </div>
 
+                <div class="col-md-6 step-field">
+                    <label for="delivery_charge">Delivery Charge</label>
+                    <input
+                        type="number"
+                        name="delivery_charge"
+                        id="delivery_charge"
+                        class="form-control"
+                        value="{{ old('delivery_charge', 0) }}"
+                        min="0"
+                        step="0.01"
+                        placeholder="Enter delivery charge"
+                    >
+
+                    @error('delivery_charge')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <!-- <div class="col-md-6 step-field">
                     <label for="status">Status</label>
                     <select name="status" class="form-control">
