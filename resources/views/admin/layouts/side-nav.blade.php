@@ -224,6 +224,27 @@
                 </a>
             </li>
 
+            <li class="@if (Route::is('dashboard.admin.ai-photo-plans.*')) active @endif">
+                <a href="{{ route('dashboard.admin.ai-photo-plans.index') }}">
+                    <i class="fas fa-image"></i>
+                    <span>AI Photo Plans</span>
+                </a>
+            </li>
+
+            <li class="@if (Route::currentRouteName() == 'dashboard.admin.ai-photo-orders.index') active @endif">
+                <a href="{{ route('dashboard.admin.ai-photo-orders.index') }}">
+                    <i class="fas fa-receipt"></i>
+                    <span>AI Photo Purchases</span>
+                </a>
+            </li>
+
+            <li class="@if (Route::currentRouteName() == 'dashboard.admin.ai-photo-balances') active @endif">
+                <a href="{{ route('dashboard.admin.ai-photo-balances') }}">
+                    <i class="fas fa-coins"></i>
+                    <span>Seller Credit Balances</span>
+                </a>
+            </li>
+
 
         @endif
 

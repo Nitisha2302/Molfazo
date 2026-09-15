@@ -22,6 +22,8 @@ use App\Http\Controllers\Admin\VideoPlanController;
 use App\Http\Controllers\Admin\VideoRequestController;
 use App\Http\Controllers\Admin\EnquiryController;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\Admin\AiPhotoPlanController;
+use App\Http\Controllers\Admin\AiPhotoOrderController;
 
 // Product share deep links (inBozor app). Must exist so shared HTTPS links
 // like https://mudir.inbozor.app/product/{id} do not 404 in the browser.
@@ -261,6 +263,20 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
 
 
        Route::resource('video-plans', VideoPlanController::class);
+
+         // ===================== AI PHOTO MODULE =====================
+
+        Route::resource('ai-photo-plans', AiPhotoPlanController::class);
+        Route::post('ai-photo-plans/{id}/toggle', [AiPhotoPlanController::class, 'toggle'])
+            ->name('ai-photo-plans.toggle');
+
+        Route::get('ai-photo-orders', [AiPhotoOrderController::class, 'index'])
+            ->name('ai-photo-orders.index');
+
+        Route::get('ai-photo-balances', [AiPhotoOrderController::class, 'balances'])
+            ->name('ai-photo-balances');
+
+        // ===================== AI PHOTO MODULE END =================
 
        Route::prefix('store/video')->group(function () {
 

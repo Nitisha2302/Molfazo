@@ -47,5 +47,21 @@ return [
         'api_key' => env('GEMINI_API_KEY'),
     ],
 
+    
+
+
+    'stripe' => [
+        'key'            => env('STRIPE_KEY'),              // pk_test_... (safe to send to the app)
+        'secret'         => env('STRIPE_SECRET'),           // sk_test_... (SERVER ONLY, never in the app)
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),   // whsec_...
+    ],
+
+    'stability' => [
+        'api_key' => env('STABILITY_API_KEY'),
+        'host'    => env('STABILITY_API_HOST', 'https://api.stability.ai'),
+        'engine'  => env('STABILITY_ENGINE', 'sd3.5-large'),
+    ],
+
+
 
 ];

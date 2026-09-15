@@ -28,6 +28,8 @@ use App\Http\Controllers\vendor\PromotionController;
 use App\Http\Controllers\vendor\ReviewController;
 use App\Http\Controllers\vendor\KycController;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\Vendor\AiPhotoController;
+use App\Http\Controllers\StripeWebhookController;
 
 use App\Http\Controllers\Customer\ChatController as CustomerChatController;
 
@@ -230,6 +232,20 @@ Route::post('/didit/webhook', [KycController::class, 'webhook'])->name('didit.we
 
 Route::post('toggle-block-user', [CustomerAuthController::class, 'toggleBlockUser']);
   Route::post('/store-report', [CustomerAuthController::class, 'storeReport']);
+
+  Route::get('vendor/ai-photo/plans',          [AiPhotoController::class, 'plans']);
+Route::get('vendor/ai-photo/credits',        [AiPhotoController::class, 'credits']);
+Route::post('vendor/ai-photo/purchase',      [AiPhotoController::class, 'purchase']);
+Route::post('vendor/ai-photo/verify-payment',[AiPhotoController::class, 'verifyPayment']);
+Route::get('vendor/ai-photo/orders',         [AiPhotoController::class, 'orders']);
+Route::get('vendor/ai-photo/transactions',   [AiPhotoController::class, 'transactions']);
+// ===================== STRIPE WEBHOOK =========================
+// PUBLIC. No auth. Stripe signs the request instead.
+// Routes in api.php are already CSRF-exempt.
+
+Route::post('stripe/webhook', [StripeWebhookController::class, 'handle'])
+    ->name('stripe.webhook');
+
 
 
 
