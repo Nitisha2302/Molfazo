@@ -42,14 +42,36 @@ class AiPhotoGenerationController extends Controller
      *  Change this line to change what every "edit" produces.
      * ===============================================================
      */
+    // protected function editPrompt(?string $productName = null): string
+    // {
+    //     $name = $productName ?: 'the product';
+
+    //     return "Professional e-commerce product photograph of {$name}, "
+    //          . "clean pure white studio background, soft even lighting, "
+    //          . "sharp focus, centered composition, no shadows, "
+    //          . "no text, no watermark";
+    // }
+
+        /**
+     * NOT a prompt sent to any AI.
+     *
+     * Remove Background is a segmentation service — it takes an image and
+     * nothing else. There is no prompt parameter and no text to tune.
+     *
+     * This string is stored in ai_photo_generations.prompt purely as a
+     * record of what the operation did.
+     *
+     * The actual process:
+     *   1. AI automatically removes the background
+     *   2. Server places the cutout on a professional white background
+     *   3. Enhanced photo is saved as the product card image
+     */
     protected function editPrompt(?string $productName = null): string
     {
         $name = $productName ?: 'the product';
 
-        return "Professional e-commerce product photograph of {$name}, "
-             . "clean pure white studio background, soft even lighting, "
-             . "sharp focus, centered composition, no shadows, "
-             . "no text, no watermark";
+        return "Background removed from {$name} photo and placed on a "
+             . "professional white background";
     }
 
     protected AiPhotoCreditService $credits;
@@ -371,5 +393,107 @@ class AiPhotoGenerationController extends Controller
                 'balance'       => $this->credits->getBalance($vendorId),
             ],
         ], 500);
+    }
+
+
+        /**
+     * ==================== PREVIEW (new product) ====================
+     * POST /api/vendor/ai-photo/preview
+     *
+     * For the ADD NEW PRODUCT screen, where the product does not exist
+     * yet so there is no product_id and nothing to attach to.
+     *
+     *   prompt  -> generate a brand new image from that prompt
+     *   image   -> remove the background of the uploaded photo
+     *
+     * Saves into public/assets/product_images and returns ONLY the file
+     * name. NOTHING is written to product_images — the app sends that
+     * file name back when the seller saves the product.
+     *
+     * Costs 1 credit. No refund if it fails.
+     */
+    public function preview(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (! $user) {
+            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'prompt' => 'required_without:image|nullable|string|min:3|max:1000',
+            'image'  => 'required_without:prompt|nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+        ], [
+            'prompt.required_without' => 'Send either a prompt or an image.',
+            'image.required_without'  => 'Send either a prompt or an image.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        if ($this->credits->getBalance($user->id) < 1) {
+            return $this->noCredits();
+        }
+
+        // an uploaded image wins: the seller clearly wants that photo cleaned
+        $isEdit = $request->hasFile('image');
+
+        $sourcePath = null;
+        $absolute   = null;
+
+        if ($isEdit) {
+            $file       = $request->file('image');
+            $sourcePath = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('assets/product_images'), $sourcePath);
+
+            $absolute = public_path('assets/product_images/' . $sourcePath);
+
+            if (! file_exists($absolute)) {
+                return response()->json(['status' => false, 'message' => 'Upload failed. Try again.'], 422);
+            }
+        }
+
+        $generation = AiPhotoGeneration::create([
+            'vendor_id'    => $user->id,
+            'product_id'   => null,            // product does not exist yet
+            'mode'         => $isEdit ? AiPhotoGeneration::MODE_EDIT : AiPhotoGeneration::MODE_GENERATE,
+            'prompt'       => $isEdit ? $this->editPrompt() : $request->prompt,
+            'source_image' => $sourcePath,
+            'status'       => AiPhotoGeneration::STATUS_PROCESSING,
+            'meta'         => ['context' => 'new_product_preview'],
+        ]);
+
+        $reason = $isEdit ? 'Photo cleaned (new product)' : 'Photo generated (new product)';
+
+        if (! $this->takeCredit($generation, $user->id, $reason)) {
+            return $this->noCredits();
+        }
+
+        try {
+            $service = new StabilityAiService();
+
+            $path = $isEdit
+                ? $service->enhanceProductPhoto($absolute)
+                : $service->generate($request->prompt);
+        } catch (\Throwable $e) {
+            return $this->failAndRefund($generation, $user->id, $e);
+        }
+
+        $generation->update([
+            'output_image' => $path,
+            'status'       => AiPhotoGeneration::STATUS_SUCCESS,
+        ]);
+
+        return response()->json([
+            'status'  => true,
+            'message' => $isEdit ? 'Photo cleaned successfully' : 'Photo generated successfully',
+            'data'    => [
+                'generation_id' => $generation->id,
+                'image'         => $path,          // send this back on product save
+                'mode'          => $isEdit ? 'edit' : 'generate',
+                'balance'       => $this->credits->getBalance($user->id),
+            ],
+        ]);
     }
 }

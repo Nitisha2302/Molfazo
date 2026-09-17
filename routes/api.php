@@ -253,6 +253,7 @@ Route::get('vendor/ai-photo/transactions',   [AiPhotoController::class, 'transac
 // Route::get('vendor/ai-photo/generations',    [AiPhotoGenerationController::class, 'history']);
 Route::post('vendor/ai-photo/generate', [AiPhotoGenerationController::class, 'generate']);
 Route::post('vendor/ai-photo/edit',     [AiPhotoGenerationController::class, 'edit']);
+Route::post('vendor/ai-photo/preview', [AiPhotoGenerationController::class, 'preview']);
 
 
 
