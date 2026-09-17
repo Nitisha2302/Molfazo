@@ -30,6 +30,7 @@ use App\Http\Controllers\vendor\KycController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\Vendor\AiPhotoController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\Vendor\AiPhotoGenerationController;
 
 use App\Http\Controllers\Customer\ChatController as CustomerChatController;
 
@@ -236,15 +237,22 @@ Route::post('toggle-block-user', [CustomerAuthController::class, 'toggleBlockUse
   Route::get('vendor/ai-photo/plans',          [AiPhotoController::class, 'plans']);
 Route::get('vendor/ai-photo/credits',        [AiPhotoController::class, 'credits']);
 Route::post('vendor/ai-photo/purchase',      [AiPhotoController::class, 'purchase']);
-Route::post('vendor/ai-photo/verify-payment',[AiPhotoController::class, 'verifyPayment']);
+// Route::post('vendor/ai-photo/verify-payment',[AiPhotoController::class, 'verifyPayment']);
 Route::get('vendor/ai-photo/orders',         [AiPhotoController::class, 'orders']);
 Route::get('vendor/ai-photo/transactions',   [AiPhotoController::class, 'transactions']);
 // ===================== STRIPE WEBHOOK =========================
 // PUBLIC. No auth. Stripe signs the request instead.
 // Routes in api.php are already CSRF-exempt.
 
-Route::post('stripe/webhook', [StripeWebhookController::class, 'handle'])
-    ->name('stripe.webhook');
+// Route::post('stripe/webhook', [StripeWebhookController::class, 'handle'])
+//     ->name('stripe.webhook');
+
+// Route::get('vendor/ai-photo/default-prompt', [AiPhotoGenerationController::class, 'defaultPrompt']);
+// Route::post('vendor/ai-photo/generate',      [AiPhotoGenerationController::class, 'generate']);
+// Route::post('vendor/ai-photo/edit',          [AiPhotoGenerationController::class, 'edit']);
+// Route::get('vendor/ai-photo/generations',    [AiPhotoGenerationController::class, 'history']);
+Route::post('vendor/ai-photo/generate', [AiPhotoGenerationController::class, 'generate']);
+Route::post('vendor/ai-photo/edit',     [AiPhotoGenerationController::class, 'edit']);
 
 
 

@@ -269,6 +269,7 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
         Route::resource('ai-photo-plans', AiPhotoPlanController::class);
         Route::post('ai-photo-plans/{id}/toggle', [AiPhotoPlanController::class, 'toggle'])
             ->name('ai-photo-plans.toggle');
+        
 
         Route::get('ai-photo-orders', [AiPhotoOrderController::class, 'index'])
             ->name('ai-photo-orders.index');

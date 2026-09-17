@@ -7,12 +7,34 @@ use App\Models\AiPhotoCreditTransaction;
 use App\Models\AiPhotoOrder;
 use App\Models\AiPhotoPlan;
 use App\Services\AiPhotoCreditService;
-use App\Services\StripeService;
+// use App\Services\StripeService;   // STRIPE ON HOLD — re-enable later
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * =====================================================================
+ *  MODE: DIRECT PURCHASE (no Stripe)
+ * =====================================================================
+ *
+ *  The frontend collects the payment itself and then tells this API
+ *  "the seller bought plan X". Credits are granted immediately.
+ *
+ *  SECURITY WARNING — READ THIS
+ *  In this mode the server CANNOT verify that money was actually paid.
+ *  Anyone holding a valid seller token can call /purchase repeatedly and
+ *  receive unlimited free credits. The backend cannot prevent this,
+ *  because the backend is not part of the payment.
+ *
+ *  This is acceptable ONLY for development and internal testing.
+ *  Before going live, switch to the Stripe flow (kept commented below)
+ *  or to whichever gateway you choose.
+ *
+ *  Every order created in this mode is tagged in `meta` as
+ *  'verified' => false so you can find and audit them later.
+ * =====================================================================
+ */
 class AiPhotoController extends Controller
 {
     protected AiPhotoCreditService $credits;
@@ -24,7 +46,7 @@ class AiPhotoController extends Controller
 
     /**
      * GET /api/vendor/ai-photo/plans
-     * Lists active plans + the vendor's current balance.
+     * Same in both modes.
      */
     public function plans(Request $request)
     {
@@ -39,14 +61,16 @@ class AiPhotoController extends Controller
             ->orderBy('credits')
             ->get()
             ->map(function ($plan) {
+                $perPhoto = ((float) $plan->price) / max(1, $plan->credits);
+
                 return [
-                    'id'              => $plan->id,
-                    'name'            => $plan->name,
-                    'credits'         => $plan->credits,
-                    'price'           => (float) $plan->price,
-                    'currency'        => strtoupper($plan->currency),
-                    'display_price'   => $this->formatMoney($plan->price, $plan->currency),
-                    'price_per_photo' => round(((float) $plan->price) / max(1, $plan->credits), 3),
+                    'id'                      => $plan->id,
+                    'name'                    => $plan->name,
+                    'credits'                 => $plan->credits,
+                    'price'                   => (float) $plan->price,
+                    // 'display_price'           => $this->formatMoney($plan->price),
+                    // 'price_per_photo'         => round($perPhoto, 2),
+                    // 'display_price_per_photo' => $this->formatMoney($perPhoto),
                 ];
             });
 
@@ -62,7 +86,6 @@ class AiPhotoController extends Controller
 
     /**
      * GET /api/vendor/ai-photo/credits
-     * Just the balance — call after every generation to refresh the UI.
      */
     public function credits(Request $request)
     {
@@ -87,15 +110,19 @@ class AiPhotoController extends Controller
 
     /**
      * POST /api/vendor/ai-photo/purchase
-     * body: { plan_id }
      *
-     * Creates a PENDING order + a Stripe PaymentIntent, returns client_secret.
-     * The app then opens the Stripe Payment Sheet with that client_secret.
+     * DIRECT MODE — one call does everything.
+     * The app calls this AFTER it has taken the payment.
      *
-     * IMPORTANT: credits are NOT granted here. They are granted only when
-     * Stripe confirms payment (webhook, or the verify endpoint below).
+     * body: {
+     *   plan_id           : required
+     *   payment_reference : optional — transaction id from whatever the app used
+     *   payment_method    : optional — free text, e.g. "manual", "test"
+     * }
+     *
+     * There is no verify-payment step in this mode.
      */
-    public function purchase(Request $request, StripeService $stripe)
+    public function purchase(Request $request)
     {
         $user = Auth::guard('api')->user();
 
@@ -104,7 +131,9 @@ class AiPhotoController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'plan_id' => 'required|integer|exists:ai_photo_plans,id',
+            'plan_id'           => 'required|integer|exists:ai_photo_plans,id',
+            'payment_reference' => 'nullable|string|max:191',
+            'payment_method'    => 'nullable|string|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -123,8 +152,189 @@ class AiPhotoController extends Controller
             ], 422);
         }
 
-        // Reuse an existing unpaid order for the same plan instead of
-        // spawning a new PaymentIntent every time the user taps Buy.
+        $reference = $request->input('payment_reference');
+
+        // If the app sends a reference, refuse to process the same one twice.
+        // This is the only duplicate protection available in this mode.
+        if ($reference) {
+            $existing = AiPhotoOrder::where('vendor_id', $user->id)
+                ->where('meta->payment_reference', $reference)
+                ->first();
+
+            if ($existing) {
+                return response()->json([
+                    'status'  => true,
+                    'message' => 'This payment was already processed',
+                    'data'    => [
+                        'order_id'      => $existing->id,
+                        'credits_added' => $existing->credits,
+                        'balance'       => $this->credits->getBalance($user->id),
+                        'duplicate'     => true,
+                    ],
+                ]);
+            }
+        }
+
+        // Snapshot the plan — later edits must not change this order.
+        $order = AiPhotoOrder::create([
+            'vendor_id' => $user->id,
+            'plan_id'   => $plan->id,
+            'plan_name' => $plan->name,
+            'credits'   => $plan->credits,
+            'amount'    => $plan->price,
+            'currency'  => $plan->currency,
+            'status'    => AiPhotoOrder::STATUS_PAID,
+            'paid_at'   => now(),
+            'meta'      => [
+                'mode'              => 'direct',
+                'verified'          => false,   // server did not confirm the money
+                'payment_method'    => $request->input('payment_method', 'frontend'),
+                'payment_reference' => $reference,
+                'ip'                => $request->ip(),
+            ],
+        ]);
+
+        $this->credits->grantCreditsForOrder($order);
+
+        Log::info('AI photo: direct purchase (UNVERIFIED)', [
+            'order_id'  => $order->id,
+            'vendor_id' => $user->id,
+            'credits'   => $plan->credits,
+            'amount'    => $plan->price,
+            'reference' => $reference,
+        ]);
+
+        return response()->json([
+            'status'  => true,
+            'message' => "{$plan->credits} credits added successfully",
+            'data'    => [
+                'order_id'      => $order->id,
+                'plan_name'     => $plan->name,
+                'credits_added' => $plan->credits,
+                'amount'        => (float) $plan->price,
+                'display_price' => $this->formatMoney($plan->price),
+                'balance'       => $this->credits->getBalance($user->id),
+            ],
+        ]);
+    }
+
+    /**
+     * GET /api/vendor/ai-photo/orders
+     */
+    public function orders(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (! $user) {
+            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $orders = AiPhotoOrder::where('vendor_id', $user->id)->latest()->paginate(20);
+
+        $data = $orders->getCollection()->map(function ($o) {
+            return [
+                'id'            => $o->id,
+                'plan_name'     => $o->plan_name,
+                'credits'       => $o->credits,
+                'amount'        => (float) $o->amount,
+                'display_price' => $this->formatMoney($o->amount),
+                'status'        => $o->status,
+                'paid_at'       => optional($o->paid_at)->toDateTimeString(),
+                'created_at'    => $o->created_at->toDateTimeString(),
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'data'   => $data,
+            'meta'   => [
+                'current_page' => $orders->currentPage(),
+                'last_page'    => $orders->lastPage(),
+                'total'        => $orders->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * GET /api/vendor/ai-photo/transactions
+     */
+    public function transactions(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (! $user) {
+            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $tx = AiPhotoCreditTransaction::where('vendor_id', $user->id)->latest()->paginate(30);
+
+        $data = $tx->getCollection()->map(function ($t) {
+            return [
+                'id'            => $t->id,
+                'type'          => $t->type,
+                'amount'        => $t->amount,
+                'balance_after' => $t->balance_after,
+                'description'   => $t->description,
+                'created_at'    => $t->created_at->toDateTimeString(),
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'data'   => $data,
+            'meta'   => [
+                'current_page' => $tx->currentPage(),
+                'last_page'    => $tx->lastPage(),
+                'total'        => $tx->total(),
+            ],
+        ]);
+    }
+
+    protected function formatMoney($amount): string
+    {
+        return 'c. ' . number_format((float) $amount, 2);
+    }
+
+
+    /* =================================================================
+     |  STRIPE FLOW — ON HOLD
+     |=================================================================
+     |  To switch back on:
+     |    1. composer require stripe/stripe-php
+     |    2. add stripe keys to .env + config/services.php
+     |    3. uncomment `use App\Services\StripeService;` at the top
+     |    4. uncomment stripePurchase() and verifyPayment() below
+     |    5. in routes/api.php point /purchase at stripePurchase
+     |       and re-enable /verify-payment + /stripe/webhook
+     |    6. rename the direct purchase() above to legacyDirectPurchase()
+     |       so it is no longer reachable
+     |
+     |  Nothing in the database has to change. The tables, the ledger and
+     |  the credit service already work with both flows.
+     |=================================================================
+
+    public function stripePurchase(Request $request, StripeService $stripe)
+    {
+        $user = Auth::guard('api')->user();
+
+        if (! $user) {
+            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'plan_id' => 'required|integer|exists:ai_photo_plans,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $plan = AiPhotoPlan::find($request->plan_id);
+
+        if (! $plan || ! $plan->is_active) {
+            return response()->json(['status' => false, 'message' => 'This plan is no longer available'], 422);
+        }
+
         $existing = AiPhotoOrder::where('vendor_id', $user->id)
             ->where('plan_id', $plan->id)
             ->where('status', AiPhotoOrder::STATUS_PENDING)
@@ -149,7 +359,6 @@ class AiPhotoController extends Controller
             }
         }
 
-        // Snapshot the plan — later plan edits must not change this order.
         $order = AiPhotoOrder::create([
             'vendor_id' => $user->id,
             'plan_id'   => $plan->id,
@@ -172,31 +381,14 @@ class AiPhotoController extends Controller
                     'credits'   => (string) $plan->credits,
                 ],
                 null,
-                // idempotency key: same order never creates two intents
                 'ai_photo_order_' . $order->id
             );
-        } catch (\Stripe\Exception\CardException $e) {
-            $order->update([
-                'status'         => AiPhotoOrder::STATUS_FAILED,
-                'failure_reason' => $e->getMessage(),
-            ]);
-
-            return response()->json(['status' => false, 'message' => $e->getMessage()], 402);
         } catch (\Throwable $e) {
-            Log::error('AI photo: stripe intent failed', [
-                'order_id' => $order->id,
-                'error'    => $e->getMessage(),
-            ]);
+            Log::error('AI photo: stripe intent failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
 
-            $order->update([
-                'status'         => AiPhotoOrder::STATUS_FAILED,
-                'failure_reason' => $e->getMessage(),
-            ]);
+            $order->update(['status' => AiPhotoOrder::STATUS_FAILED, 'failure_reason' => $e->getMessage()]);
 
-            return response()->json([
-                'status'  => false,
-                'message' => 'Could not start the payment. Please try again.',
-            ], 500);
+            return response()->json(['status' => false, 'message' => 'Could not start the payment. Please try again.'], 500);
         }
 
         $order->update(['stripe_payment_intent_id' => $intent->id]);
@@ -208,16 +400,6 @@ class AiPhotoController extends Controller
         ]);
     }
 
-    /**
-     * POST /api/vendor/ai-photo/verify-payment
-     * body: { order_id }
-     *
-     * Called by the app right after the Payment Sheet reports success,
-     * so the seller sees credits instantly instead of waiting for the webhook.
-     *
-     * This does NOT trust the app. It asks Stripe what really happened.
-     * Safe to call many times — grantCreditsForOrder is idempotent.
-     */
     public function verifyPayment(Request $request, StripeService $stripe)
     {
         $user = Auth::guard('api')->user();
@@ -226,16 +408,14 @@ class AiPhotoController extends Controller
             return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
         }
 
-        $validator = Validator::make($request->all(), [
-            'order_id' => 'required|integer',
-        ]);
+        $validator = Validator::make($request->all(), ['order_id' => 'required|integer']);
 
         if ($validator->fails()) {
             return response()->json(['status' => false, 'message' => $validator->errors()->first()], 422);
         }
 
         $order = AiPhotoOrder::where('id', $request->order_id)
-            ->where('vendor_id', $user->id)   // vendor can only verify their OWN order
+            ->where('vendor_id', $user->id)
             ->first();
 
         if (! $order) {
@@ -247,10 +427,10 @@ class AiPhotoController extends Controller
                 'status'  => true,
                 'message' => 'Payment already confirmed',
                 'data'    => [
-                    'order_id'         => $order->id,
-                    'payment_status'   => 'paid',
-                    'credits_added'    => $order->credits,
-                    'balance'          => $this->credits->getBalance($user->id),
+                    'order_id'       => $order->id,
+                    'payment_status' => 'paid',
+                    'credits_added'  => $order->credits,
+                    'balance'        => $this->credits->getBalance($user->id),
                 ],
             ]);
         }
@@ -267,13 +447,8 @@ class AiPhotoController extends Controller
             return response()->json(['status' => false, 'message' => 'Could not verify payment. Try again.'], 500);
         }
 
-        // Guard against a tampered/mismatched intent
         if ((int) $intent->amount !== (int) round(((float) $order->amount) * 100)) {
-            Log::critical('AI photo: amount mismatch', [
-                'order_id'      => $order->id,
-                'order_amount'  => $order->amount,
-                'intent_amount' => $intent->amount,
-            ]);
+            Log::critical('AI photo: amount mismatch', ['order_id' => $order->id]);
 
             return response()->json(['status' => false, 'message' => 'Payment amount mismatch'], 422);
         }
@@ -311,7 +486,6 @@ class AiPhotoController extends Controller
             ]);
         }
 
-        // requires_payment_method / canceled => failed
         $order->update([
             'status'         => AiPhotoOrder::STATUS_FAILED,
             'failure_reason' => $intent->last_payment_error->message ?? "Intent status: {$intent->status}",
@@ -328,89 +502,6 @@ class AiPhotoController extends Controller
         ], 402);
     }
 
-    /**
-     * GET /api/vendor/ai-photo/orders
-     * Purchase history.
-     */
-    public function orders(Request $request)
-    {
-        $user = Auth::guard('api')->user();
-
-        if (! $user) {
-            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
-        }
-
-        $orders = AiPhotoOrder::where('vendor_id', $user->id)
-            ->latest()
-            ->paginate(20);
-
-        $data = $orders->getCollection()->map(function ($o) {
-            return [
-                'id'            => $o->id,
-                'plan_name'     => $o->plan_name,
-                'credits'       => $o->credits,
-                'amount'        => (float) $o->amount,
-                'currency'      => strtoupper($o->currency),
-                'display_price' => $this->formatMoney($o->amount, $o->currency),
-                'status'        => $o->status,
-                'paid_at'       => optional($o->paid_at)->toDateTimeString(),
-                'created_at'    => $o->created_at->toDateTimeString(),
-            ];
-        });
-
-        return response()->json([
-            'status'  => true,
-            'message' => 'Orders fetched successfully',
-            'data'    => $data,
-            'meta'    => [
-                'current_page' => $orders->currentPage(),
-                'last_page'    => $orders->lastPage(),
-                'total'        => $orders->total(),
-            ],
-        ]);
-    }
-
-    /**
-     * GET /api/vendor/ai-photo/transactions
-     * Full credit history (bought + used).
-     */
-    public function transactions(Request $request)
-    {
-        $user = Auth::guard('api')->user();
-
-        if (! $user) {
-            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
-        }
-
-        $tx = AiPhotoCreditTransaction::where('vendor_id', $user->id)
-            ->latest()
-            ->paginate(30);
-
-        $data = $tx->getCollection()->map(function ($t) {
-            return [
-                'id'            => $t->id,
-                'type'          => $t->type,
-                'amount'        => $t->amount,
-                'balance_after' => $t->balance_after,
-                'description'   => $t->description,
-                'created_at'    => $t->created_at->toDateTimeString(),
-            ];
-        });
-
-        return response()->json([
-            'status'  => true,
-            'message' => 'Transactions fetched successfully',
-            'data'    => $data,
-            'meta'    => [
-                'current_page' => $tx->currentPage(),
-                'last_page'    => $tx->lastPage(),
-                'total'        => $tx->total(),
-            ],
-        ]);
-    }
-
-    // ---------- helpers ----------
-
     protected function intentPayload(AiPhotoOrder $order, $intent, AiPhotoPlan $plan): array
     {
         return [
@@ -419,18 +510,11 @@ class AiPhotoController extends Controller
             'plan_name'         => $plan->name,
             'credits'           => $plan->credits,
             'amount'            => (float) $plan->price,
-            'currency'          => strtoupper($plan->currency),
             'client_secret'     => $intent->client_secret,
             'payment_intent_id' => $intent->id,
             'publishable_key'   => config('services.stripe.key'),
         ];
     }
 
-    protected function formatMoney($amount, string $currency): string
-    {
-        $symbols = ['usd' => '$', 'eur' => '€', 'gbp' => '£'];
-        $symbol  = $symbols[strtolower($currency)] ?? (strtoupper($currency) . ' ');
-
-        return $symbol . number_format((float) $amount, 2);
-    }
+    ================================================================= */
 }

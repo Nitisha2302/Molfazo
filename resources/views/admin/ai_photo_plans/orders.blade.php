@@ -11,7 +11,7 @@
         <div class="col-md-3">
             <div class="card p-3">
                 <small class="text-muted">Total Revenue</small>
-                <h4 class="mb-0">{{ number_format($stats['total_revenue'], 2) }}</h4>
+                <h4 class="mb-0">c. {{ number_format($stats['total_revenue'], 2) }}</h4>
             </div>
         </div>
         <div class="col-md-3">
@@ -84,7 +84,7 @@
     </td>
     <td>{{ $order->plan_name }}</td>
     <td>{{ $order->credits }}</td>
-    <td>{{ strtoupper($order->currency) }} {{ number_format($order->amount, 2) }}</td>
+    <td>c. {{ number_format($order->amount, 2) }}</td>
     <td>
         @php
             $map = [

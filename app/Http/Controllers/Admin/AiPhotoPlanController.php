@@ -16,6 +16,7 @@ class AiPhotoPlanController extends Controller
             $query->where('name', 'LIKE', '%' . $request->search . '%');
         }
 
+        // cheapest plan first — admin does not manage ordering manually
         $plans = $query->orderBy('credits')->paginate(10);
 
         return view('admin.ai_photo_plans.index', compact('plans'));
@@ -86,12 +87,16 @@ class AiPhotoPlanController extends Controller
             ]
         );
 
-        // only these three change — currency / is_active / sort_order untouched
+        // only these three change. currency / is_active / sort_order are untouched,
+        // so the show-hide toggle is not reset by an edit.
         $plan->update([
             'name'    => $data['name'],
             'credits' => $data['credits'],
             'price'   => $data['price'],
         ]);
+
+        // NOTE: existing orders keep their own snapshot (plan_name/credits/amount),
+        // so editing a plan never changes what an already-paid seller received.
 
         return redirect()->route('dashboard.admin.ai-photo-plans.index')
             ->with('success', 'AI Photo Plan Updated Successfully');
@@ -119,6 +124,7 @@ class AiPhotoPlanController extends Controller
     {
         $plan = AiPhotoPlan::findOrFail($id);
 
+        // Never hard-delete a plan that has paid orders — it would break history.
         if ($plan->orders()->where('status', 'paid')->exists()) {
             $plan->update(['is_active' => false]);
 
