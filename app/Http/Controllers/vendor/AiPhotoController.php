@@ -7,11 +7,11 @@ use App\Models\AiPhotoCreditTransaction;
 use App\Models\AiPhotoOrder;
 use App\Models\AiPhotoPlan;
 use App\Services\AiPhotoCreditService;
-use App\Services\StripeService;   // STRIPE ON HOLD — re-enable later
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+// use App\Services\StripeService;   // STRIPE ON HOLD — re-enable later
 
 /**
  * =====================================================================
