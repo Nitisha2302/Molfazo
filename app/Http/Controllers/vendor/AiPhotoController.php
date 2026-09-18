@@ -83,6 +83,7 @@ class AiPhotoController extends Controller
             ],
         ]);
     }
+    
 
     /**
      * GET /api/vendor/ai-photo/credits
