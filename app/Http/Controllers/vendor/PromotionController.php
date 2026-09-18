@@ -49,29 +49,61 @@ class PromotionController extends Controller
             ->get()
             ->keyBy('package_id');
 
+        // $data = $packages->map(function ($package) use ($requests) {
+
+        //     $promotion = $requests[$package->id] ?? null;
+        //     // ✅ COUNT USED REVIEWS
+        //    $usedReviews = 0;
+        //     if ($promotion) {
+        //         $usedReviews = ProductReview::where('product_id', $promotion->product_id)
+        //         ->where('vendor_id', $promotion->vendor_id)
+        //         ->count();
+        //     }
+
+        //     return [
+        //         'id' => $package->id,
+        //         'title' => $package->title,
+        //         'review_count' => $package->review_count,
+        //         'price' => $package->price,
+        //          // ✅ NEW FIELDS
+        //         'used_reviews' => $usedReviews,
+        //         'remaining_reviews' => $promotion ? ($package->review_count - $usedReviews) : $package->review_count,
+
+        //         'status' => $promotion->status ?? null,
+        //         'is_applied' => $promotion ? true : false,
+        //           'promotion_request_id' => $promotion->id ?? null
+        //     ];
+        // });
+
         $data = $packages->map(function ($package) use ($requests) {
 
             $promotion = $requests[$package->id] ?? null;
-            // ✅ COUNT USED REVIEWS
-           $usedReviews = 0;
+
+            $usedReviews = 0;
+
             if ($promotion) {
-                $usedReviews = ProductReview::where('product_id', $promotion->product_id)
-                ->where('vendor_id', $promotion->vendor_id)
-                ->count();
+                $usedReviews = ProductReview::where(
+                    'promotion_request_id',
+                    $promotion->id
+                )->count();
             }
+
+            $remainingReviews = $promotion
+                ? max(0, $package->review_count - $usedReviews)
+                : $package->review_count;
 
             return [
                 'id' => $package->id,
                 'title' => $package->title,
                 'review_count' => $package->review_count,
                 'price' => $package->price,
-                 // ✅ NEW FIELDS
+
                 'used_reviews' => $usedReviews,
-                'remaining_reviews' => $promotion ? ($package->review_count - $usedReviews) : $package->review_count,
+                'remaining_reviews' => $remainingReviews,
 
                 'status' => $promotion->status ?? null,
                 'is_applied' => $promotion ? true : false,
-                  'promotion_request_id' => $promotion->id ?? null
+                'promotion_request_id' => $promotion->id ?? null,
             ];
         });
 
@@ -258,17 +290,17 @@ class PromotionController extends Controller
         }
 
         // ✅ ALREADY HAS A PENDING OR ACTIVE PROMOTION FOR THIS PRODUCT?
-        // $exists = PromotionRequest::where('vendor_id', $user->id)
-        //     ->where('product_id', $request->product_id)
-        //     ->whereIn('status', ['pending', 'approved'])
-        //     ->exists();
+        $exists = PromotionRequest::where('vendor_id', $user->id)
+            ->where('product_id', $request->product_id)
+            ->whereIn('status', ['pending'])
+            ->exists();
 
-        // if ($exists) {
-        //     return response()->json([
-        //         'status'  => false,
-        //         'message' => __('messages.vendor.promotion.store.duplicate')
-        //     ]);
-        // }
+        if ($exists) {
+            return response()->json([
+                'status'  => false,
+                'message' => __('messages.vendor.promotion.store.duplicate')
+            ]);
+        }
 
         $package = PromotionPackage::find($request->package_id);
 
