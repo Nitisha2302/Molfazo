@@ -235,7 +235,7 @@ Route::post('toggle-block-user', [CustomerAuthController::class, 'toggleBlockUse
   Route::post('/store-report', [CustomerAuthController::class, 'storeReport']);
 
 
-  Route::get('vendor/ai-photo/ai-plans',          [AiPhotoController::class, 'plans']);
+  Route::get('vendor/ai-photo/plans',          [AiPhotoController::class, 'plans']);
 Route::get('vendor/ai-photo/credits',        [AiPhotoController::class, 'credits']);
 Route::post('vendor/ai-photo/purchase',      [AiPhotoController::class, 'purchase']);
 // Route::post('vendor/ai-photo/verify-payment',[AiPhotoController::class, 'verifyPayment']);
@@ -256,31 +256,6 @@ Route::post('vendor/ai-photo/generate', [AiPhotoGenerationController::class, 'ge
 Route::post('vendor/ai-photo/edit',     [AiPhotoGenerationController::class, 'edit']);
 Route::post('vendor/ai-photo/preview', [AiPhotoGenerationController::class, 'preview']);
 
-Route::get('debug-ai-photo', function (\Illuminate\Http\Request $request) {
-    try {
-        $user = \Illuminate\Support\Facades\Auth::guard('api')->user();
-
-        $plans = \App\Models\AiPhotoPlan::active()
-            ->orderBy('sort_order')
-            ->orderBy('credits')
-            ->get();
-
-        $balance = app(\App\Services\AiPhotoCreditService::class)
-            ->getBalance($user->id ?? 0);
-
-        return response()->json([
-            'user_id'  => $user->id ?? null,
-            'plans'    => $plans,
-            'balance'  => $balance,
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'file'  => $e->getFile(),
-            'line'  => $e->getLine(),
-        ], 500);
-    }
-});
 
 
 
