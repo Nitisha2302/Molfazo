@@ -234,7 +234,7 @@ Route::post('/didit/webhook', [KycController::class, 'webhook'])->name('didit.we
 Route::post('toggle-block-user', [CustomerAuthController::class, 'toggleBlockUser']);
   Route::post('/store-report', [CustomerAuthController::class, 'storeReport']);
 
-  
+
   Route::get('vendor/ai-photo/ai-plans',          [AiPhotoController::class, 'plans']);
 Route::get('vendor/ai-photo/credits',        [AiPhotoController::class, 'credits']);
 Route::post('vendor/ai-photo/purchase',      [AiPhotoController::class, 'purchase']);
@@ -256,7 +256,24 @@ Route::post('vendor/ai-photo/generate', [AiPhotoGenerationController::class, 'ge
 Route::post('vendor/ai-photo/edit',     [AiPhotoGenerationController::class, 'edit']);
 Route::post('vendor/ai-photo/preview', [AiPhotoGenerationController::class, 'preview']);
 
+Route::get('debug-ai-photo', function () {
+    try {
+        $count = \App\Models\AiPhotoPlan::count();
+        $svc   = app(\App\Services\AiPhotoCreditService::class);
 
+        return response()->json([
+            'plans_table_ok' => true,
+            'plan_count'     => $count,
+            'service_ok'     => get_class($svc),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file'  => $e->getFile(),
+            'line'  => $e->getLine(),
+        ], 500);
+    }
+});
 
 
 
