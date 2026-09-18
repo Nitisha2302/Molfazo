@@ -234,6 +234,7 @@ Route::post('/didit/webhook', [KycController::class, 'webhook'])->name('didit.we
 Route::post('toggle-block-user', [CustomerAuthController::class, 'toggleBlockUser']);
   Route::post('/store-report', [CustomerAuthController::class, 'storeReport']);
 
+  
   Route::get('vendor/ai-photo/ai-plans',          [AiPhotoController::class, 'plans']);
 Route::get('vendor/ai-photo/credits',        [AiPhotoController::class, 'credits']);
 Route::post('vendor/ai-photo/purchase',      [AiPhotoController::class, 'purchase']);
