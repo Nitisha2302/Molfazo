@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\vendor;
+namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Models\AiPhotoGeneration;
@@ -412,6 +412,108 @@ class AiPhotoGenerationController extends Controller
      *
      * Costs 1 credit. No refund if it fails.
      */
+    // public function preview(Request $request)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if (! $user) {
+    //         return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
+    //     }
+
+    //     $validator = Validator::make($request->all(), [
+    //         'prompt' => 'required_without:image|nullable|string|min:3|max:1000',
+    //         'image'  => 'required_without:prompt|nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+    //     ], [
+    //         'prompt.required_without' => 'Send either a prompt or an image.',
+    //         'image.required_without'  => 'Send either a prompt or an image.',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['status' => false, 'message' => $validator->errors()->first()], 422);
+    //     }
+
+    //     if ($this->credits->getBalance($user->id) < 1) {
+    //         return $this->noCredits();
+    //     }
+
+    //     // an uploaded image wins: the seller clearly wants that photo cleaned
+    //     $isEdit = $request->hasFile('image');
+
+    //     $sourcePath = null;
+    //     $absolute   = null;
+
+    //     if ($isEdit) {
+    //         $file       = $request->file('image');
+    //         $sourcePath = time() . '_' . $file->getClientOriginalName();
+    //         $file->move(public_path('assets/product_images'), $sourcePath);
+
+    //         $absolute = public_path('assets/product_images/' . $sourcePath);
+
+    //         if (! file_exists($absolute)) {
+    //             return response()->json(['status' => false, 'message' => 'Upload failed. Try again.'], 422);
+    //         }
+    //     }
+
+    //     $generation = AiPhotoGeneration::create([
+    //         'vendor_id'    => $user->id,
+    //         'product_id'   => null,            // product does not exist yet
+    //         'mode'         => $isEdit ? AiPhotoGeneration::MODE_EDIT : AiPhotoGeneration::MODE_GENERATE,
+    //         'prompt'       => $isEdit ? $this->editPrompt() : $request->prompt,
+    //         'source_image' => $sourcePath,
+    //         'status'       => AiPhotoGeneration::STATUS_PROCESSING,
+    //         'meta'         => ['context' => 'new_product_preview'],
+    //     ]);
+
+    //     $reason = $isEdit ? 'Photo cleaned (new product)' : 'Photo generated (new product)';
+
+    //     if (! $this->takeCredit($generation, $user->id, $reason)) {
+    //         return $this->noCredits();
+    //     }
+
+    //     try {
+    //         $service = new StabilityAiService();
+
+    //         $path = $isEdit
+    //             ? $service->enhanceProductPhoto($absolute)
+    //             : $service->generate($request->prompt);
+    //     } catch (\Throwable $e) {
+    //         return $this->failAndRefund($generation, $user->id, $e);
+    //     }
+
+    //     $generation->update([
+    //         'output_image' => $path,
+    //         'status'       => AiPhotoGeneration::STATUS_SUCCESS,
+    //     ]);
+
+    //     return response()->json([
+    //         'status'  => true,
+    //         'message' => $isEdit ? 'Photo cleaned successfully' : 'Photo generated successfully',
+    //         'data'    => [
+    //             'generation_id' => $generation->id,
+    //             'image'         => $path,          // send this back on product save
+    //             'mode'          => $isEdit ? 'edit' : 'generate',
+    //             'balance'       => $this->credits->getBalance($user->id),
+    //         ],
+    //     ]);
+    // }
+
+    // with prompt 
+
+        /**
+     * ==================== PREVIEW (new product) ====================
+     * POST /api/vendor/ai-photo/preview
+     *
+     * For the ADD NEW PRODUCT screen — no product_id, nothing written
+     * to product_images. Returns only the file name.
+     *
+     * THREE CASES:
+     *   prompt only    -> generate a brand new image from that prompt
+     *   image only     -> remove background, place on clean white
+     *   image + prompt -> modify the photo according to that prompt
+     *                     (any prompt: backgrounds, lighting, scenes)
+     *
+     * Costs 1 credit. No refund if it fails.
+     */
     public function preview(Request $request)
     {
         $user = Auth::guard('api')->user();
@@ -421,8 +523,8 @@ class AiPhotoGenerationController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'prompt' => 'required_without:image|nullable|string|min:3|max:1000',
-            'image'  => 'required_without:prompt|nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'prompt'   => 'required_without:image|nullable|string|min:3|max:1000',
+            'image'    => 'required_without:prompt|nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
         ], [
             'prompt.required_without' => 'Send either a prompt or an image.',
             'image.required_without'  => 'Send either a prompt or an image.',
@@ -436,13 +538,25 @@ class AiPhotoGenerationController extends Controller
             return $this->noCredits();
         }
 
-        // an uploaded image wins: the seller clearly wants that photo cleaned
-        $isEdit = $request->hasFile('image');
+        $hasImage  = $request->hasFile('image');
+        $prompt    = trim((string) $request->input('prompt'));
+        $hasPrompt = $prompt !== '';
+
+        // image + prompt -> modify per the prompt
+        // image only     -> plain white background
+        // prompt only    -> brand new image
+        if ($hasImage && $hasPrompt) {
+            $mode = 'modify';
+        } elseif ($hasImage) {
+            $mode = 'white_background';
+        } else {
+            $mode = 'generate';
+        }
 
         $sourcePath = null;
         $absolute   = null;
 
-        if ($isEdit) {
+        if ($hasImage) {
             $file       = $request->file('image');
             $sourcePath = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('assets/product_images'), $sourcePath);
@@ -457,25 +571,36 @@ class AiPhotoGenerationController extends Controller
         $generation = AiPhotoGeneration::create([
             'vendor_id'    => $user->id,
             'product_id'   => null,            // product does not exist yet
-            'mode'         => $isEdit ? AiPhotoGeneration::MODE_EDIT : AiPhotoGeneration::MODE_GENERATE,
-            'prompt'       => $isEdit ? $this->editPrompt() : $request->prompt,
+            'mode'         => $hasImage ? AiPhotoGeneration::MODE_EDIT : AiPhotoGeneration::MODE_GENERATE,
+            'prompt'       => $hasPrompt ? $prompt : $this->editPrompt(),
             'source_image' => $sourcePath,
             'status'       => AiPhotoGeneration::STATUS_PROCESSING,
-            'meta'         => ['context' => 'new_product_preview'],
+            'meta'         => ['context' => 'new_product_preview', 'operation' => $mode],
         ]);
 
-        $reason = $isEdit ? 'Photo cleaned (new product)' : 'Photo generated (new product)';
+        $reasons = [
+            'generate'         => 'Photo generated (new product)',
+            'white_background' => 'Photo cleaned (new product)',
+            'modify'           => 'Photo modified by prompt (new product)',
+        ];
 
-        if (! $this->takeCredit($generation, $user->id, $reason)) {
+        if (! $this->takeCredit($generation, $user->id, $reasons[$mode])) {
             return $this->noCredits();
         }
 
         try {
             $service = new StabilityAiService();
 
-            $path = $isEdit
-                ? $service->enhanceProductPhoto($absolute)
-                : $service->generate($request->prompt);
+            if ($mode === 'modify') {
+                $path = $service->modifyWithPrompt(
+                    $absolute,
+                    $prompt,
+                );
+            } elseif ($mode === 'white_background') {
+                $path = $service->enhanceProductPhoto($absolute);
+            } else {
+                $path = $service->generate($prompt);
+            }
         } catch (\Throwable $e) {
             return $this->failAndRefund($generation, $user->id, $e);
         }
@@ -485,13 +610,19 @@ class AiPhotoGenerationController extends Controller
             'status'       => AiPhotoGeneration::STATUS_SUCCESS,
         ]);
 
+        $messages = [
+            'generate'         => 'Photo generated successfully',
+            'white_background' => 'Photo cleaned successfully',
+            'modify'           => 'Photo updated successfully',
+        ];
+
         return response()->json([
             'status'  => true,
-            'message' => $isEdit ? 'Photo cleaned successfully' : 'Photo generated successfully',
+            'message' => $messages[$mode],
             'data'    => [
                 'generation_id' => $generation->id,
                 'image'         => $path,          // send this back on product save
-                'mode'          => $isEdit ? 'edit' : 'generate',
+                'mode'          => $mode,
                 'balance'       => $this->credits->getBalance($user->id),
             ],
         ]);

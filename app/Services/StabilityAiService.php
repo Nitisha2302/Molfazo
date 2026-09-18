@@ -187,4 +187,41 @@ class StabilityAiService
 
         throw new RuntimeException($message ?? ('Image processing failed (' . $response->status() . ')'));
     }
+
+          /**
+     * Modify a photo according to whatever the seller typed.
+     * The prompt can be anything — colours, backgrounds, lighting, scenes.
+     *
+     * How much changes is fixed at 0.7 and decided here, not by the app.
+     * That level is high enough to handle colour and material changes,
+     * which are the hardest case.
+     */
+    public function modifyWithPrompt(string $sourceAbsolutePath, string $prompt): string
+    {
+        if (! file_exists($sourceAbsolutePath)) {
+            throw new RuntimeException('Source image not found.');
+        }
+
+        $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Accept'        => 'image/*',
+            ])
+            ->timeout(180)
+            ->attach('image', file_get_contents($sourceAbsolutePath), basename($sourceAbsolutePath))
+            ->post($this->host . '/v2beta/stable-image/generate/sd3', [
+                ['name' => 'prompt',          'contents' => $prompt],
+                ['name' => 'negative_prompt', 'contents' => self::NEGATIVE_PROMPT],
+                ['name' => 'mode',            'contents' => 'image-to-image'],
+                // ['name' => 'strength',        'contents' => '0.7'],
+                ['name' => 'strength',        'contents' => '0.92'],
+                ['name' => 'model',           'contents' => 'sd3.5-medium'],
+                ['name' => 'output_format',   'contents' => 'png'],
+            ]);
+
+        if ($response->failed()) {
+            $this->throwApiError($response, 'image-to-image');
+        }
+
+        return $this->saveToProductImages($response->body());
+    }
 }
