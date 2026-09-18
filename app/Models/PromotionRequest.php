@@ -10,10 +10,23 @@ class PromotionRequest extends Model
         'vendor_id',
         'product_id',
         'package_id',
-        'payment_screenshot',
-        'status'
+        'payment_screenshot',   // kept — old manual flow still works
+        'status',
+
+        // added for the Stripe flow
+        'payment_id',
+        'payment_status',
+        'payment_method',
+        'amount_paid',
+        'paid_at',
+        'auto_approved',
     ];
 
+    protected $casts = [
+        'amount_paid'   => 'decimal:2',
+        'paid_at'       => 'datetime',
+        'auto_approved' => 'boolean',
+    ];
 
     public function reviews()
     {
@@ -33,5 +46,10 @@ class PromotionRequest extends Model
     public function vendor()
     {
         return $this->belongsTo(\App\Models\User::class, 'vendor_id');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
     }
 }

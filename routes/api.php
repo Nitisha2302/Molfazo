@@ -139,7 +139,8 @@ Route::post('vendor/reset-forgot-password', [AuthController::class, 'resetForgot
 
     Route::get('vendor/packages', [PromotionController::class,'packages']);
     Route::get('vendor/payment-details', [PromotionController::class,'paymentDetails']);
-    Route::post('vendor/promotion-request', [PromotionController::class,'store']);
+    // Route::post('vendor/promotion-request', [PromotionController::class,'store']);
+    Route::post('vendor/promotion-request', [PromotionController::class,'store']);   // NEW — stripe, auto approve
 
     Route::post('vendor/add-review', [ReviewController::class,'store']);
 
