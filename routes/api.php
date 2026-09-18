@@ -28,9 +28,9 @@ use App\Http\Controllers\vendor\PromotionController;
 use App\Http\Controllers\vendor\ReviewController;
 use App\Http\Controllers\vendor\KycController;
 use App\Http\Controllers\ContentController;
-use App\Http\Controllers\Vendor\AiPhotoController;
+use App\Http\Controllers\vendor\AiPhotoController;
 use App\Http\Controllers\StripeWebhookController;
-use App\Http\Controllers\Vendor\AiPhotoGenerationController;
+use App\Http\Controllers\vendor\AiPhotoGenerationController;
 
 use App\Http\Controllers\Customer\ChatController as CustomerChatController;
 
