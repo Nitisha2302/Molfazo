@@ -258,17 +258,17 @@ class PromotionController extends Controller
         }
 
         // ✅ ALREADY HAS A PENDING OR ACTIVE PROMOTION FOR THIS PRODUCT?
-        $exists = PromotionRequest::where('vendor_id', $user->id)
-            ->where('product_id', $request->product_id)
-            ->whereIn('status', ['pending', 'approved'])
-            ->exists();
+        // $exists = PromotionRequest::where('vendor_id', $user->id)
+        //     ->where('product_id', $request->product_id)
+        //     ->whereIn('status', ['pending', 'approved'])
+        //     ->exists();
 
-        if ($exists) {
-            return response()->json([
-                'status'  => false,
-                'message' => __('messages.vendor.promotion.store.duplicate')
-            ]);
-        }
+        // if ($exists) {
+        //     return response()->json([
+        //         'status'  => false,
+        //         'message' => __('messages.vendor.promotion.store.duplicate')
+        //     ]);
+        // }
 
         $package = PromotionPackage::find($request->package_id);
 
