@@ -256,15 +256,22 @@ Route::post('vendor/ai-photo/generate', [AiPhotoGenerationController::class, 'ge
 Route::post('vendor/ai-photo/edit',     [AiPhotoGenerationController::class, 'edit']);
 Route::post('vendor/ai-photo/preview', [AiPhotoGenerationController::class, 'preview']);
 
-Route::get('debug-ai-photo', function () {
+Route::get('debug-ai-photo', function (\Illuminate\Http\Request $request) {
     try {
-        $count = \App\Models\AiPhotoPlan::count();
-        $svc   = app(\App\Services\AiPhotoCreditService::class);
+        $user = \Illuminate\Support\Facades\Auth::guard('api')->user();
+
+        $plans = \App\Models\AiPhotoPlan::active()
+            ->orderBy('sort_order')
+            ->orderBy('credits')
+            ->get();
+
+        $balance = app(\App\Services\AiPhotoCreditService::class)
+            ->getBalance($user->id ?? 0);
 
         return response()->json([
-            'plans_table_ok' => true,
-            'plan_count'     => $count,
-            'service_ok'     => get_class($svc),
+            'user_id'  => $user->id ?? null,
+            'plans'    => $plans,
+            'balance'  => $balance,
         ]);
     } catch (\Throwable $e) {
         return response()->json([
